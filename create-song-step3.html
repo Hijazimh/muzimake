@@ -188,62 +188,8 @@
                         <label class="block text-custom-gray text-xs font-bold tracking-wider uppercase mb-2">
                             Enter your email*
                         </label>
-                        <div class="relative">
-                            <input type="email" id="email" name="email" class="form-input w-full pr-10" placeholder="email">
-                            <div id="emailCheckIcon" class="absolute right-3 top-1/2 transform -translate-y-1/2 hidden">
-                                <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                            </div>
-                        </div>
+                        <input type="email" id="email" name="email" class="form-input w-full" placeholder="email">
                         <div id="emailError" class="error-message hidden"></div>
-                        <div id="emailExistsMessage" class="text-custom-gray text-xs mt-1 hidden">
-                            THIS EMAIL ALREADY EXISTS
-                        </div>
-                    </div>
-
-                    <!-- Password (for new users) -->
-                    <div id="newUserPasswordSection">
-                        <label class="block text-custom-gray text-xs font-bold tracking-wider uppercase mb-2">
-                            Create a password*
-                        </label>
-                        <input type="password" id="password" name="password" class="form-input w-full" placeholder="create a secure password">
-                        <div id="passwordError" class="error-message hidden"></div>
-                        <p class="text-custom-gray text-xs mt-1">This will create your account for future orders</p>
-                    </div>
-
-                    <!-- Login Section (for existing users) -->
-                    <div id="existingUserLoginSection" class="hidden">
-                        <label class="block text-custom-gray text-xs font-bold tracking-wider uppercase mb-2">
-                            Enter your password*
-                        </label>
-                        <input type="password" id="loginPassword" name="loginPassword" class="form-input w-full" placeholder="enter your password">
-                        <div id="loginPasswordError" class="error-message hidden"></div>
-                        <button id="loginBtn" class="mt-3 bg-custom-gray text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-custom-gray/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                            Login
-                        </button>
-                    </div>
-
-                    <!-- Logged In User Card -->
-                    <div id="loggedInUserCard" class="hidden">
-                        <div class="bg-white border border-gray-200 rounded-lg p-4">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-medium text-custom-dark" id="loggedInName"></p>
-                                        <p class="text-xs text-custom-gray" id="loggedInEmail"></p>
-                                    </div>
-                                </div>
-                                <button id="logoutBtn" class="text-xs text-custom-gray hover:text-custom-dark underline">
-                                    Log out
-                                </button>
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Phone Number -->
@@ -623,26 +569,8 @@
         const nextBtn = document.getElementById('nextBtn');
         const fullNameInput = document.getElementById('fullName');
         const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
-        const loginPasswordInput = document.getElementById('loginPassword');
         const phoneInput = document.getElementById('phoneNumber');
         const countryCodeSelect = document.getElementById('countryCode');
-        
-        // UI elements
-        const emailCheckIcon = document.getElementById('emailCheckIcon');
-        const emailExistsMessage = document.getElementById('emailExistsMessage');
-        const newUserPasswordSection = document.getElementById('newUserPasswordSection');
-        const existingUserLoginSection = document.getElementById('existingUserLoginSection');
-        const loggedInUserCard = document.getElementById('loggedInUserCard');
-        const loggedInName = document.getElementById('loggedInName');
-        const loggedInEmail = document.getElementById('loggedInEmail');
-        const loginBtn = document.getElementById('loginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        
-        // State variables
-        let isEmailExisting = false;
-        let isUserLoggedIn = false;
-        let currentUser = null;
 
         // Validation functions
         function validateName(name) {
@@ -654,9 +582,6 @@
             return emailRegex.test(email.trim());
         }
 
-        function validatePassword(password) {
-            return password.trim().length >= 8;
-        }
 
         function validatePhone(phone, countryCode) {
             try {
@@ -712,187 +637,13 @@
             }
         }
 
-        // Check if email exists in database
-        async function checkEmailExists(email) {
-            try {
-                console.log('Checking email:', email);
-                const { data, error } = await supabase
-                    .from('users')
-                    .select('id, email, full_name')
-                    .eq('email', email.toLowerCase())
-                    .single();
-
-                if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-                    console.error('Error checking email:', error);
-                    return false;
-                }
-
-                console.log('Email check result:', data);
-                return data ? data : false;
-            } catch (error) {
-                console.error('Email check error:', error);
-                return false;
-            }
-        }
-
-        // Handle email input with debouncing
-        let emailCheckTimeout;
-        async function handleEmailInput() {
-            const email = emailInput.value.trim();
-            
-            // Clear previous timeout
-            if (emailCheckTimeout) {
-                clearTimeout(emailCheckTimeout);
-            }
-
-            // Reset UI state
-            emailCheckIcon.classList.add('hidden');
-            emailExistsMessage.classList.add('hidden');
-            hideLoginSections();
-
-            if (validateEmail(email)) {
-                // Debounce the email check
-                emailCheckTimeout = setTimeout(async () => {
-                    console.log('Starting email check for:', email);
-                    const userData = await checkEmailExists(email);
-                    console.log('User data result:', userData);
-                    if (userData) {
-                        // Email exists - show login option
-                        console.log('Email exists, showing login section');
-                        isEmailExisting = true;
-                        emailCheckIcon.classList.remove('hidden');
-                        emailExistsMessage.classList.remove('hidden');
-                        showLoginSection();
-                    } else {
-                        // Email doesn't exist - show new user password
-                        console.log('Email does not exist, showing new user section');
-                        isEmailExisting = false;
-                        showNewUserSection();
-                    }
-                }, 500); // 500ms delay
-            } else {
-                // Invalid email - show new user section
-                isEmailExisting = false;
-                showNewUserSection();
-            }
-            
-            updateNextButton();
-        }
-
-        // Show/hide login sections
-        function showLoginSection() {
-            newUserPasswordSection.classList.add('hidden');
-            existingUserLoginSection.classList.remove('hidden');
-        }
-
-        function showNewUserSection() {
-            newUserPasswordSection.classList.remove('hidden');
-            existingUserLoginSection.classList.add('hidden');
-        }
-
-        function hideLoginSections() {
-            newUserPasswordSection.classList.add('hidden');
-            existingUserLoginSection.classList.add('hidden');
-        }
-
-        function showLoggedInCard(userEmail, userName = null) {
-            loggedInUserCard.classList.remove('hidden');
-            loggedInEmail.textContent = userEmail;
-            loggedInName.textContent = userName || userEmail; // Use name if available, otherwise email
-            hideLoginSections();
-            newUserPasswordSection.classList.add('hidden');
-        }
-
-        function hideLoggedInCard() {
-            loggedInUserCard.classList.add('hidden');
-            isUserLoggedIn = false;
-            currentUser = null;
-        }
-
-        // Login functionality
-        async function handleLogin() {
-            const email = emailInput.value.trim();
-            const password = loginPasswordInput.value.trim();
-
-            if (!email || !password) {
-                showError(loginPasswordInput, document.getElementById('loginPasswordError'), 'Please enter your password');
-                return;
-            }
-
-            try {
-                loginBtn.disabled = true;
-                loginBtn.textContent = 'Logging in...';
-
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password
-                });
-
-                if (error) {
-                    showError(loginPasswordInput, document.getElementById('loginPasswordError'), 'Invalid email or password');
-                    return;
-                }
-
-                // Login successful
-                isUserLoggedIn = true;
-                currentUser = data.user;
-                
-                // Get user name from metadata or use email
-                const userName = data.user.user_metadata?.full_name || email;
-                showLoggedInCard(email, userName);
-                loginPasswordInput.value = '';
-                
-                // Update form with user data
-                if (data.user.user_metadata?.full_name) {
-                    fullNameInput.value = data.user.user_metadata.full_name;
-                }
-
-                console.log('Login successful:', data.user);
-            } catch (error) {
-                console.error('Login error:', error);
-                showError(loginPasswordInput, document.getElementById('loginPasswordError'), 'Login failed. Please try again.');
-            } finally {
-                loginBtn.disabled = false;
-                loginBtn.textContent = 'Login';
-            }
-        }
-
-        // Logout functionality
-        async function handleLogout() {
-            try {
-                await supabase.auth.signOut();
-                hideLoggedInCard();
-                showNewUserSection();
-                emailInput.value = '';
-                fullNameInput.value = '';
-                passwordInput.value = '';
-                loginPasswordInput.value = '';
-                isEmailExisting = false;
-                updateNextButton();
-                console.log('Logout successful');
-            } catch (error) {
-                console.error('Logout error:', error);
-            }
-        }
 
         function updateNextButton() {
             const nameValid = validateField(fullNameInput, document.getElementById('nameError'), validateName, 'Please enter a valid name (at least 2 characters)');
             const emailValid = validateField(emailInput, document.getElementById('emailError'), validateEmail, 'Please enter a valid email address');
             const phoneValid = validatePhoneField();
             
-            let passwordValid = false;
-            if (isUserLoggedIn) {
-                // User is logged in, no password validation needed
-                passwordValid = true;
-            } else if (isEmailExisting) {
-                // Email exists but user not logged in, password not valid
-                passwordValid = false;
-            } else {
-                // New user, validate password
-                passwordValid = validateField(passwordInput, document.getElementById('passwordError'), validatePassword, 'Password must be at least 8 characters');
-            }
-            
-            const isComplete = nameValid && emailValid && passwordValid && phoneValid;
+            const isComplete = nameValid && emailValid && phoneValid;
             
             if (isComplete) {
                 nextBtn.className = 'next-button-active px-8 py-3 rounded-full font-medium transition-all duration-200 cursor-pointer';
@@ -905,22 +656,9 @@
 
         // Add event listeners
         fullNameInput.addEventListener('input', updateNextButton);
-        emailInput.addEventListener('input', handleEmailInput);
-        passwordInput.addEventListener('input', updateNextButton);
-        loginPasswordInput.addEventListener('input', updateNextButton);
+        emailInput.addEventListener('input', updateNextButton);
         phoneInput.addEventListener('input', updateNextButton);
         countryCodeSelect.addEventListener('change', updateNextButton);
-        
-        // Login and logout event listeners
-        loginBtn.addEventListener('click', handleLogin);
-        logoutBtn.addEventListener('click', handleLogout);
-        
-        // Allow Enter key to trigger login
-        loginPasswordInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                handleLogin();
-            }
-        });
 
         // Add number-only validation to phone input
         phoneInput.addEventListener('input', function(e) {
@@ -960,11 +698,8 @@
                     const contactData = {
                         fullName: fullNameInput.value,
                         email: emailInput.value,
-                        password: isUserLoggedIn ? null : passwordInput.value, // Don't store password for logged-in users
                         countryCode: countryCodeSelect.value,
                         phoneNumber: phoneInput.value,
-                        isLoggedIn: isUserLoggedIn,
-                        userId: isUserLoggedIn ? currentUser?.id : null,
                         pricing: {
                             songFee: SONG_PRICE,
                             subtotal: SONG_PRICE,
@@ -1152,24 +887,12 @@
                 }
                 if (contactData.email) {
                     emailInput.value = contactData.email;
-                    // Trigger email check if email is already filled
-                    handleEmailInput();
-                }
-                if (contactData.password && !contactData.isLoggedIn) {
-                    passwordInput.value = contactData.password;
                 }
                 if (contactData.countryCode) {
                     countryCodeSelect.value = contactData.countryCode;
                 }
                 if (contactData.phoneNumber) {
                     phoneInput.value = contactData.phoneNumber;
-                }
-                
-                // If user was logged in, show logged in state
-                if (contactData.isLoggedIn && contactData.email) {
-                    isUserLoggedIn = true;
-                    const userName = contactData.fullName || contactData.email;
-                    showLoggedInCard(contactData.email, userName);
                 }
             }
         }
