@@ -296,15 +296,33 @@
             const songFormData = JSON.parse(localStorage.getItem('songFormData') || '{}');
             const contactData = JSON.parse(localStorage.getItem('contactData') || '{}');
 
+            // Map the data correctly based on the actual structure
             orderData = {
-                ...songPreferences,
-                ...songFormData,
-                ...contactData,
+                // From songPreferences (Step 1)
+                moment: songPreferences.moment,
+                vibe: songPreferences.vibe,
+                genre: songPreferences.genre,
+                gender: songPreferences.gender,
+                
+                // From songFormData (Step 2)
+                recipientName: songFormData.name,
+                story: songFormData.story,
+                
+                // From contactData (Step 3)
+                fullName: contactData.fullName,
+                email: contactData.email,
+                countryCode: contactData.countryCode,
+                phoneNumber: contactData.phoneNumber,
+                
+                // Generate order ID and timestamp
                 orderId: generateOrderId(),
                 timestamp: new Date().toISOString()
             };
 
             console.log('Order data loaded:', orderData);
+            console.log('Song preferences:', songPreferences);
+            console.log('Song form data:', songFormData);
+            console.log('Contact data:', contactData);
         }
 
         // Generate unique order ID
@@ -319,10 +337,12 @@
                     <div>
                         <h3 class="font-semibold text-custom-dark mb-2">Song Details</h3>
                         <div class="space-y-1 text-sm text-custom-gray">
-                            <p><span class="font-medium">Celebration:</span> ${orderData.celebration || 'N/A'}</p>
+                            <p><span class="font-medium">Celebration:</span> ${orderData.moment || 'N/A'}</p>
                             <p><span class="font-medium">Genre:</span> ${orderData.genre || 'N/A'}</p>
                             <p><span class="font-medium">For:</span> ${orderData.recipientName || 'N/A'}</p>
-                            <p><span class="font-medium">Gender:</span> ${orderData.recipientGender || 'N/A'}</p>
+                            <p><span class="font-medium">Gender:</span> ${orderData.gender || 'N/A'}</p>
+                            ${orderData.vibe && orderData.vibe.length > 0 ? `<p><span class="font-medium">Vibe:</span> ${Array.isArray(orderData.vibe) ? orderData.vibe.join(', ') : orderData.vibe}</p>` : ''}
+                            ${orderData.story ? `<p><span class="font-medium">Story:</span> ${orderData.story.length > 50 ? orderData.story.substring(0, 50) + '...' : orderData.story}</p>` : ''}
                         </div>
                     </div>
                     <div>
@@ -619,10 +639,12 @@
                     customer_name: orderData.fullName,
                     customer_email: orderData.email,
                     customer_phone: `${orderData.countryCode}${orderData.phoneNumber}`,
-                    celebration: orderData.celebration,
+                    celebration: orderData.moment,
                     genre: orderData.genre,
                     recipient_name: orderData.recipientName,
-                    recipient_gender: orderData.recipientGender,
+                    recipient_gender: orderData.gender,
+                    story: orderData.story,
+                    vibe: Array.isArray(orderData.vibe) ? orderData.vibe.join(', ') : orderData.vibe,
                     status: 'pending_payment',
                     price: 31.50,
                     order_id: orderData.orderId,
