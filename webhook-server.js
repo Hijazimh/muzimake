@@ -10,6 +10,9 @@ app.use(express.urlencoded({ extended: true }));
 // Your webhook verify token (use the same one in Meta Developer Console)
 const VERIFY_TOKEN = 'Muzimake_WhatsApp_Verify_2024_Secure_Token_XYZ789';
 
+// Production webhook URL (update this with your actual Vercel domain)
+const PRODUCTION_WEBHOOK_URL = 'https://your-vercel-domain.vercel.app/webhook';
+
 // Webhook verification endpoint
 app.get('/webhook', (req, res) => {
     const mode = req.query['hub.mode'];
