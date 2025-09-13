@@ -100,14 +100,15 @@
     <script>
         // Handle payment success
         document.addEventListener('DOMContentLoaded', function() {
-            // Get payment ID from URL parameters
+            // Get payment ID and order ID from URL parameters
             const urlParams = new URLSearchParams(window.location.search);
             const paymentId = urlParams.get('payment_id') || urlParams.get('id');
+            const orderId = urlParams.get('order_id');
             
             if (paymentId) {
                 console.log('Payment successful with ID:', paymentId);
                 // Update order status in Supabase
-                updateOrderStatus(paymentId);
+                updateOrderStatus(paymentId, orderId);
             }
             
             // Clear form data
@@ -122,10 +123,16 @@
         }
 
         // Update order status
-        async function updateOrderStatus(paymentId) {
+        async function updateOrderStatus(paymentId, orderId) {
             try {
                 // You can add Supabase integration here to update the order status
-                console.log('Updating order status for payment:', paymentId);
+                console.log('Updating order status for payment:', paymentId, 'order:', orderId);
+                
+                // If you have Supabase integration, update the order status to 'paid'
+                // const { error } = await supabase
+                //     .from('song_requests')
+                //     .update({ status: 'paid', payment_id: paymentId })
+                //     .eq('order_id', orderId);
             } catch (error) {
                 console.error('Error updating order status:', error);
             }
