@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Supabase Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .info { color: blue; }
+        .warning { color: orange; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        button:hover { background: #0056b3; }
+        .result {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            text-align: left;
+        }
+        .config {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 New Supabase Project Test</h1>
+        
+        <div class="config">
+            <h3>Configuration:</h3>
+            <p><strong>Project URL:</strong> https://lchleopfdvrgunbrlngh.supabase.co</p>
+            <p><strong>Project ID:</strong> lchleopfdvrgunbrlngh</p>
+            <p><strong>API Key:</strong> eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxjaGxlb3BmZHZyZ3VuYnJsbmdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3NTYwNjgsImV4cCI6MjA3MzMzMjA2OH0.U4NkKdXFgK3Im78oz_SaEHkWQqGzhlaeA83Rom4oD7A</p>
+        </div>
+        
+        <button onclick="testConnection()">Test Connection</button>
+        <button onclick="createTable()">Create Table</button>
+        <button onclick="testOrder()">Test Order</button>
+        
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        // New Supabase configuration
+        const supabaseUrl = 'https://lchleopfdvrgunbrlngh.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxjaGxlb3BmZHZyZ3VuYnJsbmdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3NTYwNjgsImV4cCI6MjA3MzMzMjA2OH0.U4NkKdXFgK3Im78oz_SaEHkWQqGzhlaeA83Rom4oD7A';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        function showResult(message, type = 'info') {
+            const result = document.getElementById('result');
+            result.style.display = 'block';
+            result.className = `result ${type}`;
+            result.textContent = message;
+        }
+
+        async function testConnection() {
+            showResult('Testing connection to new Supabase project...', 'info');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .select('count')
+                    .limit(1);
+
+                if (error) {
+                    if (error.message.includes('relation "song_requests" does not exist')) {
+                        showResult('✅ Connection successful!\n❌ Table does not exist yet.\n\nClick "Create Table" to set up the database.', 'info');
+                    } else {
+                        showResult(`❌ Connection failed: ${error.message}`, 'error');
+                    }
+                } else {
+                    showResult('✅ Connection successful!\n✅ Table exists!\n\nReady to create orders!', 'success');
+                }
+            } catch (error) {
+                showResult(`❌ Connection error: ${error.message}`, 'error');
+            }
+        }
+
+        async function createTable() {
+            showResult('Creating table...', 'info');
+            
+            try {
+                // Try to insert a test record to see if table exists
+                const testRecord = {
+                    customer_name: 'Test User',
+                    customer_email: 'test@example.com',
+                    customer_phone: '+971501234567',
+                    celebration: 'Test',
+                    genre: 'Pop',
+                    recipient_name: 'Test Recipient',
+                    recipient_gender: 'Male',
+                    status: 'test',
+                    price: 31.50,
+                    order_id: 'TEST_' + Date.now()
+                };
+
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .insert([testRecord])
+                    .select();
+
+                if (error) {
+                    if (error.message.includes('relation "song_requests" does not exist')) {
+                        showResult('❌ Table does not exist.\n\nPlease create the table manually in your Supabase dashboard:\n\n1. Go to https://supabase.com/dashboard/project/lchleopfdvrgunbrlngh\n2. Click "SQL Editor"\n3. Click "New Query"\n4. Copy and paste this SQL:\n\nCREATE TABLE IF NOT EXISTS song_requests (\n    id SERIAL PRIMARY KEY,\n    customer_name TEXT,\n    customer_email TEXT,\n    customer_phone TEXT,\n    celebration TEXT,\n    genre TEXT,\n    recipient_name TEXT,\n    recipient_gender TEXT,\n    status TEXT DEFAULT \'pending\',\n    price DECIMAL(10,2),\n    order_id TEXT UNIQUE,\n    payment_id TEXT,\n    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n);\n\nALTER TABLE song_requests ENABLE ROW LEVEL SECURITY;\n\nCREATE POLICY "Allow anonymous inserts" ON song_requests\n    FOR INSERT WITH CHECK (true);\n\nCREATE POLICY "Allow authenticated read" ON song_requests\n    FOR SELECT USING (auth.role() = \'authenticated\');\n\nCREATE POLICY "Allow authenticated update" ON song_requests\n    FOR UPDATE USING (auth.role() = \'authenticated\');\n\n5. Click "Run" to execute', 'error');
+                    } else {
+                        showResult(`❌ Error: ${error.message}`, 'error');
+                    }
+                } else {
+                    showResult('✅ Table created successfully!\n✅ Test record inserted!\n\nDatabase is ready!', 'success');
+                }
+            } catch (error) {
+                showResult(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testOrder() {
+            showResult('Creating test order...', 'info');
+            
+            try {
+                const testOrder = {
+                    customer_name: 'Test Customer ' + Date.now(),
+                    customer_email: 'test' + Date.now() + '@example.com',
+                    customer_phone: '+971501234567',
+                    celebration: 'Test Celebration',
+                    genre: 'Pop',
+                    recipient_name: 'Test Recipient',
+                    recipient_gender: 'Male',
+                    status: 'pending',
+                    price: 31.50,
+                    order_id: 'MZ_TEST_' + Date.now()
+                };
+
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .insert([testOrder])
+                    .select();
+
+                if (error) {
+                    showResult(`❌ Order creation failed: ${error.message}`, 'error');
+                } else {
+                    showResult('✅ Test order created successfully!\n\nOrder details:\n' + JSON.stringify(data, null, 2), 'success');
+                }
+            } catch (error) {
+                showResult(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-test on page load
+        window.addEventListener('load', function() {
+            setTimeout(testConnection, 1000);
+        });
+    </script>
+</body>
+</html>
