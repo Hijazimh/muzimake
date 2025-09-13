@@ -6,6 +6,18 @@
       "use": "@vercel/static"
     }
   ],
+  "redirects": [
+    {
+      "source": "/admin",
+      "destination": "/admin-login.html",
+      "permanent": true
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/admin-dashboard-new.html",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
