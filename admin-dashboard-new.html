@@ -321,11 +321,11 @@
 
     <!-- Order Details Modal -->
     <div id="orderModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl w-[780px] h-[735px] overflow-y-auto">
             <!-- Modal Header -->
-            <div class="flex items-center justify-between p-6 border-b border-gray-200">
-                <h2 class="text-xl font-semibold text-gray-800">Order Details</h2>
-                <button id="closeModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+            <div class="flex items-center justify-between p-5">
+                <h2 class="text-[15.469px] font-bold text-[#232321] tracking-[-0.27px]">Song Order Details</h2>
+                <button id="closeModal" class="w-6 h-6 text-gray-400 hover:text-gray-600 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
@@ -333,110 +333,132 @@
             </div>
             
             <!-- Modal Content -->
-            <div class="p-6">
-                <!-- Order Info -->
-                <div class="grid grid-cols-2 gap-6 mb-6">
-                    <div>
-                        <h3 class="text-sm font-semibold text-gray-600 mb-2">Order Information</h3>
-                        <div class="space-y-2">
-                            <div class="flex justify-between">
-                                <span class="text-sm text-gray-600">Order ID:</span>
-                                <span class="text-sm font-medium text-gray-800" id="modalOrderId">-</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-sm text-gray-600">Date:</span>
-                                <span class="text-sm font-medium text-gray-800" id="modalDate">-</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-sm text-gray-600">Status:</span>
-                                <span class="text-sm font-medium" id="modalStatus">-</span>
-                            </div>
+            <div class="px-5 pb-5">
+                <!-- Customer Details Section -->
+                <div class="mb-4">
+                    <h3 class="text-[13px] font-semibold text-[#303030] mb-4">Customer Details</h3>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <p class="text-[15.047px] font-medium text-[#232321]">
+                                <span class="font-bold">Name:</span> <span id="modalCustomerName">Full name</span>
+                            </p>
+                        </div>
+                        <div>
+                            <p class="text-[15.047px] font-medium text-[#232321]">
+                                <span class="font-bold">Email:</span> <span id="modalCustomerEmail">email address</span>
+                            </p>
                         </div>
                     </div>
-                    
-                    <div>
-                        <h3 class="text-sm font-semibold text-gray-600 mb-2">Customer Information</h3>
-                        <div class="space-y-2">
-                            <div class="flex justify-between">
-                                <span class="text-sm text-gray-600">Name:</span>
-                                <span class="text-sm font-medium text-gray-800" id="modalCustomerName">-</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-sm text-gray-600">Email:</span>
-                                <span class="text-sm font-medium text-gray-800" id="modalCustomerEmail">-</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-sm text-gray-600">Phone:</span>
-                                <span class="text-sm font-medium text-gray-800" id="modalCustomerPhone">-</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Recipient Info -->
-                <div class="mb-6">
-                    <h3 class="text-sm font-semibold text-gray-600 mb-2">Recipient Information</h3>
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="flex justify-between">
-                            <span class="text-sm text-gray-600">Name:</span>
-                            <span class="text-sm font-medium text-gray-800" id="modalRecipientName">-</span>
+                        <div>
+                            <p class="text-[15.047px] font-medium text-[#232321]">
+                                <span class="font-bold">Whatsapp:</span> <span id="modalCustomerPhone">+971 12345678</span>
+                            </p>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="text-sm text-gray-600">Relationship:</span>
-                            <span class="text-sm font-medium text-gray-800" id="modalRelationship">-</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Song Details -->
-                <div class="mb-6">
-                    <h3 class="text-sm font-semibold text-gray-600 mb-2">Song Details</h3>
-                    <div class="space-y-2">
-                        <div class="flex justify-between">
-                            <span class="text-sm text-gray-600">Celebration:</span>
-                            <span class="text-sm font-medium text-gray-800" id="modalCelebration">-</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-sm text-gray-600">Genre:</span>
-                            <span class="text-sm font-medium text-gray-800" id="modalGenre">-</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-sm text-gray-600">Mood:</span>
-                            <span class="text-sm font-medium text-gray-800" id="modalMood">-</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-sm text-gray-600">Duration:</span>
-                            <span class="text-sm font-medium text-gray-800" id="modalDuration">-</span>
+                        <div>
+                            <p class="text-[15.047px] font-medium text-[#232321]">
+                                <span class="font-bold">Date submitted:</span> <span id="modalDate">Timestamp</span>
+                            </p>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Special Instructions -->
-                <div class="mb-6">
-                    <h3 class="text-sm font-semibold text-gray-600 mb-2">Special Instructions</h3>
-                    <p class="text-sm text-gray-800 bg-gray-50 p-3 rounded-lg" id="modalInstructions">-</p>
-                </div>
+                <!-- Separator -->
+                <div class="border-b border-[rgba(38,36,32,0.2)] mb-4"></div>
                 
-                <!-- Audio Files -->
-                <div class="mb-6" id="audioSection">
-                    <h3 class="text-sm font-semibold text-gray-600 mb-2">Audio Files</h3>
-                    <div class="space-y-2" id="audioFiles">
-                        <!-- Audio files will be populated here -->
+                <!-- Celebrating Section -->
+                <div class="mb-4">
+                    <h3 class="text-[13px] font-semibold text-[#303030] mb-2">Celebrating</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <span id="modalCelebration" class="bg-[#e1ded6] text-[#262420] text-[14.125px] font-semibold px-4 py-2 rounded-[35px] tracking-[0.5px] capitalize">Birthday 🎂</span>
                     </div>
                 </div>
                 
-                <!-- Status Management -->
-                <div class="border-t border-gray-200 pt-6">
-                    <h3 class="text-sm font-semibold text-gray-600 mb-4">Update Status</h3>
-                    <div class="flex space-x-3">
-                        <button id="markInProgress" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                            Mark In Progress
+                <!-- Who is this for Section -->
+                <div class="mb-4">
+                    <h3 class="text-[13px] font-semibold text-[#303030] mb-2">Who is this for</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <span id="modalRelationship" class="bg-[#e1ded6] text-[#262420] text-[14.125px] font-semibold px-4 py-2 rounded-[35px] tracking-[0.5px] capitalize">Husband</span>
+                        <span id="modalRecipientName" class="bg-[#e1ded6] text-[#262420] text-[14.125px] font-semibold px-4 py-2 rounded-[35px] tracking-[0.5px] capitalize">Michael Fitzpatrick</span>
+                    </div>
+                </div>
+                
+                <!-- Vibe Section -->
+                <div class="mb-4">
+                    <h3 class="text-[13px] font-semibold text-[#303030] mb-2">Vibe</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <span id="modalMood" class="bg-[#e1ded6] text-[#262420] text-[13.875px] font-semibold px-4 py-2 rounded-[35px] tracking-[0.5px] capitalize">lighthearted</span>
+                        <span class="bg-[#e1ded6] text-[#262420] text-[13.875px] font-semibold px-4 py-2 rounded-[35px] tracking-[0.5px] capitalize">comical</span>
+                    </div>
+                </div>
+                
+                <!-- Genre Section -->
+                <div class="mb-4">
+                    <h3 class="text-[13px] font-semibold text-[#303030] mb-2">Genre</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <span id="modalGenre" class="bg-[#e1ded6] text-[#262420] text-[14.125px] font-semibold px-4 py-2 rounded-[35px] tracking-[0.5px] capitalize">Rap / Hip-Hop</span>
+                    </div>
+                </div>
+                
+                <!-- Voice Gender Section -->
+                <div class="mb-4">
+                    <h3 class="text-[13px] font-semibold text-[#303030] mb-2">Voice Gender</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <span id="modalVoiceGender" class="bg-[#e1ded6] text-[#262420] text-[14.125px] font-semibold px-4 py-2 rounded-[35px] tracking-[0.5px] capitalize">Male</span>
+                    </div>
+                </div>
+                
+                <!-- Their story Section -->
+                <div class="mb-4">
+                    <h3 class="text-[13px] font-semibold text-[#303030] mb-2">Their story</h3>
+                    <div class="bg-[#fdfdfd] border border-[#8a8a8a] rounded-lg p-3 h-[109px]">
+                        <p id="modalInstructions" class="text-[12.898px] font-medium text-[#303030]">Write the story here</p>
+                    </div>
+                </div>
+                
+                <!-- Separator -->
+                <div class="border-b border-[rgba(38,36,32,0.2)] mb-4"></div>
+                
+                <!-- Order Status Section -->
+                <div class="mb-4">
+                    <h3 class="text-[13px] font-semibold text-[#303030] mb-4">Order Status</h3>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div>
+                            <h4 class="text-[15.047px] font-bold text-[#232321] mb-2">Payment</h4>
+                            <div class="bg-[#e3e3e3] text-[#616161] text-[12.898px] font-medium px-4 py-2 rounded-lg text-center">
+                                <span id="modalPaymentStatus">Payment Pending</span>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-[15.047px] font-bold text-[#232321] mb-2">Order ID</h4>
+                            <div class="bg-[#e3e3e3] text-[#616161] text-[12.898px] font-medium px-4 py-2 rounded-lg text-center">
+                                <span id="modalOrderId">12345678</span>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-[15.047px] font-bold text-[#232321] mb-2">Payment</h4>
+                            <div class="bg-[#e3e3e3] text-[#616161] text-[12.898px] font-medium px-4 py-2 rounded-lg text-center">
+                                <span id="modalPaymentStatus2">Payment Pending</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Separator -->
+                <div class="border-b border-[rgba(38,36,32,0.2)] mb-4"></div>
+                
+                <!-- Actions Section -->
+                <div>
+                    <h3 class="text-[13px] font-semibold text-[#303030] mb-4">Actions</h3>
+                    <div class="flex gap-4">
+                        <button id="markInProgress" class="bg-[#fc6900] text-white text-[14.766px] font-medium px-6 py-3 rounded-[40px] hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            In Progress
                         </button>
-                        <button id="markComplete" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                            Mark Complete
+                        <button id="markComplete" class="bg-[#fc6900] text-white text-[14.766px] font-medium px-8 py-3 rounded-[40px] hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            Complete
                         </button>
-                        <button id="markSent" class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                            Mark Sent
+                        <button id="markSent" class="bg-[#262420] text-white text-[14.766px] font-medium px-8 py-3 rounded-[40px] hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            Mark as Sent
                         </button>
                     </div>
                 </div>
@@ -582,36 +604,63 @@
         // Show order modal
         function showOrderModal(request) {
             console.log('showOrderModal called with request:', request);
-            // Populate modal with request data
-            document.getElementById('modalOrderId').textContent = request.order_id || 'N/A';
-            document.getElementById('modalDate').textContent = new Date(request.created_at).toLocaleDateString();
-            document.getElementById('modalCustomerName').textContent = request.customer_name || 'N/A';
-            document.getElementById('modalCustomerEmail').textContent = request.customer_email || 'N/A';
-            document.getElementById('modalCustomerPhone').textContent = request.customer_phone || 'N/A';
-            document.getElementById('modalRecipientName').textContent = request.recipient_name || 'N/A';
-            document.getElementById('modalRelationship').textContent = request.relationship || 'N/A';
-            document.getElementById('modalCelebration').textContent = request.celebration || 'N/A';
-            document.getElementById('modalGenre').textContent = request.genre || 'N/A';
-            document.getElementById('modalMood').textContent = request.mood || 'N/A';
-            document.getElementById('modalDuration').textContent = request.duration || 'N/A';
-            document.getElementById('modalInstructions').textContent = request.special_instructions || 'No special instructions provided.';
             
-            // Update status badge
-            const statusElement = document.getElementById('modalStatus');
-            statusElement.textContent = request.status || 'pending';
-            statusElement.className = `text-sm font-medium px-2 py-1 rounded-full ${getStatusClass(request.status)}`;
+            // Populate customer details
+            document.getElementById('modalCustomerName').textContent = request.customer_name || 'Full name';
+            document.getElementById('modalCustomerEmail').textContent = request.customer_email || 'email address';
+            document.getElementById('modalCustomerPhone').textContent = request.customer_phone || '+971 12345678';
+            document.getElementById('modalDate').textContent = new Date(request.created_at).toLocaleDateString() || 'Timestamp';
+            
+            // Populate celebration
+            const celebrationElement = document.getElementById('modalCelebration');
+            celebrationElement.textContent = request.celebration || 'Birthday 🎂';
+            
+            // Populate recipient info
+            document.getElementById('modalRelationship').textContent = request.relationship || 'Husband';
+            document.getElementById('modalRecipientName').textContent = request.recipient_name || 'Michael Fitzpatrick';
+            
+            // Populate vibe/mood
+            document.getElementById('modalMood').textContent = request.mood || 'lighthearted';
+            
+            // Populate genre
+            document.getElementById('modalGenre').textContent = request.genre || 'Rap / Hip-Hop';
+            
+            // Populate voice gender
+            document.getElementById('modalVoiceGender').textContent = request.recipient_gender || 'Male';
+            
+            // Populate story
+            document.getElementById('modalInstructions').textContent = request.story || request.special_instructions || 'Write the story here';
+            
+            // Populate order status
+            document.getElementById('modalOrderId').textContent = request.order_id || '12345678';
+            document.getElementById('modalPaymentStatus').textContent = getPaymentStatusText(request.status);
+            document.getElementById('modalPaymentStatus2').textContent = getPaymentStatusText(request.status);
             
             // Update status buttons
             updateStatusButtons(request.status);
-            
-            // Handle audio files
-            populateAudioFiles(request);
             
             // Show modal
             const modal = document.getElementById('orderModal');
             console.log('Modal element found:', modal);
             modal.classList.remove('hidden');
             console.log('Modal should now be visible');
+        }
+        
+        // Get payment status text
+        function getPaymentStatusText(status) {
+            switch (status) {
+                case 'pending':
+                case 'pending_payment':
+                    return 'Payment Pending';
+                case 'in_progress':
+                    return 'In Progress';
+                case 'complete':
+                    return 'Complete';
+                case 'sent':
+                    return 'Sent';
+                default:
+                    return 'Payment Pending';
+            }
         }
 
         // Update status buttons based on current status
@@ -642,32 +691,6 @@
             }
         }
 
-        // Populate audio files section
-        function populateAudioFiles(request) {
-            const audioSection = document.getElementById('audioSection');
-            const audioFiles = document.getElementById('audioFiles');
-            
-            if (request.audio_files && request.audio_files.length > 0) {
-                audioFiles.innerHTML = '';
-                request.audio_files.forEach((file, index) => {
-                    const audioDiv = document.createElement('div');
-                    audioDiv.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-lg';
-                    audioDiv.innerHTML = `
-                        <div class="flex items-center">
-                            <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
-                            </svg>
-                            <span class="text-sm text-gray-800">Audio File ${index + 1}</span>
-                        </div>
-                        <a href="${file}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800">Download</a>
-                    `;
-                    audioFiles.appendChild(audioDiv);
-                });
-                audioSection.classList.remove('hidden');
-            } else {
-                audioSection.classList.add('hidden');
-            }
-        }
 
         // Update order status
         async function updateOrderStatus(newStatus) {
