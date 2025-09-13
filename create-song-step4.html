@@ -255,7 +255,7 @@
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
         // Ziina API configuration
-        const ZIINA_API_KEY = 'cYE49B8AG4cOVoAW4t13rBNem2C46F1M5+qK+Q3XHPRm4gZ8B6+GNuNgLguztWvm';
+        const ZIINA_API_KEY = 'ICBwiSb7cUWIBkczgyyGWMd4IqGN8kk0JdlLMylkwqA2M3BbRGhdRKbADGkHnen4';
         const ZIINA_BASE_URL = 'https://api-v2.ziina.com/api'; // Ziina API v2 base URL
 
         // DOM elements
@@ -435,12 +435,12 @@
 
                 // Prepare payment data for Ziina (Payment Intent)
                 const paymentData = {
-                    amount: 3150, // AED 31.50 in base units (cents) - 3150 cents = 31.50 AED
-                    currency_code: 'AED',
-                    message: `Custom song for ${orderData.recipientName} - ${orderData.celebration}`,
-                    allow_tips: false,
+                    amount: 3150, // AED 31.50 in fils (100 AED = 10000 fils) - 3150 fils = 31.50 AED
+                    currency: 'AED',
+                    description: `Custom song for ${orderData.recipientName} - ${orderData.celebration}`,
                     success_url: `${window.location.origin}/payment-success.html?order_id=${orderData.orderId}`,
-                    cancel_url: `${window.location.origin}/create-song-step4.html`
+                    cancel_url: `${window.location.origin}/create-song-step4.html`,
+                    test: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' // Test mode for localhost
                 };
 
                 console.log('Payment data prepared:', paymentData);
@@ -522,11 +522,12 @@
 
                 // Use the correct Ziina API endpoint and structure
                 const ziinaPaymentData = {
-                    amount: paymentData.amount,
-                    currency: paymentData.currency_code,
-                    description: paymentData.message,
+                    amount: paymentData.amount, // Amount in fils
+                    currency: paymentData.currency,
+                    description: paymentData.description,
                     success_url: paymentData.success_url,
                     cancel_url: paymentData.cancel_url,
+                    test: paymentData.test, // Test mode for localhost
                     metadata: {
                         order_id: orderData.orderId,
                         customer_name: orderData.fullName,

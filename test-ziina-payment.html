@@ -57,10 +57,11 @@
         
         <div class="config">
             <h3>Current Configuration:</h3>
-            <p><strong>API Key:</strong> cYE49B8AG4cOVoAW4t13rBNem2C46F1M5+qK+Q3XHPRm4gZ8B6+GNuNgLguztWvm</p>
+            <p><strong>API Key:</strong> ICBwiSb7cUWIBkczgyyGWMd4IqGN8kk0JdlLMylkwqA2M3BbRGhdRKbADGkHnen4</p>
             <p><strong>Base URL:</strong> https://api-v2.ziina.com/api</p>
-            <p><strong>Payment Amount:</strong> AED 31.50 (3150 cents)</p>
+            <p><strong>Payment Amount:</strong> AED 31.50 (3150 fils)</p>
             <p><strong>Currency:</strong> AED</p>
+            <p><strong>Test Mode:</strong> Enabled for localhost</p>
         </div>
         
         <button onclick="testZiinaConnection()">Test Ziina Connection</button>
@@ -72,7 +73,7 @@
 
     <script>
         // Ziina API configuration
-        const ZIINA_API_KEY = 'cYE49B8AG4cOVoAW4t13rBNem2C46F1M5+qK+Q3XHPRm4gZ8B6+GNuNgLguztWvm';
+        const ZIINA_API_KEY = 'ICBwiSb7cUWIBkczgyyGWMd4IqGN8kk0JdlLMylkwqA2M3BbRGhdRKbADGkHnen4';
         const ZIINA_BASE_URL = 'https://api-v2.ziina.com/api';
 
         function showResult(message, type = 'info') {
@@ -116,17 +117,18 @@
             
             // Check if we're on localhost
             if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                showResult('🔄 LOCALHOST TESTING MODE\n\n✅ Simulating successful payment creation!\n\nPayment Data:\n• Amount: AED 31.50 (3150 cents)\n• Currency: AED\n• Description: Test payment for Muzimake\n• Order ID: TEST_' + Date.now() + '\n\n✅ This simulates what would happen on the live website.\n\nOn the live site, this would create a real Ziina payment intent.', 'success');
+                showResult('🔄 LOCALHOST TESTING MODE\n\n✅ Simulating successful payment creation!\n\nPayment Data:\n• Amount: AED 31.50 (3150 fils)\n• Currency: AED\n• Description: Test payment for Muzimake\n• Test Mode: true\n• Order ID: TEST_' + Date.now() + '\n\n✅ This simulates what would happen on the live website.\n\nOn the live site, this would create a real Ziina payment intent with test=false.', 'success');
                 return;
             }
             
             try {
                 const paymentData = {
-                    amount: 3150, // AED 31.50 in cents
+                    amount: 3150, // AED 31.50 in fils (100 AED = 10000 fils)
                     currency: 'AED',
                     description: 'Test payment for Muzimake song creation',
                     success_url: `${window.location.origin}/payment-success.html?payment_id=test_${Date.now()}`,
                     cancel_url: `${window.location.origin}/create-song-step4.html`,
+                    test: false, // Real payment on live site
                     metadata: {
                         order_id: 'TEST_' + Date.now(),
                         customer_name: 'Test Customer',
@@ -172,12 +174,12 @@
                 };
 
                 const paymentData = {
-                    amount: 3150, // AED 31.50 in base units (cents)
-                    currency_code: 'AED',
-                    message: `Custom song for ${orderData.recipientName} - ${orderData.celebration}`,
-                    allow_tips: false,
+                    amount: 3150, // AED 31.50 in fils (100 AED = 10000 fils)
+                    currency: 'AED',
+                    description: `Custom song for ${orderData.recipientName} - ${orderData.celebration}`,
                     success_url: `${window.location.origin}/payment-success.html?order_id=${orderData.orderId}`,
-                    cancel_url: `${window.location.origin}/create-song-step4.html`
+                    cancel_url: `${window.location.origin}/create-song-step4.html`,
+                    test: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
                 };
 
                 showResult(`Full payment flow test:\n\nOrder Data:\n${JSON.stringify(orderData, null, 2)}\n\nPayment Data:\n${JSON.stringify(paymentData, null, 2)}\n\nTesting payment creation...`, 'info');
