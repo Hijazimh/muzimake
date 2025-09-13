@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Your Song - Step 2 - Muzimake</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'custom-beige': '#f3f1eb',
+                        'custom-dark': '#080808',
+                        'custom-gray': '#232321',
+                        'custom-blue': '#0056fc',
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        .font-inter { font-family: 'Inter', sans-serif; }
+        .font-extrabold { font-weight: 800; }
+        .font-bold { font-weight: 700; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        
+        /* Navigation scroll effects */
+        #navbar.scrolled {
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Navigation link colors */
+        .nav-link {
+            transition: color 0.3s ease-in-out;
+        }
+        
+        /* When navbar is scrolled, change link colors to dark */
+        #navbar.scrolled .nav-link {
+            color: #232321 !important;
+        }
+        
+        /* Smooth transitions */
+        #top-banner, #navbar {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        /* Form input styles */
+        .form-input {
+            background-color: white;
+            border: 1px solid #e1ded6;
+            border-radius: 4px;
+            padding: 12px 18px;
+            font-size: 14.906px;
+            color: #54524c;
+            transition: border-color 0.2s ease-in-out;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #262420;
+        }
+        
+        .form-textarea {
+            background-color: white;
+            border: 1px solid #e1ded6;
+            border-radius: 4px;
+            padding: 12px 18px;
+            font-size: 14.906px;
+            color: #83817b;
+            min-height: 200px;
+            resize: vertical;
+            transition: border-color 0.2s ease-in-out;
+        }
+        
+        .form-textarea:focus {
+            outline: none;
+            border-color: #262420;
+            color: #262420;
+        }
+        
+        .form-textarea::placeholder {
+            color: #83817b;
+        }
+        
+        /* Modal styles */
+        .modal-overlay {
+            backdrop-filter: blur(2px);
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Button states */
+        .next-button-active {
+            background-color: #262420;
+            color: white;
+        }
+        
+        .next-button-inactive {
+            background-color: rgba(38, 36, 32, 0.12);
+            color: #232321;
+            opacity: 0.38;
+        }
+    </style>
+</head>
+<body class="bg-custom-beige font-inter">
+    <!-- Top Banner -->
+    <div id="top-banner" class="bg-custom-gray h-12 flex items-center justify-center transition-transform duration-300">
+        <p class="text-white text-xs font-semibold tracking-wider uppercase opacity-80">
+            THE #1 CUSTOM SONG PLATFORM WITH MORE THAN 375,000 SONGS CREATED
+        </p>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed top-0 left-0 right-0 bg-black/20 backdrop-blur-md z-50 h-20 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-8 h-full flex items-center justify-between">
+            <!-- Logo -->
+            <div class="h-12 w-40">
+                <a href="index.html">
+                    <img id="logo" src="media/logo-horiz-white.png" alt="Muzimake" class="h-full w-full object-contain transition-opacity duration-300">
+                </a>
+            </div>
+            
+            <!-- Navigation Links -->
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="index.html" class="text-white text-base font-medium hover:text-custom-blue transition-colors nav-link">Products</a>
+                <a href="index.html" class="text-white text-base font-medium hover:text-custom-blue transition-colors nav-link">How it works</a>
+                <a href="index.html" class="text-white text-base font-medium hover:text-custom-blue transition-colors nav-link">Browse artists</a>
+                <a href="index.html" class="text-white text-base font-medium hover:text-custom-blue transition-colors nav-link">Song examples</a>
+            </div>
+            
+            <!-- Right side -->
+            <div class="flex items-center space-x-6">
+                <a href="#" class="text-white text-base font-medium hover:text-custom-blue transition-colors nav-link">Login</a>
+                <div class="w-6 h-6">
+                    <img src="http://localhost:3845/assets/5c4ad8d8d2a1a0a193099e23542d2e3b5d289261.svg" alt="Cart" class="w-full h-full">
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="pt-32 pb-20">
+        <div class="max-w-2xl mx-auto px-8">
+            <!-- Progress Indicator -->
+            <div class="text-center mb-8 relative">
+                <div class="inline-flex items-center border border-gray-300 rounded-full px-4 py-2 bg-white">
+                    <span class="text-custom-dark text-xs font-bold tracking-wider uppercase">Step 2 of 4</span>
+                </div>
+                <button id="backBtn" class="absolute left-8 top-0 w-6 h-6">
+                    <img src="http://localhost:3845/assets/c0f4433ed92785af25c16678f2c543ebaacdb2f9.svg" alt="Back" class="w-full h-full">
+                </button>
+                <button id="closeBtn" class="absolute right-8 top-0 w-6 h-6">
+                    <img src="http://localhost:3845/assets/1e612b0ba25cde4bcf39ee67cae8c23c72698021.svg" alt="Close" class="w-full h-full">
+                </button>
+            </div>
+
+            <!-- Form Container -->
+            <div class="p-8">
+                <!-- Header -->
+                <div class="text-center mb-12">
+                    <h1 class="text-custom-dark text-3xl font-bold leading-tight">
+                        Share more with us
+                    </h1>
+                </div>
+
+                <!-- Form Fields -->
+                <div class="space-y-8">
+                    <!-- Who's this for? -->
+                    <div>
+                        <label class="block text-custom-gray text-xs font-bold tracking-wider uppercase mb-2">
+                            Who's this for?
+                        </label>
+                        <div class="relative">
+                            <select id="who" name="who" class="form-input w-full appearance-none pr-10">
+                                <option value="" selected disabled>Select an option</option>
+                                <option value="husband">Husband</option>
+                                <option value="wife">Wife</option>
+                                <option value="boyfriend">Boyfriend</option>
+                                <option value="girlfriend">Girlfriend</option>
+                                <option value="mother">Mother</option>
+                                <option value="father">Father</option>
+                                <option value="son">Son</option>
+                                <option value="daughter">Daughter</option>
+                                <option value="brother">Brother</option>
+                                <option value="sister">Sister</option>
+                                <option value="friend">Friend</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <div class="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- What's their name? -->
+                    <div>
+                        <label class="block text-custom-gray text-xs font-bold tracking-wider uppercase mb-2">
+                            What's their name?
+                        </label>
+                        <input type="text" id="name" name="name" class="form-input w-full" placeholder="name or nickname">
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="border-t border-gray-200 my-8"></div>
+
+                    <!-- Tell us their story -->
+                    <div>
+                        <label class="block text-custom-gray text-xs font-bold tracking-wider uppercase mb-2">
+                            Tell us their story
+                        </label>
+                        <textarea class="form-textarea w-full" placeholder="Start typing" rows="8"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="fixed bottom-0 left-0 right-0 bg-custom-beige/60 backdrop-blur-sm shadow-lg">
+        <div class="max-w-2xl mx-auto px-8 py-4">
+            <div class="flex justify-center">
+                <button id="nextBtn" class="next-button-inactive px-8 py-3 rounded-full font-medium transition-all duration-200 cursor-not-allowed">
+                    Next
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exit Confirmation Modal -->
+    <div id="exitModal" class="fixed inset-0 modal-overlay z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="modal-content w-full max-w-md p-6">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-custom-gray text-lg font-bold tracking-tight">Progress will be lost</h3>
+                    <button id="closeModalBtn" class="w-6 h-6">
+                        <img src="http://localhost:3845/assets/261860234b69dea612332d05e2ea8e57d7f58e85.svg" alt="Close" class="w-full h-full">
+                    </button>
+                </div>
+                
+                <!-- Modal Content -->
+                <p class="text-custom-gray text-sm leading-relaxed mb-6">
+                    If you leave this page, all your progress will be lost. Are you sure you want to continue?
+                </p>
+                
+                <!-- Divider -->
+                <div class="border-t border-gray-200 mb-6"></div>
+                
+                <!-- Modal Actions -->
+                <div class="flex gap-4">
+                    <button id="cancelExitBtn" class="flex-1 bg-custom-gray/12 text-custom-dark px-6 py-3 rounded-full font-medium hover:bg-custom-gray/20 transition-colors">
+                        Cancel
+                    </button>
+                    <button id="confirmExitBtn" class="flex-1 bg-custom-gray text-white px-6 py-3 rounded-full font-medium hover:bg-custom-gray/90 transition-colors">
+                        Leave
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation scroll behavior
+        let lastScrollTop = 0;
+        const topBanner = document.getElementById('top-banner');
+        const navbar = document.getElementById('navbar');
+        const logo = document.getElementById('logo');
+
+        window.addEventListener('scroll', function() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            // Hide top banner when scrolling down
+            if (scrollTop > 50) {
+                topBanner.style.transform = 'translateY(-100%)';
+            } else {
+                topBanner.style.transform = 'translateY(0)';
+            }
+
+            // Add/remove scrolled class for navbar styling and switch logo
+            if (scrollTop > 100) {
+                navbar.classList.add('scrolled');
+                // Switch to black logo when navbar is white
+                logo.src = 'media/logo-horiz-black.png';
+            } else {
+                navbar.classList.remove('scrolled');
+                // Switch to white logo when navbar is blurry
+                logo.src = 'media/logo-horiz-white.png';
+            }
+
+            lastScrollTop = scrollTop;
+        });
+
+        // Form validation
+        const nextBtn = document.getElementById('nextBtn');
+        const nameInput = document.querySelector('input[type="text"]');
+        const storyTextarea = document.querySelector('textarea');
+        const selectInput = document.querySelector('select');
+
+        function updateNextButton() {
+            const isComplete = nameInput.value.trim() !== '' && 
+                              storyTextarea.value.trim() !== '' && 
+                              selectInput.value !== '';
+            
+            if (isComplete) {
+                nextBtn.className = 'next-button-active px-8 py-3 rounded-full font-medium transition-all duration-200 cursor-pointer';
+                nextBtn.disabled = false;
+            } else {
+                nextBtn.className = 'next-button-inactive px-8 py-3 rounded-full font-medium transition-all duration-200 cursor-not-allowed';
+                nextBtn.disabled = true;
+            }
+        }
+
+        // Add event listeners
+        nameInput.addEventListener('input', updateNextButton);
+        storyTextarea.addEventListener('input', updateNextButton);
+        selectInput.addEventListener('change', updateNextButton);
+
+        // Next button functionality
+        nextBtn.addEventListener('click', function() {
+            if (!this.disabled) {
+                // Store the form data in localStorage
+                const formData = {
+                    who: selectInput.value,
+                    name: nameInput.value,
+                    story: storyTextarea.value
+                };
+                localStorage.setItem('songFormData', JSON.stringify(formData));
+                
+                // Navigate to step 3
+                window.location.href = 'create-song-step3.html';
+            }
+        });
+
+        // Back button functionality
+        document.getElementById('backBtn').addEventListener('click', function() {
+            window.location.href = 'create-song.html';
+        });
+
+        // Exit modal functionality
+        const exitModal = document.getElementById('exitModal');
+        const closeBtn = document.getElementById('closeBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelExitBtn = document.getElementById('cancelExitBtn');
+        const confirmExitBtn = document.getElementById('confirmExitBtn');
+
+        // Show modal when close button is clicked
+        closeBtn.addEventListener('click', function() {
+            exitModal.classList.remove('hidden');
+        });
+
+        // Close modal when X button is clicked
+        closeModalBtn.addEventListener('click', function() {
+            exitModal.classList.add('hidden');
+        });
+
+        // Cancel exit
+        cancelExitBtn.addEventListener('click', function() {
+            exitModal.classList.add('hidden');
+        });
+
+        // Confirm exit - go back to home
+        confirmExitBtn.addEventListener('click', function() {
+            // Clear localStorage to reset progress
+            localStorage.removeItem('songPreferences');
+            localStorage.removeItem('songFormData');
+            localStorage.removeItem('contactData');
+            // Navigate to home page
+            window.location.href = 'index.html';
+        });
+
+        // Function to clear all form data
+        function clearAllFormData() {
+            localStorage.removeItem('songPreferences');
+            localStorage.removeItem('songFormData');
+            localStorage.removeItem('contactData');
+        }
+
+        // Clear form data when clicking logo or navigation links to home
+        document.querySelectorAll('a[href="index.html"]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                clearAllFormData();
+            });
+        });
+
+        // Close modal when clicking outside
+        exitModal.addEventListener('click', function(e) {
+            if (e.target === exitModal) {
+                exitModal.classList.add('hidden');
+            }
+        });
+
+        // Load saved data from Step 1
+        function loadSavedData() {
+            const savedPreferences = localStorage.getItem('songPreferences');
+            if (savedPreferences) {
+                const preferences = JSON.parse(savedPreferences);
+                console.log('Loaded preferences:', preferences);
+            }
+            
+            const savedFormData = localStorage.getItem('songFormData');
+            if (savedFormData) {
+                const formData = JSON.parse(savedFormData);
+                console.log('Loaded form data:', formData);
+                
+                // Populate form fields with saved data
+                if (formData.who) {
+                    document.getElementById('who').value = formData.who;
+                }
+                if (formData.name) {
+                    document.getElementById('name').value = formData.name;
+                }
+                if (formData.story) {
+                    document.querySelector('textarea').value = formData.story;
+                }
+            }
+        }
+
+        // Initialize
+        loadSavedData();
+        updateNextButton();
+    </script>
+</body>
+</html>

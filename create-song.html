@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Your Song - Muzimake</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'custom-beige': '#f3f1eb',
+                        'custom-dark': '#080808',
+                        'custom-gray': '#232321',
+                        'custom-blue': '#0056fc',
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        .font-inter { font-family: 'Inter', sans-serif; }
+        .font-extrabold { font-weight: 800; }
+        .font-bold { font-weight: 700; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        
+        /* Navigation scroll effects */
+        #navbar.scrolled {
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Navigation link colors */
+        .nav-link {
+            transition: color 0.3s ease-in-out;
+        }
+        
+        /* When navbar is scrolled, change link colors to dark */
+        #navbar.scrolled .nav-link {
+            color: #232321 !important;
+        }
+        
+        /* Smooth transitions */
+        #top-banner, #navbar {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        /* Button selection styles */
+        .option-button {
+            transition: all 0.2s ease-in-out;
+            background-color: #e1ded6;
+            color: #262420;
+        }
+        
+        .option-button.selected {
+            background-color: #262420;
+            color: white;
+        }
+        
+        .option-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Modal styles */
+        .modal-overlay {
+            backdrop-filter: blur(2px);
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Button states */
+        .next-button-active {
+            background-color: #262420;
+            color: white;
+        }
+        
+        .next-button-inactive {
+            background-color: rgba(38, 36, 32, 0.12);
+            color: #232321;
+            opacity: 0.38;
+        }
+    </style>
+</head>
+<body class="bg-custom-beige font-inter">
+    <!-- Top Banner -->
+    <div id="top-banner" class="bg-custom-gray h-12 flex items-center justify-center transition-transform duration-300">
+        <p class="text-white text-xs font-semibold tracking-wider uppercase opacity-80">
+            THE #1 CUSTOM SONG PLATFORM WITH MORE THAN 375,000 SONGS CREATED
+        </p>
+    </div>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed top-0 left-0 right-0 bg-black/20 backdrop-blur-md z-50 h-20 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-8 h-full flex items-center justify-between">
+            <!-- Logo -->
+            <div class="h-12 w-40">
+                <a href="index.html">
+                    <img id="logo" src="media/logo-horiz-white.png" alt="Muzimake" class="h-full w-full object-contain transition-opacity duration-300">
+                </a>
+            </div>
+            
+            <!-- Navigation Links -->
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="index.html" class="text-white text-base font-medium hover:text-custom-blue transition-colors nav-link">Products</a>
+                <a href="index.html" class="text-white text-base font-medium hover:text-custom-blue transition-colors nav-link">How it works</a>
+                <a href="index.html" class="text-white text-base font-medium hover:text-custom-blue transition-colors nav-link">Browse artists</a>
+                <a href="index.html" class="text-white text-base font-medium hover:text-custom-blue transition-colors nav-link">Song examples</a>
+            </div>
+            
+            <!-- Right side -->
+            <div class="flex items-center space-x-6">
+                <a href="#" class="text-white text-base font-medium hover:text-custom-blue transition-colors nav-link">Login</a>
+                <div class="w-6 h-6">
+                    <img src="http://localhost:3845/assets/5c4ad8d8d2a1a0a193099e23542d2e3b5d289261.svg" alt="Cart" class="w-full h-full">
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="pt-32 pb-20">
+        <div class="max-w-4xl mx-auto px-8">
+            <!-- Progress Indicator -->
+            <div class="text-center mb-8 relative">
+                <div class="inline-flex items-center border border-gray-300 rounded-full px-4 py-2 bg-white">
+                    <span class="text-custom-dark text-xs font-bold tracking-wider uppercase">Step 1 of 4</span>
+                </div>
+                <button id="closeBtn" class="absolute right-8 top-0 w-6 h-6">
+                    <img src="http://localhost:3845/assets/1e612b0ba25cde4bcf39ee67cae8c23c72698021.svg" alt="Close" class="w-full h-full">
+                </button>
+            </div>
+
+            <!-- Form Container -->
+            <div class="p-8">
+                <!-- Header -->
+                <div class="text-center mb-12">
+                    <h1 class="text-custom-dark text-3xl font-bold leading-tight mb-4">
+                        Let's create the perfect<br>
+                        song for you!
+                    </h1>
+                </div>
+
+                <!-- Question 1: What moment are you celebrating? -->
+                <div class="mb-12">
+                    <h2 class="text-custom-dark text-lg font-bold text-center mb-8">
+                        What moment are you celebrating?
+                    </h2>
+                    <div class="flex flex-wrap justify-center gap-3">
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="just-because">
+                            Just Because ✨
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="birthday">
+                            Birthday 🎂
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="love-story">
+                            Our Love Story 🥰
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="engagement">
+                            Engagement 💍
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="wedding">
+                            Wedding 💒
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="anniversary">
+                            Anniversary ❤️
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="valentines">
+                            Valentine's Day 🌹
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="christmas">
+                            Christmas 🎄
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="graduation">
+                            Graduation 🎓
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="mothers-day">
+                            Mother's Day 👩
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="fathers-day">
+                            Father's Day 👨
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="new-baby">
+                            New Baby 🐣
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="prank">
+                            Prank 🤡
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="memorial">
+                            Memorial 🕯️
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="other">
+                            Other
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="border-t border-gray-200 my-8"></div>
+
+                <!-- Question 2: What vibe are you going for? -->
+                <div class="mb-12">
+                    <div class="flex items-center justify-center gap-2 mb-4">
+                        <h2 class="text-custom-dark text-lg font-bold">
+                            What vibe are you going for?
+                        </h2>
+                        <div class="w-4 h-4">
+                            <img src="http://localhost:3845/assets/6a874c7c6ec5c9d6dc34f4f0ab436827099bccb4.svg" alt="Hint" class="w-full h-full">
+                        </div>
+                    </div>
+                    <p class="text-custom-dark text-sm text-center mb-6">
+                        Feel free to choose up to two
+                    </p>
+                    <div class="flex flex-wrap justify-center gap-3">
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="happy">
+                            happy
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="lighthearted">
+                            lighthearted
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="comical">
+                            comical
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="heartfelt">
+                            heartfelt
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="uplifting">
+                            uplifting
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="romantic">
+                            romantic
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="reflective">
+                            reflective
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="somber">
+                            somber
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="border-t border-gray-200 my-8"></div>
+
+                <!-- Question 3: What kind of artist do you want to work with? -->
+                <div class="mb-12">
+                    <div class="flex items-center justify-center gap-2 mb-8">
+                        <h2 class="text-custom-dark text-lg font-bold">
+                            What genre do you prefer ?
+                        </h2>
+                        <div class="w-4 h-4">
+                            <img src="http://localhost:3845/assets/6a874c7c6ec5c9d6dc34f4f0ab436827099bccb4.svg" alt="Hint" class="w-full h-full">
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap justify-center gap-3">
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="rap-hiphop">
+                            Rap / Hip-Hop
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="folk">
+                            Folk
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="rock">
+                            Rock
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="jazz">
+                            Jazz
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="rnb">
+                            R&B
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="country">
+                            Country
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="singer-songwriter">
+                            Singer Songwriter
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="acoustic-pop">
+                            Acoustic Pop
+                        </button>
+                        <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="electronic">
+                            Electronic
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="border-t border-gray-200 my-8"></div>
+
+                <!-- Question 4: Male or female artist? -->
+                <div class="mb-12">
+                    <h2 class="text-custom-dark text-lg font-bold text-center mb-8">
+                        Are you looking for a male or female vocals?
+                    </h2>
+                    <div class="flex justify-center gap-4">
+                        <button class="option-button px-6 py-2 rounded-full text-sm font-semibold" data-option="male">
+                            Male
+                        </button>
+                        <button class="option-button px-6 py-2 rounded-full text-sm font-semibold" data-option="female">
+                            Female
+                        </button>
+                        <button class="option-button px-6 py-2 rounded-full text-sm font-semibold" data-option="no-preference">
+                            No preference
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Testimonial Section -->
+                <div class="border border-gray-200 rounded-xl p-6 mb-8">
+                    <div class="flex justify-center mb-4">
+                        <div class="flex space-x-1">
+                            <div class="w-2 h-2 bg-gray-300 rounded-full"></div>
+                            <div class="w-2 h-2 bg-gray-300 rounded-full"></div>
+                            <div class="w-2 h-2 bg-custom-dark rounded-full"></div>
+                        </div>
+                    </div>
+                    <p class="text-custom-dark text-sm leading-relaxed text-center">
+                        🥰 "I loved working with Alexandra Adamoski—she truly listened, added amazing detail, and brought my vision to life. <strong>Her patience and willingness to rework things until the song was perfect set her apart</strong>. Her passion and talent made it perfect!" - Darlene S.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="fixed bottom-0 left-0 right-0 bg-custom-beige/60 backdrop-blur-sm shadow-lg">
+        <div class="max-w-4xl mx-auto px-8 py-4">
+            <div class="flex justify-center">
+                <button id="nextBtn" class="next-button-inactive px-8 py-3 rounded-full font-medium transition-all duration-200 cursor-not-allowed">
+                    Next
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation scroll behavior
+        let lastScrollTop = 0;
+        const topBanner = document.getElementById('top-banner');
+        const navbar = document.getElementById('navbar');
+        const logo = document.getElementById('logo');
+
+        window.addEventListener('scroll', function() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            // Hide top banner when scrolling down
+            if (scrollTop > 50) {
+                topBanner.style.transform = 'translateY(-100%)';
+            } else {
+                topBanner.style.transform = 'translateY(0)';
+            }
+
+            // Add/remove scrolled class for navbar styling and switch logo
+            if (scrollTop > 100) {
+                navbar.classList.add('scrolled');
+                // Switch to black logo when navbar is white
+                logo.src = 'media/logo-horiz-black.png';
+            } else {
+                navbar.classList.remove('scrolled');
+                // Switch to white logo when navbar is blurry
+                logo.src = 'media/logo-horiz-white.png';
+            }
+
+            lastScrollTop = scrollTop;
+        });
+
+        // Option selection functionality
+        let selectedOptions = {
+            moment: null,
+            vibe: [],
+            genre: null,
+            gender: null
+        };
+
+        document.querySelectorAll('.option-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const option = this.dataset.option;
+                const question = this.closest('.mb-12');
+                
+                // Determine which question this button belongs to
+                const questionText = question.querySelector('h2').textContent.toLowerCase();
+                
+                if (questionText.includes('moment') && questionText.includes('celebrating')) {
+                    // Single selection for moment
+                    document.querySelectorAll('[data-option]').forEach(btn => {
+                        if (btn.closest('.mb-12') === question) {
+                            btn.classList.remove('selected');
+                        }
+                    });
+                    this.classList.add('selected');
+                    selectedOptions.moment = option;
+                } else if (questionText.includes('vibe')) {
+                    // Multiple selection for vibe (up to 2)
+                    if (this.classList.contains('selected')) {
+                        this.classList.remove('selected');
+                        selectedOptions.vibe = selectedOptions.vibe.filter(v => v !== option);
+                    } else if (selectedOptions.vibe.length < 2) {
+                        this.classList.add('selected');
+                        selectedOptions.vibe.push(option);
+                    }
+                } else if (questionText.includes('genre') && questionText.includes('prefer')) {
+                    // Single selection for genre
+                    document.querySelectorAll('[data-option]').forEach(btn => {
+                        if (btn.closest('.mb-12') === question) {
+                            btn.classList.remove('selected');
+                        }
+                    });
+                    this.classList.add('selected');
+                    selectedOptions.genre = option;
+                } else if (questionText.includes('male or female') && questionText.includes('vocals')) {
+                    // Single selection for gender
+                    document.querySelectorAll('[data-option]').forEach(btn => {
+                        if (btn.closest('.mb-12') === question) {
+                            btn.classList.remove('selected');
+                        }
+                    });
+                    this.classList.add('selected');
+                    selectedOptions.gender = option;
+                }
+                
+                updateNextButton();
+            });
+        });
+
+        function updateNextButton() {
+            const nextBtn = document.getElementById('nextBtn');
+            const isComplete = selectedOptions.moment && selectedOptions.genre && selectedOptions.gender;
+            
+            if (isComplete) {
+                nextBtn.className = 'next-button-active px-8 py-3 rounded-full font-medium transition-all duration-200 cursor-pointer';
+                nextBtn.disabled = false;
+            } else {
+                nextBtn.className = 'next-button-inactive px-8 py-3 rounded-full font-medium transition-all duration-200 cursor-not-allowed';
+                nextBtn.disabled = true;
+            }
+        }
+
+        // Next button functionality
+        document.getElementById('nextBtn').addEventListener('click', function() {
+            if (!this.disabled) {
+                // Store the selected options in localStorage for the next step
+                localStorage.setItem('songPreferences', JSON.stringify(selectedOptions));
+                // Navigate to step 2
+                window.location.href = 'create-song-step2.html';
+            }
+        });
+
+        // Exit modal functionality
+        const exitModal = document.getElementById('exitModal');
+        const closeBtn = document.getElementById('closeBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelExitBtn = document.getElementById('cancelExitBtn');
+        const confirmExitBtn = document.getElementById('confirmExitBtn');
+
+        // Show modal when close button is clicked
+        closeBtn.addEventListener('click', function() {
+            exitModal.classList.remove('hidden');
+        });
+
+        // Close modal when X button is clicked
+        closeModalBtn.addEventListener('click', function() {
+            exitModal.classList.add('hidden');
+        });
+
+        // Cancel exit
+        cancelExitBtn.addEventListener('click', function() {
+            exitModal.classList.add('hidden');
+        });
+
+        // Confirm exit - go back to home
+        confirmExitBtn.addEventListener('click', function() {
+            // Clear localStorage to reset progress
+            localStorage.removeItem('songPreferences');
+            localStorage.removeItem('songFormData');
+            localStorage.removeItem('contactData');
+            // Navigate to home page
+            window.location.href = 'index.html';
+        });
+
+        // Function to clear all form data
+        function clearAllFormData() {
+            localStorage.removeItem('songPreferences');
+            localStorage.removeItem('songFormData');
+            localStorage.removeItem('contactData');
+        }
+
+        // Clear form data when clicking logo or navigation links to home
+        document.querySelectorAll('a[href="index.html"]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                clearAllFormData();
+            });
+        });
+
+        // Close modal when clicking outside
+        exitModal.addEventListener('click', function(e) {
+            if (e.target === exitModal) {
+                exitModal.classList.add('hidden');
+            }
+        });
+
+        // Load saved data when page loads
+        function loadSavedData() {
+            const savedPreferences = localStorage.getItem('songPreferences');
+            if (savedPreferences) {
+                const preferences = JSON.parse(savedPreferences);
+                console.log('Loaded preferences:', preferences);
+                
+                // Restore selections
+                if (preferences.moment) {
+                    const momentBtn = document.querySelector(`[data-option="${preferences.moment}"]`);
+                    if (momentBtn) {
+                        momentBtn.classList.add('selected');
+                    }
+                }
+                
+                if (preferences.vibe && preferences.vibe.length > 0) {
+                    preferences.vibe.forEach(vibe => {
+                        const vibeBtn = document.querySelector(`[data-option="${vibe}"]`);
+                        if (vibeBtn) {
+                            vibeBtn.classList.add('selected');
+                        }
+                    });
+                }
+                
+                if (preferences.genre) {
+                    const genreBtn = document.querySelector(`[data-option="${preferences.genre}"]`);
+                    if (genreBtn) {
+                        genreBtn.classList.add('selected');
+                    }
+                }
+                
+                if (preferences.gender) {
+                    const genderBtn = document.querySelector(`[data-option="${preferences.gender}"]`);
+                    if (genderBtn) {
+                        genderBtn.classList.add('selected');
+                    }
+                }
+                
+                // Update selectedOptions object
+                selectedOptions = preferences;
+            }
+        }
+
+        // Initialize
+        loadSavedData();
+        updateNextButton();
+    </script>
+
+    <!-- Exit Confirmation Modal -->
+    <div id="exitModal" class="fixed inset-0 modal-overlay z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="modal-content w-full max-w-md p-6">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-custom-gray text-lg font-bold tracking-tight">Progress will be lost</h3>
+                    <button id="closeModalBtn" class="w-6 h-6">
+                        <img src="http://localhost:3845/assets/261860234b69dea612332d05e2ea8e57d7f58e85.svg" alt="Close" class="w-full h-full">
+                    </button>
+                </div>
+                
+                <!-- Modal Content -->
+                <p class="text-custom-gray text-sm leading-relaxed mb-6">
+                    If you leave this page, all your progress will be lost. Are you sure you want to continue?
+                </p>
+                
+                <!-- Divider -->
+                <div class="border-t border-gray-200 mb-6"></div>
+                
+                <!-- Modal Actions -->
+                <div class="flex gap-4">
+                    <button id="cancelExitBtn" class="flex-1 bg-custom-gray/12 text-custom-dark px-6 py-3 rounded-full font-medium hover:bg-custom-gray/20 transition-colors">
+                        Cancel
+                    </button>
+                    <button id="confirmExitBtn" class="flex-1 bg-custom-gray text-white px-6 py-3 rounded-full font-medium hover:bg-custom-gray/90 transition-colors">
+                        Leave
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

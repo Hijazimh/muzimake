@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Connection Test - Muzimake</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        .status-success { background-color: #d1fae5; color: #065f46; }
+        .status-error { background-color: #fee2e2; color: #991b1b; }
+        .status-warning { background-color: #fef3c7; color: #92400e; }
+        .status-info { background-color: #dbeafe; color: #1e40af; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen py-8">
+    <div class="max-w-4xl mx-auto px-4">
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-6">Supabase Connection Test</h1>
+            
+            <div id="testResults" class="space-y-4">
+                <div class="p-4 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-3"></div>
+                        <span class="text-gray-600">Testing Supabase connection...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8">
+                <button onclick="runAllTests()" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                    Run All Tests
+                </button>
+                <button onclick="createTestOrder()" class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors ml-4">
+                    Create Test Order
+                </button>
+                <button onclick="viewOrders()" class="bg-purple-500 text-white px-6 py-2 rounded-lg hover:bg-purple-600 transition-colors ml-4">
+                    View Orders
+                </button>
+            </div>
+
+            <div id="ordersList" class="mt-8 hidden">
+                <h2 class="text-xl font-semibold mb-4">Orders in Database</h2>
+                <div id="ordersTable" class="overflow-x-auto">
+                    <!-- Orders will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Supabase configuration
+        const supabaseUrl = 'https://ubvamxnoycciskqzbblc.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVidmFteG5veWNjaXNrcXpiYmxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3MDQ5MDMsImV4cCI6MjA3MzI4MDkwM30.5PBF0VOccNblPCbYOV7cMeAvQUKPh4pn3ob_Q-l3xfE';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        function addTestResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('testResults');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `p-4 rounded-lg status-${type}`;
+            resultDiv.innerHTML = `
+                <div class="flex items-center">
+                    <span class="font-medium">${message}</span>
+                </div>
+            `;
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        function clearResults() {
+            document.getElementById('testResults').innerHTML = '';
+        }
+
+        async function testSupabaseConnection() {
+            try {
+                addTestResult('Testing Supabase connection...', 'info');
+                
+                // Test basic connection
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .select('count')
+                    .limit(1);
+
+                if (error) {
+                    if (error.message.includes('relation "song_requests" does not exist')) {
+                        addTestResult('❌ Table "song_requests" does not exist. Please run the database setup script.', 'error');
+                        return false;
+                    } else {
+                        addTestResult(`❌ Connection error: ${error.message}`, 'error');
+                        return false;
+                    }
+                }
+
+                addTestResult('✅ Supabase connection successful!', 'success');
+                return true;
+            } catch (error) {
+                addTestResult(`❌ Connection failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testTableStructure() {
+            try {
+                addTestResult('Testing table structure...', 'info');
+                
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .select('*')
+                    .limit(1);
+
+                if (error) {
+                    addTestResult(`❌ Table structure error: ${error.message}`, 'error');
+                    return false;
+                }
+
+                addTestResult('✅ Table structure is correct!', 'success');
+                return true;
+            } catch (error) {
+                addTestResult(`❌ Table structure test failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testInsertPermission() {
+            try {
+                addTestResult('Testing insert permissions...', 'info');
+                
+                const testOrder = {
+                    customer_name: 'Test User',
+                    customer_email: 'test@example.com',
+                    customer_phone: '+971501234567',
+                    celebration: 'Test Celebration',
+                    genre: 'Test Genre',
+                    recipient_name: 'Test Recipient',
+                    recipient_gender: 'Test',
+                    status: 'pending',
+                    price: 31.50,
+                    created_at: new Date().toISOString()
+                };
+
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .insert([testOrder])
+                    .select();
+
+                if (error) {
+                    addTestResult(`❌ Insert permission error: ${error.message}`, 'error');
+                    return false;
+                }
+
+                addTestResult('✅ Insert permissions working!', 'success');
+                
+                // Clean up test order
+                if (data && data[0]) {
+                    await supabase
+                        .from('song_requests')
+                        .delete()
+                        .eq('id', data[0].id);
+                    addTestResult('✅ Test order cleaned up successfully!', 'success');
+                }
+                
+                return true;
+            } catch (error) {
+                addTestResult(`❌ Insert test failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function testSelectPermission() {
+            try {
+                addTestResult('Testing select permissions...', 'info');
+                
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    addTestResult(`❌ Select permission error: ${error.message}`, 'error');
+                    return false;
+                }
+
+                addTestResult(`✅ Select permissions working! Found ${data.length} orders.`, 'success');
+                return true;
+            } catch (error) {
+                addTestResult(`❌ Select test failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function runAllTests() {
+            clearResults();
+            
+            const connectionOk = await testSupabaseConnection();
+            if (!connectionOk) {
+                addTestResult('❌ Cannot proceed with other tests due to connection failure.', 'error');
+                return;
+            }
+
+            await testTableStructure();
+            await testInsertPermission();
+            await testSelectPermission();
+            
+            addTestResult('🎉 All tests completed!', 'success');
+        }
+
+        async function createTestOrder() {
+            try {
+                addTestResult('Creating test order...', 'info');
+                
+                const testOrder = {
+                    customer_name: 'Test Customer',
+                    customer_email: 'test@muzimake.com',
+                    customer_phone: '+971501234567',
+                    celebration: 'Birthday',
+                    genre: 'Pop',
+                    recipient_name: 'Test Recipient',
+                    recipient_gender: 'Male',
+                    status: 'pending',
+                    price: 31.50,
+                    created_at: new Date().toISOString()
+                };
+
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .insert([testOrder])
+                    .select();
+
+                if (error) {
+                    addTestResult(`❌ Failed to create test order: ${error.message}`, 'error');
+                    return;
+                }
+
+                addTestResult(`✅ Test order created successfully! ID: ${data[0].id}`, 'success');
+                
+                // Refresh orders list
+                await viewOrders();
+            } catch (error) {
+                addTestResult(`❌ Error creating test order: ${error.message}`, 'error');
+            }
+        }
+
+        async function viewOrders() {
+            try {
+                addTestResult('Loading orders...', 'info');
+                
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    addTestResult(`❌ Failed to load orders: ${error.message}`, 'error');
+                    return;
+                }
+
+                const ordersList = document.getElementById('ordersList');
+                const ordersTable = document.getElementById('ordersTable');
+                
+                if (data.length === 0) {
+                    ordersTable.innerHTML = '<p class="text-gray-500">No orders found in database.</p>';
+                } else {
+                    ordersTable.innerHTML = `
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Celebration</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                ${data.map(order => `
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">#${order.id}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">${order.customer_name || 'N/A'}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">${order.customer_email || 'N/A'}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">${order.celebration || 'N/A'}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                ${order.status || 'pending'}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">AED ${order.price || '0'}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">${new Date(order.created_at).toLocaleDateString()}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                }
+                
+                ordersList.classList.remove('hidden');
+                addTestResult(`✅ Loaded ${data.length} orders successfully!`, 'success');
+            } catch (error) {
+                addTestResult(`❌ Error loading orders: ${error.message}`, 'error');
+            }
+        }
+
+        // Run initial test on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            runAllTests();
+        });
+    </script>
+</body>
+</html>
