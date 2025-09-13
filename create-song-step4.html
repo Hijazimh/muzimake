@@ -589,12 +589,12 @@
             try {
                 console.log('Starting to save order to Supabase...');
                 
-                // Always simulate successful save for now - we'll implement real Supabase later
-                console.log('Simulating successful order save (database setup in progress)');
-                return [{ id: 'order_' + Date.now(), order_id: orderData.orderId }];
+                // For localhost testing, simulate successful save to avoid CORS issues
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    console.log('Localhost mode: Simulating successful order save (CORS bypass)');
+                    return [{ id: 'test_' + Date.now(), order_id: orderData.orderId }];
+                }
                 
-                // TODO: Uncomment this when Supabase table is properly set up
-                /*
                 // Test Supabase connection first
                 const { data: testData, error: testError } = await supabase
                     .from('song_requests')
@@ -603,6 +603,12 @@
 
                 if (testError) {
                     console.error('Supabase connection test failed:', testError);
+                    
+                    // Check if it's a table doesn't exist error
+                    if (testError.message.includes('relation "song_requests" does not exist')) {
+                        throw new Error('Database table not found. Please run the setup script to create the table.');
+                    }
+                    
                     throw new Error(`Database connection failed: ${testError.message}`);
                 }
 
@@ -636,13 +642,16 @@
 
                 console.log('Order saved successfully:', data);
                 return data;
-                */
             } catch (error) {
                 console.error('Order submission error:', error);
                 
-                // Always return success for now
-                console.log('Fallback: Simulating successful order save');
-                return [{ id: 'fallback_' + Date.now(), order_id: orderData.orderId }];
+                // For localhost testing, simulate successful save
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    console.log('Localhost mode: Simulating successful order save');
+                    return [{ id: 'test_' + Date.now(), order_id: orderData.orderId }];
+                }
+                
+                throw error;
             }
         }
 
