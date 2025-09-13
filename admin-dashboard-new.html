@@ -467,10 +467,12 @@
 
                 if (data && data.length > 0) {
                     allRequests = data; // Store in global variable
+                    console.log('Loaded requests:', allRequests);
                     populateTable(data);
                     updateMetrics(data);
                 } else {
                     allRequests = [];
+                    console.log('No requests found');
                     showEmptyState();
                 }
             } catch (error) {
@@ -565,14 +567,21 @@
 
         // View request details
         function viewRequest(requestId) {
-            currentRequest = allRequests.find(r => r.id === requestId);
+            console.log('viewRequest called with ID:', requestId);
+            console.log('allRequests:', allRequests);
+            currentRequest = allRequests.find(r => r.id == requestId);
+            console.log('currentRequest found:', currentRequest);
             if (currentRequest) {
                 showOrderModal(currentRequest);
+            } else {
+                console.error('Request not found with ID:', requestId);
+                alert('Request not found. Please try again.');
             }
         }
 
         // Show order modal
         function showOrderModal(request) {
+            console.log('showOrderModal called with request:', request);
             // Populate modal with request data
             document.getElementById('modalOrderId').textContent = request.order_id || 'N/A';
             document.getElementById('modalDate').textContent = new Date(request.created_at).toLocaleDateString();
@@ -600,7 +609,9 @@
             
             // Show modal
             const modal = document.getElementById('orderModal');
+            console.log('Modal element found:', modal);
             modal.classList.remove('hidden');
+            console.log('Modal should now be visible');
         }
 
         // Update status buttons based on current status
