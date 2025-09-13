@@ -560,17 +560,115 @@
             <!-- Static Actions Section at Bottom -->
             <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-[rgba(38,36,32,0.2)] p-5 rounded-b-2xl">
                 <h3 class="text-[13px] font-semibold text-[#303030] mb-4">Actions</h3>
-                <div class="flex justify-end gap-4">
-                    <button id="markInProgress" class="bg-[#262420] text-white text-[14.766px] font-medium px-6 py-3 rounded-[40px] hover:bg-gray-800 transition-colors">
-                        In Progress
+                <div class="flex justify-between items-center">
+                    <!-- WhatsApp Button -->
+                    <button id="whatsappBtn" class="bg-green-500 text-white text-[14.766px] font-medium px-6 py-3 rounded-[40px] hover:bg-green-600 transition-colors flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                        </svg>
+                        Send via WhatsApp
                     </button>
-                    <button id="markComplete" class="bg-[#262420] text-white text-[14.766px] font-medium px-8 py-3 rounded-[40px] hover:bg-gray-800 transition-colors">
-                        Complete
-                    </button>
-                    <button id="markSent" class="bg-[#262420] text-white text-[14.766px] font-medium px-8 py-3 rounded-[40px] hover:bg-gray-800 transition-colors">
-                        Mark as Sent
-                    </button>
+                    
+                    <!-- Status Action Buttons -->
+                    <div class="flex gap-4">
+                        <button id="markInProgress" class="bg-[#262420] text-white text-[14.766px] font-medium px-6 py-3 rounded-[40px] hover:bg-gray-800 transition-colors">
+                            In Progress
+                        </button>
+                        <button id="markComplete" class="bg-[#262420] text-white text-[14.766px] font-medium px-8 py-3 rounded-[40px] hover:bg-gray-800 transition-colors">
+                            Complete
+                        </button>
+                        <button id="markSent" class="bg-[#262420] text-white text-[14.766px] font-medium px-8 py-3 rounded-[40px] hover:bg-gray-800 transition-colors">
+                            Mark as Sent
+                        </button>
+                    </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WhatsApp Send Modal -->
+    <div id="whatsappModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-[500px] max-h-[600px] relative flex flex-col">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-5 flex-shrink-0 border-b border-gray-200">
+                <div class="flex items-center">
+                    <svg class="w-6 h-6 text-green-500 mr-3" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                    </svg>
+                    <h2 class="text-lg font-bold text-gray-800">Send via WhatsApp</h2>
+                </div>
+                <button id="closeWhatsappModal" class="w-6 h-6 text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Modal Content -->
+            <div class="p-5 flex-1 overflow-y-auto">
+                <!-- Customer Info -->
+                <div class="mb-6">
+                    <h3 class="text-sm font-semibold text-gray-800 mb-2">Customer Details</h3>
+                    <div class="bg-gray-50 rounded-lg p-3">
+                        <p class="text-sm text-gray-600"><span class="font-medium">Name:</span> <span id="whatsappCustomerName">-</span></p>
+                        <p class="text-sm text-gray-600"><span class="font-medium">Phone:</span> <span id="whatsappCustomerPhone">-</span></p>
+                    </div>
+                </div>
+                
+                <!-- File Upload -->
+                <div class="mb-6">
+                    <h3 class="text-sm font-semibold text-gray-800 mb-2">Upload MP3 File</h3>
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-500 transition-colors">
+                        <input type="file" id="mp3FileInput" accept=".mp3,audio/*" class="hidden">
+                        <div id="fileUploadArea" class="cursor-pointer">
+                            <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            </svg>
+                            <p class="text-sm text-gray-600 mb-1">Click to upload MP3 file</p>
+                            <p class="text-xs text-gray-500">or drag and drop</p>
+                        </div>
+                        <div id="fileInfo" class="hidden">
+                            <div class="flex items-center justify-center">
+                                <svg class="w-8 h-8 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div class="text-left">
+                                    <p class="text-sm font-medium text-gray-800" id="fileName">-</p>
+                                    <p class="text-xs text-gray-500" id="fileSize">-</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Message Template -->
+                <div class="mb-6">
+                    <h3 class="text-sm font-semibold text-gray-800 mb-2">Message (Optional)</h3>
+                    <textarea id="whatsappMessage" class="w-full p-3 border border-gray-300 rounded-lg resize-none" rows="3" placeholder="Add a message to accompany the audio file...">Hi! Here's your custom song. We hope you enjoy it! 🎵</textarea>
+                </div>
+                
+                <!-- Setup Notice -->
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                    <div class="flex">
+                        <svg class="w-5 h-5 text-yellow-600 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                        <div>
+                            <h4 class="text-sm font-medium text-yellow-800">WhatsApp Business API Setup Required</h4>
+                            <p class="text-xs text-yellow-700 mt-1">To send files via WhatsApp, you need to set up the WhatsApp Business API. See setup instructions below.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Modal Actions -->
+            <div class="p-5 border-t border-gray-200 flex justify-end gap-3">
+                <button id="cancelWhatsapp" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                    Cancel
+                </button>
+                <button id="sendWhatsapp" class="px-6 py-2 text-sm font-medium text-white bg-green-500 rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    Send via WhatsApp
+                </button>
             </div>
         </div>
     </div>
@@ -1095,6 +1193,132 @@
             document.getElementById('markSent').addEventListener('click', function() {
                 updateOrderStatus('sent');
             });
+            
+            // WhatsApp functionality
+            const whatsappBtn = document.getElementById('whatsappBtn');
+            const whatsappModal = document.getElementById('whatsappModal');
+            const closeWhatsappModal = document.getElementById('closeWhatsappModal');
+            const cancelWhatsapp = document.getElementById('cancelWhatsapp');
+            const sendWhatsapp = document.getElementById('sendWhatsapp');
+            const mp3FileInput = document.getElementById('mp3FileInput');
+            const fileUploadArea = document.getElementById('fileUploadArea');
+            const fileInfo = document.getElementById('fileInfo');
+            const fileName = document.getElementById('fileName');
+            const fileSize = document.getElementById('fileSize');
+            
+            let selectedFile = null;
+            
+            // Open WhatsApp modal
+            whatsappBtn.addEventListener('click', function() {
+                if (!currentRequest) return;
+                
+                // Populate customer info
+                document.getElementById('whatsappCustomerName').textContent = currentRequest.customer_name || 'Unknown';
+                document.getElementById('whatsappCustomerPhone').textContent = currentRequest.customer_phone || 'No phone number';
+                
+                // Reset file selection
+                selectedFile = null;
+                mp3FileInput.value = '';
+                fileUploadArea.classList.remove('hidden');
+                fileInfo.classList.add('hidden');
+                sendWhatsapp.disabled = true;
+                
+                whatsappModal.classList.remove('hidden');
+            });
+            
+            // Close WhatsApp modal
+            function closeWhatsappModalFunc() {
+                whatsappModal.classList.add('hidden');
+            }
+            
+            closeWhatsappModal.addEventListener('click', closeWhatsappModalFunc);
+            cancelWhatsapp.addEventListener('click', closeWhatsappModalFunc);
+            
+            // File upload handling
+            fileUploadArea.addEventListener('click', function() {
+                mp3FileInput.click();
+            });
+            
+            mp3FileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // Check if it's an audio file
+                    if (!file.type.startsWith('audio/')) {
+                        alert('Please select an audio file (MP3, WAV, etc.)');
+                        return;
+                    }
+                    
+                    selectedFile = file;
+                    fileName.textContent = file.name;
+                    fileSize.textContent = formatFileSize(file.size);
+                    
+                    fileUploadArea.classList.add('hidden');
+                    fileInfo.classList.remove('hidden');
+                    sendWhatsapp.disabled = false;
+                }
+            });
+            
+            // Drag and drop functionality
+            fileUploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                fileUploadArea.classList.add('border-green-500', 'bg-green-50');
+            });
+            
+            fileUploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                fileUploadArea.classList.remove('border-green-500', 'bg-green-50');
+            });
+            
+            fileUploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                fileUploadArea.classList.remove('border-green-500', 'bg-green-50');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.type.startsWith('audio/')) {
+                        selectedFile = file;
+                        fileName.textContent = file.name;
+                        fileSize.textContent = formatFileSize(file.size);
+                        
+                        fileUploadArea.classList.add('hidden');
+                        fileInfo.classList.remove('hidden');
+                        sendWhatsapp.disabled = false;
+                    } else {
+                        alert('Please select an audio file (MP3, WAV, etc.)');
+                    }
+                }
+            });
+            
+            // Send WhatsApp message
+            sendWhatsapp.addEventListener('click', function() {
+                if (!selectedFile || !currentRequest) return;
+                
+                const message = document.getElementById('whatsappMessage').value;
+                const phoneNumber = currentRequest.customer_phone;
+                
+                if (!phoneNumber) {
+                    alert('No phone number available for this customer');
+                    return;
+                }
+                
+                // For now, show a demo message
+                alert(`Demo: Would send "${message}" with audio file "${selectedFile.name}" to ${phoneNumber}\n\nTo implement actual WhatsApp sending, you need to set up the WhatsApp Business API.`);
+                
+                // TODO: Implement actual WhatsApp API integration
+                // sendWhatsAppMessage(phoneNumber, message, selectedFile);
+                
+                closeWhatsappModalFunc();
+            });
+            
+            // Helper function to format file size
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
             
             // Filter and search event listeners
             document.getElementById('statusFilter').addEventListener('change', filterAndSearch);
