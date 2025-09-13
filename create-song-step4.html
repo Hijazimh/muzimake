@@ -267,9 +267,10 @@
         const ZIINA_API_KEY = 'ICBwiSb7cUWIBkczgyyGWMd4IqGN8kk0JdlLMylkwqA2M3BbRGhdRKbADGkHnen4';
         const ZIINA_BASE_URL = 'https://api.ziina.com/api'; // Ziina API base URL
         
-        console.log('Ziina API Configuration:', {
+        console.log('Ziina API Configuration (v2.1):', {
             baseUrl: ZIINA_BASE_URL,
-            apiKey: ZIINA_API_KEY.substring(0, 10) + '...' // Show only first 10 chars for security
+            apiKey: ZIINA_API_KEY.substring(0, 10) + '...', // Show only first 10 chars for security
+            timestamp: new Date().toISOString()
         });
 
         // DOM elements
