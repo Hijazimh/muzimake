@@ -192,6 +192,16 @@
                         <div id="emailError" class="error-message hidden"></div>
                     </div>
 
+                    <!-- Password -->
+                    <div>
+                        <label class="block text-custom-gray text-xs font-bold tracking-wider uppercase mb-2">
+                            Create a password*
+                        </label>
+                        <input type="password" id="password" name="password" class="form-input w-full" placeholder="create a secure password">
+                        <div id="passwordError" class="error-message hidden"></div>
+                        <p class="text-custom-gray text-xs mt-1">This will create your account for future orders</p>
+                    </div>
+
                     <!-- Phone Number -->
                     <div>
                         <label class="block text-custom-gray text-xs font-bold tracking-wider uppercase mb-2">
@@ -569,6 +579,7 @@
         const nextBtn = document.getElementById('nextBtn');
         const fullNameInput = document.getElementById('fullName');
         const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
         const phoneInput = document.getElementById('phoneNumber');
         const countryCodeSelect = document.getElementById('countryCode');
 
@@ -580,6 +591,10 @@
         function validateEmail(email) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return emailRegex.test(email.trim());
+        }
+
+        function validatePassword(password) {
+            return password.trim().length >= 8;
         }
 
         function validatePhone(phone, countryCode) {
@@ -639,9 +654,10 @@
         function updateNextButton() {
             const nameValid = validateField(fullNameInput, document.getElementById('nameError'), validateName, 'Please enter a valid name (at least 2 characters)');
             const emailValid = validateField(emailInput, document.getElementById('emailError'), validateEmail, 'Please enter a valid email address');
+            const passwordValid = validateField(passwordInput, document.getElementById('passwordError'), validatePassword, 'Password must be at least 8 characters');
             const phoneValid = validatePhoneField();
             
-            const isComplete = nameValid && emailValid && phoneValid;
+            const isComplete = nameValid && emailValid && passwordValid && phoneValid;
             
             if (isComplete) {
                 nextBtn.className = 'next-button-active px-8 py-3 rounded-full font-medium transition-all duration-200 cursor-pointer';
@@ -655,6 +671,7 @@
         // Add event listeners
         fullNameInput.addEventListener('input', updateNextButton);
         emailInput.addEventListener('input', updateNextButton);
+        passwordInput.addEventListener('input', updateNextButton);
         phoneInput.addEventListener('input', updateNextButton);
         countryCodeSelect.addEventListener('change', updateNextButton);
 
@@ -696,6 +713,7 @@
                     const contactData = {
                         fullName: fullNameInput.value,
                         email: emailInput.value,
+                        password: passwordInput.value,
                         countryCode: countryCodeSelect.value,
                         phoneNumber: phoneInput.value,
                         pricing: {
@@ -885,6 +903,9 @@
                 }
                 if (contactData.email) {
                     emailInput.value = contactData.email;
+                }
+                if (contactData.password) {
+                    passwordInput.value = contactData.password;
                 }
                 if (contactData.countryCode) {
                     countryCodeSelect.value = contactData.countryCode;
