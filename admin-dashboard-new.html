@@ -431,7 +431,7 @@
                 <div class="border-b border-[rgba(38,36,32,0.2)] mb-4"></div>
                 
                 <!-- Order Status Section -->
-                <div class="mb-4">
+                <div class="mb-8">
                     <h3 class="text-[13px] font-semibold text-[#303030] mb-4">Order Status</h3>
                     <div class="grid grid-cols-3 gap-4">
                         <div>
@@ -460,14 +460,14 @@
             <!-- Static Actions Section at Bottom -->
             <div class="absolute bottom-0 left-0 right-0 bg-white border-t border-[rgba(38,36,32,0.2)] p-5 rounded-b-2xl">
                 <h3 class="text-[13px] font-semibold text-[#303030] mb-4">Actions</h3>
-                <div class="flex gap-4">
-                    <button id="markInProgress" class="bg-[#fc6900] text-white text-[14.766px] font-medium px-6 py-3 rounded-[40px] hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                <div class="flex justify-end gap-4">
+                    <button id="markInProgress" class="bg-[#262420] text-white text-[14.766px] font-medium px-6 py-3 rounded-[40px] hover:bg-gray-800 transition-colors">
                         In Progress
                     </button>
-                    <button id="markComplete" class="bg-[#fc6900] text-white text-[14.766px] font-medium px-8 py-3 rounded-[40px] hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <button id="markComplete" class="bg-[#262420] text-white text-[14.766px] font-medium px-8 py-3 rounded-[40px] hover:bg-gray-800 transition-colors">
                         Complete
                     </button>
-                    <button id="markSent" class="bg-[#262420] text-white text-[14.766px] font-medium px-8 py-3 rounded-[40px] hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <button id="markSent" class="bg-[#262420] text-white text-[14.766px] font-medium px-8 py-3 rounded-[40px] hover:bg-gray-800 transition-colors">
                         Mark as Sent
                     </button>
                 </div>
@@ -670,26 +670,40 @@
             const completeBtn = document.getElementById('markComplete');
             const sentBtn = document.getElementById('markSent');
             
-            // Reset all buttons
-            inProgressBtn.disabled = false;
-            completeBtn.disabled = false;
-            sentBtn.disabled = false;
+            // Reset all buttons to black (default state)
+            resetAllButtons();
             
-            // Disable buttons based on current status
+            // Set the current status button to orange (completed state)
             switch (currentStatus) {
                 case 'in_progress':
-                    inProgressBtn.disabled = true;
+                    setButtonActive(inProgressBtn);
                     break;
                 case 'complete':
-                    inProgressBtn.disabled = true;
-                    completeBtn.disabled = true;
+                    setButtonActive(completeBtn);
                     break;
                 case 'sent':
-                    inProgressBtn.disabled = true;
-                    completeBtn.disabled = true;
-                    sentBtn.disabled = true;
+                    setButtonActive(sentBtn);
+                    break;
+                default:
+                    // All buttons remain black for pending status
                     break;
             }
+        }
+        
+        // Reset all buttons to black (default state)
+        function resetAllButtons() {
+            const inProgressBtn = document.getElementById('markInProgress');
+            const completeBtn = document.getElementById('markComplete');
+            const sentBtn = document.getElementById('markSent');
+            
+            inProgressBtn.className = 'bg-[#262420] text-white text-[14.766px] font-medium px-6 py-3 rounded-[40px] hover:bg-gray-800 transition-colors';
+            completeBtn.className = 'bg-[#262420] text-white text-[14.766px] font-medium px-8 py-3 rounded-[40px] hover:bg-gray-800 transition-colors';
+            sentBtn.className = 'bg-[#262420] text-white text-[14.766px] font-medium px-8 py-3 rounded-[40px] hover:bg-gray-800 transition-colors';
+        }
+        
+        // Set a button to orange (active/completed state)
+        function setButtonActive(button) {
+            button.className = 'bg-[#fc6900] text-white text-[14.766px] font-medium px-6 py-3 rounded-[40px] hover:bg-orange-600 transition-colors';
         }
 
 
@@ -716,10 +730,27 @@
                     allRequests[requestIndex].status = newStatus;
                 }
                 
-                // Update UI
-                updateStatusButtons(newStatus);
-                document.getElementById('modalStatus').textContent = newStatus;
-                document.getElementById('modalStatus').className = `text-sm font-medium px-2 py-1 rounded-full ${getStatusClass(newStatus)}`;
+                // Update UI - reset all buttons first, then set the clicked one to orange
+                resetAllButtons();
+                let clickedButton;
+                switch (newStatus) {
+                    case 'in_progress':
+                        clickedButton = document.getElementById('markInProgress');
+                        break;
+                    case 'complete':
+                        clickedButton = document.getElementById('markComplete');
+                        break;
+                    case 'sent':
+                        clickedButton = document.getElementById('markSent');
+                        break;
+                }
+                if (clickedButton) {
+                    setButtonActive(clickedButton);
+                }
+                
+                // Update payment status displays
+                document.getElementById('modalPaymentStatus').textContent = getPaymentStatusText(newStatus);
+                document.getElementById('modalPaymentStatus2').textContent = getPaymentStatusText(newStatus);
                 
                 // Refresh table
                 populateTable(allRequests);
