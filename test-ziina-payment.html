@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ziina Payment Gateway Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        .info { color: blue; }
+        .warning { color: orange; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        button:hover { background: #0056b3; }
+        .result {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            text-align: left;
+        }
+        .config {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💳 Ziina Payment Gateway Test</h1>
+        
+        <div class="config">
+            <h3>Current Configuration:</h3>
+            <p><strong>API Key:</strong> cYE49B8AG4cOVoAW4t13rBNem2C46F1M5+qK+Q3XHPRm4gZ8B6+GNuNgLguztWvm</p>
+            <p><strong>Base URL:</strong> https://api-v2.ziina.com/api</p>
+            <p><strong>Payment Amount:</strong> AED 31.50 (3150 cents)</p>
+            <p><strong>Currency:</strong> AED</p>
+        </div>
+        
+        <button onclick="testZiinaConnection()">Test Ziina Connection</button>
+        <button onclick="createTestPayment()">Create Test Payment</button>
+        <button onclick="testFullFlow()">Test Full Payment Flow</button>
+        
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Ziina API configuration
+        const ZIINA_API_KEY = 'cYE49B8AG4cOVoAW4t13rBNem2C46F1M5+qK+Q3XHPRm4gZ8B6+GNuNgLguztWvm';
+        const ZIINA_BASE_URL = 'https://api-v2.ziina.com/api';
+
+        function showResult(message, type = 'info') {
+            const result = document.getElementById('result');
+            result.style.display = 'block';
+            result.className = `result ${type}`;
+            result.textContent = message;
+        }
+
+        async function testZiinaConnection() {
+            showResult('Testing Ziina API connection...', 'info');
+            
+            try {
+                // Test basic connection to Ziina API
+                const response = await fetch(`${ZIINA_BASE_URL}/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${ZIINA_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    showResult('✅ Ziina API connection successful!\n\nAPI is accessible and responding.', 'success');
+                } else {
+                    showResult(`❌ Ziina API connection failed with status: ${response.status}\n\nThis might be normal if the health endpoint doesn't exist.`, 'warning');
+                }
+            } catch (error) {
+                showResult(`❌ Connection error: ${error.message}\n\nThis could be due to CORS or network issues.`, 'error');
+            }
+        }
+
+        async function createTestPayment() {
+            showResult('Creating test payment with Ziina...', 'info');
+            
+            try {
+                const paymentData = {
+                    amount: 3150, // AED 31.50 in cents
+                    currency: 'AED',
+                    description: 'Test payment for Muzimake song creation',
+                    success_url: `${window.location.origin}/payment-success.html?payment_id=test_${Date.now()}`,
+                    cancel_url: `${window.location.origin}/create-song-step4.html`,
+                    metadata: {
+                        order_id: 'TEST_' + Date.now(),
+                        customer_name: 'Test Customer',
+                        customer_email: 'test@example.com'
+                    }
+                };
+
+                showResult(`Payment data prepared:\n${JSON.stringify(paymentData, null, 2)}\n\nSending to Ziina API...`, 'info');
+
+                const response = await fetch(`${ZIINA_BASE_URL}/payment_intent`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${ZIINA_API_KEY}`,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(paymentData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showResult('✅ Test payment created successfully!\n\nPayment details:\n' + JSON.stringify(result, null, 2), 'success');
+                } else {
+                    showResult(`❌ Payment creation failed:\nStatus: ${response.status}\nError: ${JSON.stringify(result, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Error creating payment: ${error.message}\n\nThis might be due to CORS issues when testing from localhost.`, 'error');
+            }
+        }
+
+        async function testFullFlow() {
+            showResult('Testing full payment flow...', 'info');
+            
+            try {
+                // Simulate the exact flow from your payment page
+                const orderData = {
+                    orderId: 'MZ_TEST_' + Date.now(),
+                    fullName: 'Test Customer',
+                    email: 'test@example.com',
+                    recipientName: 'Test Recipient',
+                    celebration: 'Test Celebration'
+                };
+
+                const paymentData = {
+                    amount: 3150, // AED 31.50 in base units (cents)
+                    currency_code: 'AED',
+                    message: `Custom song for ${orderData.recipientName} - ${orderData.celebration}`,
+                    allow_tips: false,
+                    success_url: `${window.location.origin}/payment-success.html?order_id=${orderData.orderId}`,
+                    cancel_url: `${window.location.origin}/create-song-step4.html`
+                };
+
+                showResult(`Full payment flow test:\n\nOrder Data:\n${JSON.stringify(orderData, null, 2)}\n\nPayment Data:\n${JSON.stringify(paymentData, null, 2)}\n\nTesting payment creation...`, 'info');
+
+                // For localhost testing, simulate successful payment
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    showResult('✅ Localhost testing mode: Simulating successful payment\n\nIn production, this would redirect to Ziina payment page.\n\nPayment URL: payment-success.html?payment_id=test_' + Date.now() + '&order_id=' + orderData.orderId, 'success');
+                } else {
+                    // Test real payment creation
+                    const response = await fetch(`${ZIINA_BASE_URL}/payment_intent`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${ZIINA_API_KEY}`,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(paymentData)
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        showResult('✅ Full payment flow successful!\n\nPayment created and ready for redirect:\n' + JSON.stringify(result, null, 2), 'success');
+                    } else {
+                        showResult(`❌ Payment flow failed:\nStatus: ${response.status}\nError: ${JSON.stringify(result, null, 2)}`, 'error');
+                    }
+                }
+            } catch (error) {
+                showResult(`❌ Full flow error: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-test on page load
+        window.addEventListener('load', function() {
+            showResult('Ziina Payment Gateway Test Page Loaded\n\nReady to test your payment integration.\n\nClick the buttons above to test different aspects of the payment flow.', 'info');
+        });
+    </script>
+</body>
+</html>
