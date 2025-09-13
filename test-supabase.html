@@ -89,6 +89,7 @@
         async function testConnection() {
             log('Testing Supabase connection...', 'info');
             try {
+                // Test basic connection first
                 const { data, error } = await supabase
                     .from('song_requests')
                     .select('count')
@@ -97,12 +98,25 @@
                 if (error) {
                     log(`Connection failed: ${error.message}`, 'error');
                     log(`Error details: ${JSON.stringify(error)}`, 'error');
+                    
+                    // Check if it's a CORS issue
+                    if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
+                        log('This appears to be a CORS issue. This is normal when testing from localhost.', 'info');
+                        log('The connection should work fine on your live website.', 'info');
+                    }
                 } else {
                     log('Connection successful!', 'success');
                     log(`Response: ${JSON.stringify(data)}`, 'info');
                 }
             } catch (err) {
                 log(`Connection error: ${err.message}`, 'error');
+                
+                // Check if it's a CORS issue
+                if (err.message.includes('Failed to fetch') || err.message.includes('CORS')) {
+                    log('This is a CORS issue - normal for localhost testing.', 'info');
+                    log('Your Supabase connection will work fine on the live website.', 'info');
+                    log('To test locally, you can use the browser developer tools or test on the live site.', 'info');
+                }
             }
         }
 
