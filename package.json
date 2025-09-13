@@ -1,32 +1,22 @@
 {
   "name": "muzimake",
   "version": "1.0.0",
-  "description": "Custom Song Creation Platform - Your story. Your song.",
+  "description": "Muzimake - Custom Song Creation Platform",
   "main": "index.html",
   "scripts": {
-    "start": "python3 -m http.server 8000",
-    "dev": "python3 -m http.server 8000",
-    "build": "echo 'No build step required for static site'",
-    "deploy": "echo 'Deployment handled by Netlify'"
+    "build": "echo 'Static site - no build required'",
+    "start": "python3 -m http.server 8080",
+    "dev": "python3 -m http.server 8080"
   },
   "keywords": [
     "music",
     "custom-songs",
-    "website",
-    "supabase",
-    "netlify",
-    "tailwind"
+    "ziina",
+    "supabase"
   ],
-  "author": "Muzimake Team",
+  "author": "Muzimake",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/yourusername/muzimake.git"
-  },
-  "homepage": "https://muzimake.com",
   "engines": {
     "node": ">=18.0.0"
-  },
-  "devDependencies": {},
-  "dependencies": {}
+  }
 }
