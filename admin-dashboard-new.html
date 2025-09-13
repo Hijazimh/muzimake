@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Muzimake</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'custom-beige': '#f3f1eb',
+                        'custom-dark': '#080808',
+                        'custom-gray': '#232321',
+                        'custom-blue': '#0056fc',
+                        'custom-orange': '#fc6900',
+                        'admin-bg': '#f1f1f1',
+                        'admin-sidebar': '#ebebeb',
+                        'admin-header': '#1a1a1a',
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        .font-inter { font-family: 'Inter', sans-serif; }
+        .font-extrabold { font-weight: 800; }
+        .font-bold { font-weight: 700; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* Table styles */
+        .table-row:hover {
+            background-color: #f9f9f9;
+        }
+        
+        /* Status badges */
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        .status-processing {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        .status-completed {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .status-paid {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+    </style>
+</head>
+<body class="font-inter bg-admin-bg min-h-screen">
+    <!-- Main Container -->
+    <div class="flex h-screen">
+        <!-- Sidebar Navigation -->
+        <div class="w-60 bg-admin-sidebar rounded-tl-xl flex-shrink-0">
+            <div class="h-full overflow-auto custom-scrollbar rounded-tl-xl">
+                <div class="p-3">
+                    <!-- Navigation List -->
+                    <div class="space-y-1">
+                        <!-- Home -->
+                        <div class="rounded-lg hover:bg-white/50 transition-colors">
+                            <a href="#home" class="flex items-center px-3 py-2 text-sm font-semibold text-gray-800 hover:text-gray-900">
+                                <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                </svg>
+                                Home
+                            </a>
+                        </div>
+                        
+                        <!-- Song Requests (Active) -->
+                        <div class="bg-white/50 rounded-lg">
+                            <a href="#song-requests" class="flex items-center px-3 py-2 text-sm font-semibold text-gray-800">
+                                <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
+                                </svg>
+                                Song Requests
+                            </a>
+                        </div>
+                        
+                        <!-- Customers -->
+                        <div class="rounded-lg hover:bg-white/50 transition-colors">
+                            <a href="#customers" class="flex items-center px-3 py-2 text-sm font-semibold text-gray-800 hover:text-gray-900">
+                                <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                                </svg>
+                                Customers
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Settings at bottom -->
+                <div class="absolute bottom-0 left-0 right-0 p-3 bg-admin-sidebar">
+                    <div class="rounded-lg hover:bg-white/50 transition-colors">
+                        <a href="#settings" class="flex items-center px-3 py-2 text-sm font-semibold text-gray-800 hover:text-gray-900">
+                            <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            Settings
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col">
+            <!-- Header -->
+            <header class="bg-admin-header h-14 flex items-center justify-between px-6 shadow-sm">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <div class="w-8 h-8 bg-custom-orange rounded-lg flex items-center justify-center mr-3">
+                        <span class="text-white font-bold text-sm">M</span>
+                    </div>
+                    <span class="text-white font-bold text-lg">muzimake</span>
+                </div>
+                
+                <!-- Header Actions -->
+                <div class="flex items-center space-x-4">
+                    <!-- Notifications -->
+                    <div class="relative">
+                        <button class="w-9 h-9 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-gray-600 transition-colors">
+                            <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM4.5 19.5L9 15H4l5 5z"></path>
+                            </svg>
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">4</span>
+                        </button>
+                    </div>
+                    
+                    <!-- User Profile -->
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 bg-green-500 rounded-lg flex items-center justify-center">
+                            <span class="text-white font-semibold text-sm">MH</span>
+                        </div>
+                        <span class="text-gray-300 text-sm font-medium">Admin</span>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Main Content -->
+            <main class="flex-1 overflow-auto custom-scrollbar">
+                <div class="p-6">
+                    <!-- Page Header -->
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-gray-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
+                            </svg>
+                            <h1 class="text-2xl font-semibold text-gray-800">Song Requests</h1>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span class="text-sm text-gray-600">More actions</span>
+                            <button class="w-4 h-4 text-gray-600 hover:text-gray-800">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Metrics Cards -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+                        <div class="p-4">
+                            <!-- Time Filter -->
+                            <div class="flex items-center border-r border-gray-200 pr-4">
+                                <svg class="w-4 h-4 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="text-sm font-medium text-gray-800">Today</span>
+                            </div>
+                            
+                            <!-- Metrics Grid -->
+                            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-4">
+                                <div class="border-r border-gray-200 pr-4">
+                                    <h3 class="text-sm font-semibold text-gray-800 mb-1">Orders</h3>
+                                    <p class="text-2xl font-semibold text-gray-800" id="totalOrders">0</p>
+                                </div>
+                                <div class="border-r border-gray-200 pr-4">
+                                    <h3 class="text-sm font-semibold text-gray-800 mb-1">Items ordered</h3>
+                                    <p class="text-2xl font-semibold text-gray-800" id="totalItems">0</p>
+                                </div>
+                                <div class="border-r border-gray-200 pr-4">
+                                    <h3 class="text-sm font-semibold text-gray-800 mb-1">Returns</h3>
+                                    <p class="text-2xl font-semibold text-gray-800" id="totalReturns">AED 0</p>
+                                </div>
+                                <div class="border-r border-gray-200 pr-4">
+                                    <h3 class="text-sm font-semibold text-gray-800 mb-1">Orders fulfilled</h3>
+                                    <p class="text-2xl font-semibold text-gray-800" id="ordersFulfilled">0</p>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-semibold text-gray-800 mb-1">Orders delivered</h3>
+                                    <p class="text-2xl font-semibold text-gray-800" id="ordersDelivered">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Song Requests Table -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                        <div class="p-6">
+                            <!-- Table Header -->
+                            <div class="flex items-center justify-between mb-4">
+                                <h2 class="text-lg font-semibold text-gray-800">All Song Requests</h2>
+                                <div class="flex items-center space-x-3">
+                                    <input type="text" placeholder="Search requests..." class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-custom-orange focus:border-transparent">
+                                    <button class="px-4 py-2 bg-custom-orange text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors">
+                                        Export
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Table -->
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead>
+                                        <tr class="border-b border-gray-200">
+                                            <th class="text-left py-3 px-4 font-semibold text-gray-800">Order ID</th>
+                                            <th class="text-left py-3 px-4 font-semibold text-gray-800">Customer</th>
+                                            <th class="text-left py-3 px-4 font-semibold text-gray-800">Recipient</th>
+                                            <th class="text-left py-3 px-4 font-semibold text-gray-800">Celebration</th>
+                                            <th class="text-left py-3 px-4 font-semibold text-gray-800">Genre</th>
+                                            <th class="text-left py-3 px-4 font-semibold text-gray-800">Status</th>
+                                            <th class="text-left py-3 px-4 font-semibold text-gray-800">Date</th>
+                                            <th class="text-left py-3 px-4 font-semibold text-gray-800">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="songRequestsTable">
+                                        <!-- Table rows will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Empty State -->
+                            <div id="emptyState" class="text-center py-12 hidden">
+                                <div class="w-56 h-56 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-24 h-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-2">Your music orders will show here</h3>
+                                <p class="text-gray-600 text-sm">This is where you'll fulfill orders, collect payments, and track order progress.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Learn More Link -->
+                    <div class="text-center mt-6">
+                        <span class="text-sm text-gray-600">Learn more about </span>
+                        <a href="#" class="text-sm text-blue-600 underline hover:text-blue-800">orders</a>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Supabase configuration
+        const supabaseUrl = 'https://lchleopfdvrgunbrlngh.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxjaGxlb3BmZHZyZ3VuYnJsbmdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3NTYwNjgsImV4cCI6MjA3MzMzMjA2OH0.U4NkKdXFgK3Im78oz_SaEHkWQqGzhlaeA83Rom4oD7A';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Load song requests data
+        async function loadSongRequests() {
+            try {
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    console.error('Error loading song requests:', error);
+                    showEmptyState();
+                    return;
+                }
+
+                if (data && data.length > 0) {
+                    populateTable(data);
+                    updateMetrics(data);
+                } else {
+                    showEmptyState();
+                }
+            } catch (error) {
+                console.error('Error loading song requests:', error);
+                showEmptyState();
+            }
+        }
+
+        // Populate table with data
+        function populateTable(requests) {
+            const tableBody = document.getElementById('songRequestsTable');
+            const emptyState = document.getElementById('emptyState');
+            
+            tableBody.innerHTML = '';
+            emptyState.classList.add('hidden');
+
+            requests.forEach(request => {
+                const row = document.createElement('tr');
+                row.className = 'table-row border-b border-gray-100';
+                
+                const statusClass = getStatusClass(request.status);
+                const formattedDate = new Date(request.created_at).toLocaleDateString();
+                
+                row.innerHTML = `
+                    <td class="py-3 px-4 text-sm font-medium text-gray-800">${request.order_id || 'N/A'}</td>
+                    <td class="py-3 px-4 text-sm text-gray-600">${request.customer_name || 'N/A'}</td>
+                    <td class="py-3 px-4 text-sm text-gray-600">${request.recipient_name || 'N/A'}</td>
+                    <td class="py-3 px-4 text-sm text-gray-600">${request.celebration || 'N/A'}</td>
+                    <td class="py-3 px-4 text-sm text-gray-600">${request.genre || 'N/A'}</td>
+                    <td class="py-3 px-4">
+                        <span class="px-2 py-1 text-xs font-medium rounded-full ${statusClass}">
+                            ${request.status || 'pending'}
+                        </span>
+                    </td>
+                    <td class="py-3 px-4 text-sm text-gray-600">${formattedDate}</td>
+                    <td class="py-3 px-4">
+                        <button class="text-custom-orange hover:text-orange-600 text-sm font-medium" onclick="viewRequest('${request.id}')">
+                            View
+                        </button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Update metrics
+        function updateMetrics(requests) {
+            const totalOrders = requests.length;
+            const totalItems = requests.length; // Each request is one item
+            const ordersFulfilled = requests.filter(r => r.status === 'completed' || r.status === 'paid').length;
+            const ordersDelivered = requests.filter(r => r.status === 'completed').length;
+            
+            document.getElementById('totalOrders').textContent = totalOrders;
+            document.getElementById('totalItems').textContent = totalItems;
+            document.getElementById('ordersFulfilled').textContent = ordersFulfilled;
+            document.getElementById('ordersDelivered').textContent = ordersDelivered;
+        }
+
+        // Get status class for styling
+        function getStatusClass(status) {
+            switch (status) {
+                case 'pending':
+                case 'pending_payment':
+                    return 'status-pending';
+                case 'processing':
+                    return 'status-processing';
+                case 'completed':
+                case 'paid':
+                    return 'status-completed';
+                default:
+                    return 'status-pending';
+            }
+        }
+
+        // Show empty state
+        function showEmptyState() {
+            const tableBody = document.getElementById('songRequestsTable');
+            const emptyState = document.getElementById('emptyState');
+            
+            tableBody.innerHTML = '';
+            emptyState.classList.remove('hidden');
+        }
+
+        // View request details
+        function viewRequest(requestId) {
+            // TODO: Implement view request modal or redirect to detail page
+            console.log('View request:', requestId);
+            alert('View request functionality will be implemented');
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSongRequests();
+        });
+    </script>
+</body>
+</html>
