@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Webhook Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button {
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #128C7E; }
+        pre { background: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 WhatsApp Webhook Test Tool</h1>
+        
+        <div class="test-section info">
+            <h3>📋 Current Configuration</h3>
+            <p><strong>Webhook URL:</strong> <span id="webhookUrl">https://muzimake-f2gb2zdy8-mahmoudhijazi95-gmailcoms-projects.vercel.app/api/webhook</span></p>
+            <p><strong>Verify Token:</strong> <span id="verifyToken">Muzimake_WhatsApp_Verify_2024_Secure_Token_XYZ789</span></p>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Test Webhook Verification</h3>
+            <p>This simulates what Meta will do when verifying your webhook:</p>
+            <button onclick="testWebhookVerification()">Test Webhook Verification</button>
+            <div id="verificationResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📱 Test Health Endpoint</h3>
+            <button onclick="testHealthEndpoint()">Test Health Endpoint</button>
+            <div id="healthResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔗 Copy URLs for Meta Developer Console</h3>
+            <p><strong>Callback URL:</strong></p>
+            <input type="text" id="callbackUrl" value="https://muzimake-f2gb2zdy8-mahmoudhijazi95-gmailcoms-projects.vercel.app/api/webhook" readonly style="width: 100%;">
+            <button onclick="copyToClipboard('callbackUrl')">Copy Callback URL</button>
+            
+            <p><strong>Verify Token:</strong></p>
+            <input type="text" id="tokenInput" value="Muzimake_WhatsApp_Verify_2024_Secure_Token_XYZ789" readonly style="width: 100%;">
+            <button onclick="copyToClipboard('tokenInput')">Copy Verify Token</button>
+        </div>
+
+        <div class="test-section info">
+            <h3>⚠️ Important Notes</h3>
+            <ul>
+                <li>Make sure your Vercel deployment protection is disabled</li>
+                <li>Use the exact URLs and token shown above in Meta Developer Console</li>
+                <li>Subscribe to these webhook fields: <code>messages</code>, <code>message_deliveries</code>, <code>message_reads</code></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const webhookUrl = 'https://muzimake-f2gb2zdy8-mahmoudhijazi95-gmailcoms-projects.vercel.app/api/webhook';
+        const healthUrl = 'https://muzimake-f2gb2zdy8-mahmoudhijazi95-gmailcoms-projects.vercel.app/api/health';
+        const verifyToken = 'Muzimake_WhatsApp_Verify_2024_Secure_Token_XYZ789';
+
+        async function testWebhookVerification() {
+            const resultDiv = document.getElementById('verificationResult');
+            resultDiv.innerHTML = '<p>Testing webhook verification...</p>';
+            
+            try {
+                const testChallenge = 'test123';
+                const url = `${webhookUrl}?hub.mode=subscribe&hub.verify_token=${verifyToken}&hub.challenge=${testChallenge}`;
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    }
+                });
+                
+                const responseText = await response.text();
+                
+                if (response.ok && responseText === testChallenge) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Webhook Verification Successful!</h4>
+                            <p>Response: ${responseText}</p>
+                            <p>Status: ${response.status}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Webhook Verification Failed</h4>
+                            <p>Status: ${response.status}</p>
+                            <p>Response: ${responseText}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Network Error</h4>
+                        <p>Error: ${error.message}</p>
+                        <p>This might be due to Vercel authentication protection being enabled.</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testHealthEndpoint() {
+            const resultDiv = document.getElementById('healthResult');
+            resultDiv.innerHTML = '<p>Testing health endpoint...</p>';
+            
+            try {
+                const response = await fetch(healthUrl);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Health Endpoint Working!</h4>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Health Endpoint Failed</h4>
+                            <p>Status: ${response.status}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Network Error</h4>
+                        <p>Error: ${error.message}</p>
+                        <p>This might be due to Vercel authentication protection being enabled.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            element.select();
+            element.setSelectionRange(0, 99999);
+            document.execCommand('copy');
+            
+            // Show feedback
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = 'Copied!';
+            button.style.background = '#28a745';
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.background = '#25D366';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
