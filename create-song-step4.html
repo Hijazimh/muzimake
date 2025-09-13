@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment - Muzimake</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Payment - Muzimake v2.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -588,7 +591,7 @@
                 // Use the correct Ziina API endpoint and structure
                 const ziinaPaymentData = {
                     amount: paymentData.amount, // Amount in fils
-                    currency_code: paymentData.currency, // Ziina expects currency_code, not currency
+                    currency_code: 'AED', // Explicitly set currency_code to AED (3 characters)
                     description: paymentData.description,
                     success_url: paymentData.success_url,
                     cancel_url: paymentData.cancel_url,
@@ -599,6 +602,10 @@
                         customer_email: orderData.email
                     }
                 };
+                
+                console.log('Ziina Payment Data Structure:', ziinaPaymentData);
+                console.log('Currency Code Length:', ziinaPaymentData.currency_code.length);
+                console.log('Currency Code Value:', `"${ziinaPaymentData.currency_code}"`);
 
                 console.log('Sending request to Ziina API with data:', ziinaPaymentData);
 
