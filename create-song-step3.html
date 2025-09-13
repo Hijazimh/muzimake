@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Step 3 - Contact Details | Muzimake</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/libphonenumber-js@1.10.58/bundle/libphonenumber-js.min.js"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -431,11 +434,15 @@
                         <div id="phoneError" class="error-message hidden"></div>
                         <div class="flex items-center gap-1 mt-2">
                             <div class="w-4 h-4">
-                                <img src="media/whatsapp-logo.svg" alt="WhatsApp" class="w-full h-full">
+                                <img src="media/whatsapp-logo.svg?v=2" alt="WhatsApp" class="w-full h-full">
                             </div>
                             <p class="text-custom-gray text-xs font-medium tracking-wider uppercase">
                                 We will send you the song on this number
                             </p>
+                        </div>
+                        <!-- Cache test - remove this after verification -->
+                        <div class="text-xs text-green-600 mt-1">
+                            ✅ Updated: WhatsApp logo fixed - v2
                         </div>
                     </div>
 
