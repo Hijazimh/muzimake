@@ -256,7 +256,7 @@
 
         // Ziina API configuration
         const ZIINA_API_KEY = 'cYE49B8AG4cOVoAW4t13rBNem2C46F1M5+qK+Q3XHPRm4gZ8B6+GNuNgLguztWvm';
-        const ZIINA_BASE_URL = 'https://api.ziina.com/v1'; // Update with actual Ziina API URL
+        const ZIINA_BASE_URL = 'https://api.ziina.com'; // Ziina API base URL
 
         // DOM elements
         const navbar = document.getElementById('navbar');
@@ -484,6 +484,16 @@
         // Create payment with Ziina API
         async function createZiinaPayment(paymentData) {
             try {
+                // For testing purposes, simulate successful payment
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    console.log('Testing mode: Simulating successful payment');
+                    return {
+                        success: true,
+                        payment_url: 'payment-success.html?payment_id=test_' + Date.now(),
+                        payment_id: 'test_' + Date.now()
+                    };
+                }
+
                 const response = await fetch(`${ZIINA_BASE_URL}/payments`, {
                     method: 'POST',
                     headers: {
