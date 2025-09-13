@@ -197,8 +197,8 @@
                             </div>
                         </div>
                         <div id="emailError" class="error-message hidden"></div>
-                        <div id="emailExistsMessage" class="text-green-600 text-xs mt-1 hidden">
-                            ✓ Email found! Please enter your password to login.
+                        <div id="emailExistsMessage" class="text-custom-gray text-xs mt-1 hidden">
+                            THIS EMAIL ALREADY EXISTS
                         </div>
                     </div>
 
@@ -235,8 +235,8 @@
                                         </svg>
                                     </div>
                                     <div>
-                                        <p class="text-sm font-medium text-custom-dark" id="loggedInEmail"></p>
-                                        <p class="text-xs text-green-600 font-medium">Logged in</p>
+                                        <p class="text-sm font-medium text-custom-dark" id="loggedInName"></p>
+                                        <p class="text-xs text-custom-gray" id="loggedInEmail"></p>
                                     </div>
                                 </div>
                                 <button id="logoutBtn" class="text-xs text-custom-gray hover:text-custom-dark underline">
@@ -634,6 +634,7 @@
         const newUserPasswordSection = document.getElementById('newUserPasswordSection');
         const existingUserLoginSection = document.getElementById('existingUserLoginSection');
         const loggedInUserCard = document.getElementById('loggedInUserCard');
+        const loggedInName = document.getElementById('loggedInName');
         const loggedInEmail = document.getElementById('loggedInEmail');
         const loginBtn = document.getElementById('loginBtn');
         const logoutBtn = document.getElementById('logoutBtn');
@@ -714,6 +715,7 @@
         // Check if email exists in database
         async function checkEmailExists(email) {
             try {
+                console.log('Checking email:', email);
                 const { data, error } = await supabase
                     .from('users')
                     .select('id, email, full_name')
@@ -725,6 +727,7 @@
                     return false;
                 }
 
+                console.log('Email check result:', data);
                 return data ? data : false;
             } catch (error) {
                 console.error('Email check error:', error);
@@ -750,15 +753,19 @@
             if (validateEmail(email)) {
                 // Debounce the email check
                 emailCheckTimeout = setTimeout(async () => {
+                    console.log('Starting email check for:', email);
                     const userData = await checkEmailExists(email);
+                    console.log('User data result:', userData);
                     if (userData) {
                         // Email exists - show login option
+                        console.log('Email exists, showing login section');
                         isEmailExisting = true;
                         emailCheckIcon.classList.remove('hidden');
                         emailExistsMessage.classList.remove('hidden');
                         showLoginSection();
                     } else {
                         // Email doesn't exist - show new user password
+                        console.log('Email does not exist, showing new user section');
                         isEmailExisting = false;
                         showNewUserSection();
                     }
@@ -788,9 +795,10 @@
             existingUserLoginSection.classList.add('hidden');
         }
 
-        function showLoggedInCard(userEmail) {
+        function showLoggedInCard(userEmail, userName = null) {
             loggedInUserCard.classList.remove('hidden');
             loggedInEmail.textContent = userEmail;
+            loggedInName.textContent = userName || userEmail; // Use name if available, otherwise email
             hideLoginSections();
             newUserPasswordSection.classList.add('hidden');
         }
@@ -828,7 +836,10 @@
                 // Login successful
                 isUserLoggedIn = true;
                 currentUser = data.user;
-                showLoggedInCard(email);
+                
+                // Get user name from metadata or use email
+                const userName = data.user.user_metadata?.full_name || email;
+                showLoggedInCard(email, userName);
                 loginPasswordInput.value = '';
                 
                 // Update form with user data
@@ -1157,7 +1168,8 @@
                 // If user was logged in, show logged in state
                 if (contactData.isLoggedIn && contactData.email) {
                     isUserLoggedIn = true;
-                    showLoggedInCard(contactData.email);
+                    const userName = contactData.fullName || contactData.email;
+                    showLoggedInCard(contactData.email, userName);
                 }
             }
         }
