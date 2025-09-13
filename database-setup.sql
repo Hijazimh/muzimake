@@ -11,8 +11,11 @@ CREATE TABLE IF NOT EXISTS song_requests (
     genre TEXT,
     recipient_name TEXT,
     recipient_gender TEXT,
+    story TEXT,
+    vibe TEXT,
     status TEXT DEFAULT 'pending',
     price DECIMAL(10,2),
+    order_id TEXT UNIQUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
