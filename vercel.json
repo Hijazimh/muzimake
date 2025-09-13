@@ -1,25 +1,5 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "webhook-server.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/webhook",
-      "dest": "/webhook-server.js"
-    },
-    {
-      "src": "/health",
-      "dest": "/webhook-server.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
-  ],
   "redirects": [
     {
       "source": "/admin",
@@ -31,5 +11,13 @@
       "destination": "/admin-dashboard-new.html",
       "permanent": true
     }
-  ]
+  ],
+  "functions": {
+    "api/webhook.js": {
+      "maxDuration": 30
+    },
+    "api/health.js": {
+      "maxDuration": 10
+    }
+  }
 }
