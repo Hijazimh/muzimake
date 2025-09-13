@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Muzimake</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'custom-beige': '#f3f1eb',
+                        'custom-dark': '#080808',
+                        'custom-gray': '#232321',
+                        'custom-blue': '#0056fc',
+                        'custom-orange': '#fc6900',
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        .font-inter { font-family: 'Inter', sans-serif; }
+        .font-extrabold { font-weight: 800; }
+        .font-bold { font-weight: 700; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-processing {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .status-completed {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-cancelled {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body class="bg-custom-beige font-inter min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center">
+                    <img src="media/logo-horiz-black.png" alt="Muzimake" class="h-8 mr-4">
+                    <h1 class="text-custom-dark text-xl font-bold">Admin Dashboard</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-custom-gray text-sm">Welcome, Admin</span>
+                    <button onclick="logout()" class="text-custom-gray hover:text-custom-orange transition-colors">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg p-6 shadow-sm">
+                <div class="flex items-center">
+                    <div class="p-2 bg-blue-100 rounded-lg">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-custom-gray">Total Orders</p>
+                        <p class="text-2xl font-bold text-custom-dark" id="totalOrders">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg p-6 shadow-sm">
+                <div class="flex items-center">
+                    <div class="p-2 bg-yellow-100 rounded-lg">
+                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-custom-gray">Pending</p>
+                        <p class="text-2xl font-bold text-custom-dark" id="pendingOrders">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg p-6 shadow-sm">
+                <div class="flex items-center">
+                    <div class="p-2 bg-green-100 rounded-lg">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-custom-gray">Completed</p>
+                        <p class="text-2xl font-bold text-custom-dark" id="completedOrders">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg p-6 shadow-sm">
+                <div class="flex items-center">
+                    <div class="p-2 bg-orange-100 rounded-lg">
+                        <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-custom-gray">Revenue</p>
+                        <p class="text-2xl font-bold text-custom-dark" id="totalRevenue">AED 0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="bg-white rounded-lg shadow-sm">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-semibold text-custom-dark">Song Requests</h2>
+                    <div class="flex space-x-2">
+                        <button onclick="refreshData()" class="px-4 py-2 bg-custom-orange text-white rounded-lg hover:bg-orange-600 transition-colors">
+                            Refresh
+                        </button>
+                        <button onclick="testConnection()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                            Test Connection
+                        </button>
+                        <select id="statusFilter" onchange="filterOrders()" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-custom-orange">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="processing">Processing</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Song Details</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Orders will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="text-center py-8">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-custom-orange"></div>
+                <p class="mt-2 text-custom-gray">Loading orders...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="text-center py-16 hidden">
+                <div class="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+                    <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-custom-dark mb-2">No orders found</h3>
+                <p class="text-custom-gray mb-6">No song requests match your current filter or there are no orders yet.</p>
+                <button onclick="refreshData()" class="inline-flex items-center px-4 py-2 bg-custom-orange text-white rounded-lg hover:bg-orange-600 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Supabase configuration
+        const supabaseUrl = 'https://ubvamxnoycciskqzbblc.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVidmFteG5veWNjaXNrcXpiYmxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3MDQ5MDMsImV4cCI6MjA3MzI4MDkwM30.5PBF0VOccNblPCbYOV7cMeAvQUKPh4pn3ob_Q-l3xfE';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        let allOrders = [];
+        let filteredOrders = [];
+
+        // Check authentication
+        function checkAuth() {
+            // Simple auth check - in production, use proper session management
+            const isAuthenticated = sessionStorage.getItem('adminAuthenticated');
+            if (!isAuthenticated) {
+                window.location.href = 'admin-login.html';
+            }
+        }
+
+        // Logout function
+        function logout() {
+            sessionStorage.removeItem('adminAuthenticated');
+            window.location.href = 'admin-login.html';
+        }
+
+        // Load orders from Supabase
+        async function loadOrders() {
+            try {
+                showLoading(true);
+                console.log('Loading orders from Supabase...');
+                
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    console.error('Error loading orders:', error);
+                    if (error.message.includes('relation "song_requests" does not exist')) {
+                        showError('Database table not found. Please run the setup script in Supabase first.');
+                    } else {
+                        showError(`Failed to load orders: ${error.message}`);
+                    }
+                    showLoading(false);
+                    return;
+                }
+
+                console.log('Orders loaded successfully:', data);
+                allOrders = data || [];
+                filteredOrders = [...allOrders];
+                updateStats();
+                renderOrders();
+                showLoading(false);
+            } catch (error) {
+                console.error('Error:', error);
+                showError(`An error occurred while loading orders: ${error.message}`);
+                showLoading(false);
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            const total = allOrders.length;
+            const pending = allOrders.filter(order => order.status === 'pending').length;
+            const completed = allOrders.filter(order => order.status === 'completed').length;
+            const revenue = allOrders.filter(order => order.status === 'completed').length * 30;
+
+            document.getElementById('totalOrders').textContent = total;
+            document.getElementById('pendingOrders').textContent = pending;
+            document.getElementById('completedOrders').textContent = completed;
+            document.getElementById('totalRevenue').textContent = `AED ${revenue}`;
+        }
+
+        // Render orders table
+        function renderOrders() {
+            const tbody = document.getElementById('ordersTableBody');
+            const emptyState = document.getElementById('emptyState');
+
+            // Always hide loading state first
+            showLoading(false);
+
+            if (filteredOrders.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            tbody.innerHTML = filteredOrders.map(order => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-custom-dark">
+                        #${order.id}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-custom-dark">${order.customer_name || 'N/A'}</div>
+                        <div class="text-sm text-custom-gray">${order.customer_email || 'N/A'}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-custom-dark">
+                            <div><strong>Celebration:</strong> ${order.celebration || 'N/A'}</div>
+                            <div><strong>Genre:</strong> ${order.genre || 'N/A'}</div>
+                            <div><strong>For:</strong> ${order.recipient_name || 'N/A'}</div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full status-${order.status || 'pending'}">
+                            ${(order.status || 'pending').charAt(0).toUpperCase() + (order.status || 'pending').slice(1)}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-custom-gray">
+                        ${new Date(order.created_at).toLocaleDateString()}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-2">
+                            <button onclick="updateOrderStatus(${order.id}, 'processing')" 
+                                    class="text-blue-600 hover:text-blue-900 ${order.status === 'processing' ? 'hidden' : ''}">
+                                Process
+                            </button>
+                            <button onclick="updateOrderStatus(${order.id}, 'completed')" 
+                                    class="text-green-600 hover:text-green-900 ${order.status === 'completed' ? 'hidden' : ''}">
+                                Complete
+                            </button>
+                            <button onclick="viewOrderDetails(${order.id})" 
+                                    class="text-custom-orange hover:text-orange-600">
+                                View
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Filter orders by status
+        function filterOrders() {
+            const status = document.getElementById('statusFilter').value;
+            if (status === '') {
+                filteredOrders = [...allOrders];
+            } else {
+                filteredOrders = allOrders.filter(order => order.status === status);
+            }
+            renderOrders();
+        }
+
+        // Update order status
+        async function updateOrderStatus(orderId, newStatus) {
+            try {
+                const { error } = await supabase
+                    .from('song_requests')
+                    .update({ status: newStatus })
+                    .eq('id', orderId);
+
+                if (error) {
+                    console.error('Error updating order:', error);
+                    showError('Failed to update order status.');
+                    return;
+                }
+
+                // Update local data
+                const orderIndex = allOrders.findIndex(order => order.id === orderId);
+                if (orderIndex !== -1) {
+                    allOrders[orderIndex].status = newStatus;
+                }
+
+                updateStats();
+                renderOrders();
+                showSuccess(`Order #${orderId} status updated to ${newStatus}`);
+            } catch (error) {
+                console.error('Error:', error);
+                showError('An error occurred while updating the order.');
+            }
+        }
+
+        // View order details
+        function viewOrderDetails(orderId) {
+            const order = allOrders.find(o => o.id === orderId);
+            if (order) {
+                const details = `
+Order ID: #${order.id}
+Customer: ${order.customer_name || 'N/A'}
+Email: ${order.customer_email || 'N/A'}
+Phone: ${order.customer_phone || 'N/A'}
+Celebration: ${order.celebration || 'N/A'}
+Genre: ${order.genre || 'N/A'}
+Recipient: ${order.recipient_name || 'N/A'}
+Recipient Gender: ${order.recipient_gender || 'N/A'}
+Status: ${order.status || 'pending'}
+Created: ${new Date(order.created_at).toLocaleString()}
+                `;
+                alert(details);
+            }
+        }
+
+        // Refresh data
+        function refreshData() {
+            loadOrders();
+        }
+
+        // Show loading state
+        function showLoading(show) {
+            const loadingState = document.getElementById('loadingState');
+            if (show) {
+                loadingState.classList.remove('hidden');
+            } else {
+                loadingState.classList.add('hidden');
+            }
+        }
+
+        // Show error message
+        function showError(message) {
+            // Simple error display - in production, use a proper notification system
+            alert('Error: ' + message);
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            // Simple success display - in production, use a proper notification system
+            alert('Success: ' + message);
+        }
+
+        // Create test order (for testing purposes)
+        async function createTestOrder() {
+            try {
+                const testOrder = {
+                    customer_name: 'John Doe',
+                    customer_email: 'john@example.com',
+                    customer_phone: '+971501234567',
+                    celebration: 'Birthday',
+                    genre: 'Pop',
+                    recipient_name: 'Jane Doe',
+                    recipient_gender: 'Female',
+                    status: 'pending',
+                    price: 31.50,
+                    created_at: new Date().toISOString()
+                };
+
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .insert([testOrder]);
+
+                if (error) {
+                    console.error('Error creating test order:', error);
+                    return;
+                }
+
+                console.log('Test order created:', data);
+                loadOrders(); // Refresh the orders list
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            loadOrders();
+            
+            // Add test order button for development (remove in production)
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                const testButton = document.createElement('button');
+                testButton.textContent = 'Create Test Order';
+                testButton.className = 'fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors z-50';
+                testButton.onclick = createTestOrder;
+                document.body.appendChild(testButton);
+            }
+        });
+    </script>
+</body>
+</html>

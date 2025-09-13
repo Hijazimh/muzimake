@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Muzimake</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'custom-beige': '#f3f1eb',
+                        'custom-dark': '#080808',
+                        'custom-gray': '#232321',
+                        'custom-blue': '#0056fc',
+                        'custom-orange': '#fc6900',
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        .font-inter { font-family: 'Inter', sans-serif; }
+        .font-extrabold { font-weight: 800; }
+        .font-bold { font-weight: 700; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        
+        /* Form field styling */
+        .form-field {
+            transition: all 0.3s ease;
+        }
+        
+        .form-field.error {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+        
+        .form-field.valid {
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        
+        .error-message {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        
+        .success-message {
+            color: #10b981;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-custom-beige font-inter min-h-screen flex items-center justify-center">
+    <div class="max-w-md w-full mx-4">
+        <!-- Logo -->
+        <div class="text-center mb-8">
+            <img src="media/logo-horiz-black.png" alt="Muzimake" class="h-12 mx-auto mb-4">
+            <h1 class="text-custom-dark text-2xl font-bold">Admin Login</h1>
+            <p class="text-custom-gray text-sm mt-2">Access the admin dashboard</p>
+        </div>
+
+        <!-- Login Form -->
+        <div class="bg-white rounded-2xl p-8 shadow-lg">
+            <form id="adminLoginForm" class="space-y-6">
+                <!-- Email Field -->
+                <div>
+                    <label for="adminEmail" class="block text-custom-dark text-sm font-medium mb-2">
+                        Email Address
+                    </label>
+                    <input 
+                        type="email" 
+                        id="adminEmail" 
+                        name="email"
+                        class="form-field w-full px-4 py-3 border border-gray-300 rounded-lg text-custom-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-custom-orange focus:border-transparent"
+                        placeholder="admin@muzimake.com"
+                        required
+                    >
+                    <div id="emailError" class="error-message hidden"></div>
+                </div>
+
+                <!-- Password Field -->
+                <div>
+                    <label for="adminPassword" class="block text-custom-dark text-sm font-medium mb-2">
+                        Password
+                    </label>
+                    <input 
+                        type="password" 
+                        id="adminPassword" 
+                        name="password"
+                        class="form-field w-full px-4 py-3 border border-gray-300 rounded-lg text-custom-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-custom-orange focus:border-transparent"
+                        placeholder="Enter your password"
+                        required
+                    >
+                    <div id="passwordError" class="error-message hidden"></div>
+                </div>
+
+                <!-- Login Button -->
+                <button 
+                    type="submit" 
+                    id="loginBtn"
+                    class="w-full bg-custom-orange text-white py-3 px-6 rounded-lg font-medium hover:bg-orange-600 transition-colors focus:outline-none focus:ring-2 focus:ring-custom-orange focus:ring-offset-2"
+                >
+                    Sign In
+                </button>
+
+                <!-- Error/Success Messages -->
+                <div id="formMessage" class="hidden"></div>
+            </form>
+
+            <!-- Back to Home -->
+            <div class="mt-6 text-center">
+                <a href="index.html" class="text-custom-gray text-sm hover:text-custom-orange transition-colors">
+                    ← Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Form validation and submission
+        const form = document.getElementById('adminLoginForm');
+        const emailField = document.getElementById('adminEmail');
+        const passwordField = document.getElementById('adminPassword');
+        const loginBtn = document.getElementById('loginBtn');
+        const formMessage = document.getElementById('formMessage');
+
+        // Simple admin credentials (in production, use proper authentication)
+        const ADMIN_CREDENTIALS = {
+            email: 'admin@muzimake.com',
+            password: 'admin123'
+        };
+
+        // Email validation
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        // Show error message
+        function showError(field, message) {
+            const errorDiv = document.getElementById(field.id + 'Error');
+            field.classList.add('error');
+            field.classList.remove('valid');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+
+        // Show success state
+        function showSuccess(field) {
+            const errorDiv = document.getElementById(field.id + 'Error');
+            field.classList.add('valid');
+            field.classList.remove('error');
+            errorDiv.classList.add('hidden');
+        }
+
+        // Clear field state
+        function clearFieldState(field) {
+            field.classList.remove('error', 'valid');
+            const errorDiv = document.getElementById(field.id + 'Error');
+            errorDiv.classList.add('hidden');
+        }
+
+        // Real-time validation
+        emailField.addEventListener('blur', function() {
+            if (this.value.trim() === '') {
+                showError(this, 'Email is required');
+            } else if (!validateEmail(this.value)) {
+                showError(this, 'Please enter a valid email address');
+            } else {
+                showSuccess(this);
+            }
+        });
+
+        passwordField.addEventListener('blur', function() {
+            if (this.value.trim() === '') {
+                showError(this, 'Password is required');
+            } else if (this.value.length < 6) {
+                showError(this, 'Password must be at least 6 characters');
+            } else {
+                showSuccess(this);
+            }
+        });
+
+        // Clear validation on input
+        emailField.addEventListener('input', () => clearFieldState(emailField));
+        passwordField.addEventListener('input', () => clearFieldState(passwordField));
+
+        // Form submission
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = emailField.value.trim();
+            const password = passwordField.value.trim();
+            
+            // Clear previous messages
+            formMessage.classList.add('hidden');
+            formMessage.className = 'hidden';
+            
+            // Validate form
+            let isValid = true;
+            
+            if (!email) {
+                showError(emailField, 'Email is required');
+                isValid = false;
+            } else if (!validateEmail(email)) {
+                showError(emailField, 'Please enter a valid email address');
+                isValid = false;
+            }
+            
+            if (!password) {
+                showError(passwordField, 'Password is required');
+                isValid = false;
+            } else if (password.length < 6) {
+                showError(passwordField, 'Password must be at least 6 characters');
+                isValid = false;
+            }
+            
+            if (!isValid) return;
+            
+            // Show loading state
+            loginBtn.textContent = 'Signing In...';
+            loginBtn.disabled = true;
+            
+            // Simulate login process
+            setTimeout(() => {
+                if (email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {
+                    // Success - redirect to dashboard
+                    formMessage.className = 'success-message';
+                    formMessage.textContent = 'Login successful! Redirecting...';
+                    formMessage.classList.remove('hidden');
+                    
+                    setTimeout(() => {
+                        sessionStorage.setItem('adminAuthenticated', 'true');
+                        window.location.href = 'admin-dashboard.html';
+                    }, 1000);
+                } else {
+                    // Error
+                    formMessage.className = 'error-message';
+                    formMessage.textContent = 'Invalid email or password';
+                    formMessage.classList.remove('hidden');
+                    
+                    loginBtn.textContent = 'Sign In';
+                    loginBtn.disabled = false;
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
