@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Email Check</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        input { padding: 8px; margin: 5px; width: 300px; }
+    </style>
+</head>
+<body>
+    <h1>Email Check Test</h1>
+    
+    <div class="test-section info">
+        <h3>1. Test Database Connection</h3>
+        <button onclick="testConnection()">Test Connection</button>
+        <div id="connectionResult"></div>
+    </div>
+
+    <div class="test-section info">
+        <h3>2. Check Users Table</h3>
+        <button onclick="checkUsersTable()">Check Users Table</button>
+        <div id="usersTableResult"></div>
+    </div>
+
+    <div class="test-section info">
+        <h3>3. List All Users</h3>
+        <button onclick="listAllUsers()">List All Users</button>
+        <div id="allUsersResult"></div>
+    </div>
+
+    <div class="test-section info">
+        <h3>4. Test Email Check</h3>
+        <input type="email" id="testEmail" placeholder="Enter email to test" value="test@muzimake.com">
+        <button onclick="testEmailCheck()">Check Email</button>
+        <div id="emailCheckResult"></div>
+    </div>
+
+    <div class="test-section info">
+        <h3>5. Create Test User</h3>
+        <button onclick="createTestUser()">Create Test User</button>
+        <div id="createUserResult"></div>
+    </div>
+
+    <script>
+        // Supabase configuration
+        const supabaseUrl = 'https://lchleopfdvrgunbrlngh.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxjaGxlb3BmZHZyZ3VuYnJsbmdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3NTYwNjgsImV4cCI6MjA3MzMzMjA2OH0.U4NkKdXFgK3Im78oz_SaEHkWQqGzhlaeA83Rom4oD7A';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        async function testConnection() {
+            const resultDiv = document.getElementById('connectionResult');
+            resultDiv.innerHTML = 'Testing connection...';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .select('count')
+                    .limit(1);
+
+                if (error) {
+                    resultDiv.innerHTML = `<div class="error">❌ Connection failed: ${error.message}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="success">✅ Connection successful!</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Connection error: ${error.message}</div>`;
+            }
+        }
+
+        async function checkUsersTable() {
+            const resultDiv = document.getElementById('usersTableResult');
+            resultDiv.innerHTML = 'Checking users table...';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('count')
+                    .limit(1);
+
+                if (error) {
+                    resultDiv.innerHTML = `<div class="error">❌ Users table error: ${error.message}</div>`;
+                    if (error.message.includes('relation "users" does not exist')) {
+                        resultDiv.innerHTML += `<div class="error">🔧 You need to run the database setup script first!</div>`;
+                    }
+                } else {
+                    resultDiv.innerHTML = `<div class="success">✅ Users table exists!</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Users table error: ${error.message}</div>`;
+            }
+        }
+
+        async function listAllUsers() {
+            const resultDiv = document.getElementById('allUsersResult');
+            resultDiv.innerHTML = 'Loading users...';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('id, email, full_name, created_at')
+                    .order('created_at', { ascending: false });
+
+                if (error) {
+                    resultDiv.innerHTML = `<div class="error">❌ Error loading users: ${error.message}</div>`;
+                } else {
+                    if (data && data.length > 0) {
+                        let html = `<div class="success">✅ Found ${data.length} users:</div><ul>`;
+                        data.forEach(user => {
+                            html += `<li><strong>${user.email}</strong> - ${user.full_name || 'No name'} (${user.created_at})</li>`;
+                        });
+                        html += '</ul>';
+                        resultDiv.innerHTML = html;
+                    } else {
+                        resultDiv.innerHTML = `<div class="info">ℹ️ No users found in database</div>`;
+                    }
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error loading users: ${error.message}</div>`;
+            }
+        }
+
+        async function testEmailCheck() {
+            const email = document.getElementById('testEmail').value.trim();
+            const resultDiv = document.getElementById('emailCheckResult');
+            
+            if (!email) {
+                resultDiv.innerHTML = `<div class="error">❌ Please enter an email</div>`;
+                return;
+            }
+            
+            resultDiv.innerHTML = `Checking email: ${email}...`;
+            
+            try {
+                console.log('Checking email:', email);
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('id, email, full_name')
+                    .eq('email', email.toLowerCase())
+                    .single();
+
+                console.log('Email check result:', { data, error });
+
+                if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+                    resultDiv.innerHTML = `<div class="error">❌ Error checking email: ${error.message}</div>`;
+                } else if (data) {
+                    resultDiv.innerHTML = `<div class="success">✅ Email found! User: ${data.full_name || 'No name'} (${data.email})</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="info">ℹ️ Email not found in database</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Email check error: ${error.message}</div>`;
+            }
+        }
+
+        async function createTestUser() {
+            const resultDiv = document.getElementById('createUserResult');
+            resultDiv.innerHTML = 'Creating test user...';
+            
+            try {
+                // First create auth user
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email: 'test@muzimake.com',
+                    password: 'testpassword123',
+                    options: {
+                        data: {
+                            full_name: 'Test User',
+                            phone: '+971501234567'
+                        }
+                    }
+                });
+
+                if (authError) {
+                    resultDiv.innerHTML = `<div class="error">❌ Auth creation error: ${authError.message}</div>`;
+                    return;
+                }
+
+                resultDiv.innerHTML = `<div class="success">✅ Test user created successfully!</div>`;
+                resultDiv.innerHTML += `<div class="info">Auth User ID: ${authData.user?.id}</div>`;
+                
+                // The trigger should automatically create a user record
+                setTimeout(() => {
+                    listAllUsers();
+                }, 1000);
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Create user error: ${error.message}</div>`;
+            }
+        }
+
+        // Auto-run connection test on page load
+        window.addEventListener('load', () => {
+            testConnection();
+        });
+    </script>
+</body>
+</html>
