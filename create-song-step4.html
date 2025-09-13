@@ -333,8 +333,8 @@
                 countryCode: contactData.countryCode,
                 phoneNumber: contactData.phoneNumber,
                 
-                // Generate order ID and timestamp
-                orderId: generateOrderId(),
+                // Generate order ID and timestamp (reuse existing if available)
+                orderId: getOrGenerateOrderId(),
                 timestamp: new Date().toISOString()
             };
 
@@ -344,9 +344,30 @@
             console.log('Contact data:', contactData);
         }
 
+        // Get existing order ID or generate a new one
+        function getOrGenerateOrderId() {
+            // Check if we already have an order ID in localStorage
+            let existingOrderId = localStorage.getItem('currentOrderId');
+            
+            if (existingOrderId) {
+                console.log('Reusing existing order ID:', existingOrderId);
+                return existingOrderId;
+            }
+            
+            // Generate new order ID
+            const newOrderId = generateOrderId();
+            localStorage.setItem('currentOrderId', newOrderId);
+            console.log('Generated new order ID:', newOrderId);
+            return newOrderId;
+        }
+
         // Generate unique order ID
         function generateOrderId() {
-            return 'MZ' + Date.now() + Math.random().toString(36).substr(2, 5).toUpperCase();
+            // Use a combination of timestamp, random string, and user agent hash for uniqueness
+            const timestamp = Date.now();
+            const randomStr = Math.random().toString(36).substr(2, 8).toUpperCase();
+            const userAgentHash = btoa(navigator.userAgent).substr(0, 4).toUpperCase();
+            return `MZ${timestamp}${randomStr}${userAgentHash}`;
         }
 
         // Populate order summary
@@ -773,6 +794,7 @@
             localStorage.removeItem('songPreferences');
             localStorage.removeItem('songFormData');
             localStorage.removeItem('contactData');
+            localStorage.removeItem('currentOrderId'); // Clear the order ID too
         }
 
         // Handle payment success (called from payment-success.html)
