@@ -238,10 +238,10 @@
                     formMessage.textContent = 'Login successful! Redirecting...';
                     formMessage.classList.remove('hidden');
                     
-                    setTimeout(() => {
-                        sessionStorage.setItem('adminAuthenticated', 'true');
-                        window.location.href = 'admin-dashboard.html';
-                    }, 1000);
+            setTimeout(() => {
+                sessionStorage.setItem('adminAuthenticated', 'true');
+                window.location.href = 'admin-dashboard-simple.html';
+            }, 1000);
                 } else {
                     // Error
                     formMessage.className = 'error-message';
