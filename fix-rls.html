@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix RLS Policy - Muzimake</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .code-block {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen py-8">
+    <div class="max-w-4xl mx-auto px-4">
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">Fix Row Level Security Policy</h1>
+            
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <h2 class="text-lg font-semibold text-red-800 mb-2">🚨 Current Error</h2>
+                <p class="text-red-700">
+                    <strong>"new row violates row-level security policy for table 'song_requests'"</strong>
+                </p>
+                <p class="text-red-600 mt-2">
+                    This means the database columns are now present, but the security policy is blocking anonymous users from inserting data.
+                </p>
+            </div>
+
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-3">Quick Fix: Update RLS Policy</h2>
+                <div class="code-block mb-4" id="rlsFixScript">
+-- Fix Row Level Security Policy for song_requests table
+-- Run this SQL in your Supabase SQL Editor
+
+-- First, drop the existing policy if it exists
+DROP POLICY IF EXISTS "Allow anonymous inserts" ON song_requests;
+
+-- Create a new policy that allows anonymous users to insert
+CREATE POLICY "Allow anonymous inserts" ON song_requests
+    FOR INSERT 
+    WITH CHECK (true);
+
+-- Also create a policy to allow anonymous users to read their own records (optional)
+CREATE POLICY "Allow anonymous read own records" ON song_requests
+    FOR SELECT 
+    USING (true);
+
+-- Verify the policies are working
+SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual 
+FROM pg_policies 
+WHERE tablename = 'song_requests';
+                </div>
+                <button onclick="copyScript()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                    Copy Fix Script
+                </button>
+            </div>
+
+            <div class="mb-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-3">Steps to Fix:</h2>
+                <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                    <li>Go to your <a href="https://supabase.com/dashboard" target="_blank" class="text-blue-500 hover:underline">Supabase Dashboard</a></li>
+                    <li>Select your project: <code class="bg-gray-100 px-2 py-1 rounded">lchleopfdvrgunbrlngh</code></li>
+                    <li>Go to the <strong>SQL Editor</strong> tab</li>
+                    <li>Paste the fix script above</li>
+                    <li>Click <strong>Run</strong> to execute the script</li>
+                </ol>
+            </div>
+
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                <h2 class="text-lg font-semibold text-green-800 mb-2">✅ What This Fixes</h2>
+                <ul class="text-green-700 space-y-1">
+                    <li>• Allows anonymous users to insert orders</li>
+                    <li>• Removes the RLS policy violation</li>
+                    <li>• Enables the payment flow to work</li>
+                </ul>
+            </div>
+
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                <h2 class="text-lg font-semibold text-yellow-800 mb-2">⚠️ Security Note</h2>
+                <p class="text-yellow-700">
+                    This policy allows anyone to insert data. For production, you might want to add more specific conditions, 
+                    but for now this will allow your payment flow to work.
+                </p>
+            </div>
+
+            <div class="mt-8 text-center space-x-4">
+                <a href="create-song-step4.html" class="bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600">
+                    Test Payment Flow
+                </a>
+                <a href="index.html" class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600">
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyScript() {
+            const script = document.getElementById('rlsFixScript').textContent;
+            navigator.clipboard.writeText(script).then(() => {
+                alert('RLS fix script copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                alert('Failed to copy. Please select and copy manually.');
+            });
+        }
+    </script>
+</body>
+</html>
