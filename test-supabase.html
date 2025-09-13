@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Connection Test - Muzimake</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Supabase Connection Test</h1>
+    
+    <div class="test-container">
+        <h2>Connection Test</h2>
+        <button onclick="testConnection()">Test Connection</button>
+        <button onclick="testTable()">Test Table Access</button>
+        <button onclick="testInsert()">Test Insert</button>
+        <button onclick="testSelect()">Test Select</button>
+        <div id="results" class="log"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>Test Order Creation</h2>
+        <button onclick="createTestOrder()">Create Test Order</button>
+        <div id="orderResults" class="log"></div>
+    </div>
+
+    <script>
+        // Supabase configuration
+        const supabaseUrl = 'https://ubvamxnoycciskqzbblc.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVidmFteG5veWNjaXNrcXpiYmxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3MDQ5MDMsImV4cCI6MjA3MzI4MDkwM30.5PBF0VOccNblPCbYOV7cMeAvQUKPh4pn3ob_Q-l3xfE';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            results.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            results.scrollTop = results.scrollHeight;
+        }
+
+        function logOrder(message, type = 'info') {
+            const results = document.getElementById('orderResults');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            results.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            results.scrollTop = results.scrollHeight;
+        }
+
+        async function testConnection() {
+            log('Testing Supabase connection...', 'info');
+            try {
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .select('count')
+                    .limit(1);
+
+                if (error) {
+                    log(`Connection failed: ${error.message}`, 'error');
+                    log(`Error details: ${JSON.stringify(error)}`, 'error');
+                } else {
+                    log('Connection successful!', 'success');
+                    log(`Response: ${JSON.stringify(data)}`, 'info');
+                }
+            } catch (err) {
+                log(`Connection error: ${err.message}`, 'error');
+            }
+        }
+
+        async function testTable() {
+            log('Testing table access...', 'info');
+            try {
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .select('*')
+                    .limit(5);
+
+                if (error) {
+                    log(`Table access failed: ${error.message}`, 'error');
+                } else {
+                    log(`Table access successful! Found ${data.length} records`, 'success');
+                    log(`Sample data: ${JSON.stringify(data, null, 2)}`, 'info');
+                }
+            } catch (err) {
+                log(`Table access error: ${err.message}`, 'error');
+            }
+        }
+
+        async function testInsert() {
+            log('Testing insert operation...', 'info');
+            try {
+                const testOrder = {
+                    customer_name: 'Test Customer',
+                    customer_email: 'test@example.com',
+                    customer_phone: '+971501234567',
+                    celebration: 'Birthday',
+                    genre: 'Pop',
+                    recipient_name: 'Test Recipient',
+                    recipient_gender: 'Male',
+                    status: 'test',
+                    price: 31.50,
+                    order_id: 'TEST_' + Date.now(),
+                    created_at: new Date().toISOString()
+                };
+
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .insert([testOrder])
+                    .select();
+
+                if (error) {
+                    log(`Insert failed: ${error.message}`, 'error');
+                } else {
+                    log('Insert successful!', 'success');
+                    log(`Inserted data: ${JSON.stringify(data, null, 2)}`, 'info');
+                }
+            } catch (err) {
+                log(`Insert error: ${err.message}`, 'error');
+            }
+        }
+
+        async function testSelect() {
+            log('Testing select operation...', 'info');
+            try {
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .select('*')
+                    .eq('status', 'test')
+                    .order('created_at', { ascending: false })
+                    .limit(10);
+
+                if (error) {
+                    log(`Select failed: ${error.message}`, 'error');
+                } else {
+                    log(`Select successful! Found ${data.length} test records`, 'success');
+                    log(`Data: ${JSON.stringify(data, null, 2)}`, 'info');
+                }
+            } catch (err) {
+                log(`Select error: ${err.message}`, 'error');
+            }
+        }
+
+        async function createTestOrder() {
+            logOrder('Creating test order...', 'info');
+            try {
+                const testOrder = {
+                    customer_name: 'Test Customer ' + Date.now(),
+                    customer_email: 'test' + Date.now() + '@example.com',
+                    customer_phone: '+971501234567',
+                    celebration: 'Anniversary',
+                    genre: 'R&B',
+                    recipient_name: 'Test Recipient',
+                    recipient_gender: 'Female',
+                    status: 'pending_payment',
+                    price: 31.50,
+                    order_id: 'MZ' + Date.now() + Math.random().toString(36).substr(2, 5).toUpperCase(),
+                    created_at: new Date().toISOString()
+                };
+
+                logOrder(`Order data: ${JSON.stringify(testOrder, null, 2)}`, 'info');
+
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .insert([testOrder])
+                    .select();
+
+                if (error) {
+                    logOrder(`Order creation failed: ${error.message}`, 'error');
+                    logOrder(`Error details: ${JSON.stringify(error)}`, 'error');
+                } else {
+                    logOrder('Order created successfully!', 'success');
+                    logOrder(`Created order: ${JSON.stringify(data, null, 2)}`, 'info');
+                }
+            } catch (err) {
+                logOrder(`Order creation error: ${err.message}`, 'error');
+            }
+        }
+
+        // Auto-run connection test on page load
+        window.addEventListener('load', function() {
+            log('Page loaded, starting connection test...', 'info');
+            testConnection();
+        });
+    </script>
+</body>
+</html>

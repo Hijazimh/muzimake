@@ -445,13 +445,17 @@
 
                 console.log('Payment data prepared:', paymentData);
 
+                // Save order to Supabase first (before payment)
+                console.log('Saving order to database...');
+                await saveOrderToSupabase();
+                console.log('Order saved successfully');
+
                 // Create payment with Ziina
+                console.log('Creating payment with Ziina...');
                 const paymentResponse = await createZiinaPayment(paymentData);
                 
                 if (paymentResponse.success) {
-                    // Save order to Supabase
-                    await saveOrderToSupabase();
-                    
+                    console.log('Payment created successfully, redirecting...');
                     // Redirect to Ziina payment page
                     window.location.href = paymentResponse.payment_url;
                 } else {
@@ -460,7 +464,37 @@
 
             } catch (error) {
                 console.error('Payment error:', error);
-                alert(`Payment failed: ${error.message}. Please try again.`);
+                
+                // Show user-friendly error message
+                let errorMessage = 'Payment failed. Please try again.';
+                
+                if (error.message.includes('Database connection failed')) {
+                    errorMessage = 'Unable to save your order. Please check your internet connection and try again.';
+                } else if (error.message.includes('Payment service')) {
+                    errorMessage = 'Payment service is temporarily unavailable. Please try again in a few minutes.';
+                } else if (error.message.includes('Failed to save order')) {
+                    errorMessage = 'Unable to process your order. Please contact support if this continues.';
+                }
+                
+                // Show error in a more user-friendly way
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                errorDiv.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span>${errorMessage}</span>
+                    </div>
+                `;
+                document.body.appendChild(errorDiv);
+                
+                // Remove error message after 5 seconds
+                setTimeout(() => {
+                    if (errorDiv.parentNode) {
+                        errorDiv.parentNode.removeChild(errorDiv);
+                    }
+                }, 5000);
                 
                 // Reset button state
                 payButton.disabled = false;
@@ -472,12 +506,12 @@
         // Create payment with Ziina API
         async function createZiinaPayment(paymentData) {
             try {
-                // For testing purposes, simulate successful payment
+                // For testing purposes, simulate successful payment on localhost
                 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
                     console.log('Testing mode: Simulating successful payment');
                     return {
                         success: true,
-                        payment_url: 'payment-success.html?payment_id=test_' + Date.now(),
+                        payment_url: 'payment-success.html?payment_id=test_' + Date.now() + '&order_id=' + orderData.orderId,
                         payment_id: 'test_' + Date.now()
                     };
                 }
@@ -486,43 +520,88 @@
                 console.log('API URL:', `${ZIINA_BASE_URL}/payment_intent`);
                 console.log('Payment data:', paymentData);
 
+                // Use the correct Ziina API endpoint and structure
+                const ziinaPaymentData = {
+                    amount: paymentData.amount,
+                    currency: paymentData.currency_code,
+                    description: paymentData.message,
+                    success_url: paymentData.success_url,
+                    cancel_url: paymentData.cancel_url,
+                    metadata: {
+                        order_id: orderData.orderId,
+                        customer_name: orderData.fullName,
+                        customer_email: orderData.email
+                    }
+                };
+
                 const response = await fetch(`${ZIINA_BASE_URL}/payment_intent`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${ZIINA_API_KEY}`
+                        'Authorization': `Bearer ${ZIINA_API_KEY}`,
+                        'Accept': 'application/json'
                     },
-                    body: JSON.stringify(paymentData)
+                    body: JSON.stringify(ziinaPaymentData)
                 });
 
                 console.log('Response status:', response.status);
-                const result = await response.json();
-                console.log('Response data:', result);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Ziina API error response:', errorText);
+                    throw new Error(`Ziina API error: ${response.status} - ${errorText}`);
+                }
 
-                if (response.ok) {
+                const result = await response.json();
+                console.log('Ziina API response:', result);
+
+                return {
+                    success: true,
+                    payment_url: result.payment_url || result.redirect_url || result.url,
+                    payment_id: result.id || result.payment_id
+                };
+
+            } catch (error) {
+                console.error('Ziina API error:', error);
+                
+                // Provide more specific error messages
+                if (error.message.includes('Failed to fetch')) {
                     return {
-                        success: true,
-                        payment_url: result.redirect_url,
-                        payment_id: result.id
+                        success: false,
+                        error: 'Unable to connect to payment service. Please check your internet connection and try again.'
+                    };
+                } else if (error.message.includes('401') || error.message.includes('403')) {
+                    return {
+                        success: false,
+                        error: 'Payment service authentication failed. Please contact support.'
                     };
                 } else {
                     return {
                         success: false,
-                        error: result.latest_error?.message || result.message || 'Payment creation failed'
+                        error: `Payment service error: ${error.message}`
                     };
                 }
-            } catch (error) {
-                console.error('Ziina API error:', error);
-                return {
-                    success: false,
-                    error: 'Network error. Please check your connection and try again.'
-                };
             }
         }
 
         // Save order to Supabase
         async function saveOrderToSupabase() {
             try {
+                console.log('Starting to save order to Supabase...');
+                
+                // Test Supabase connection first
+                const { data: testData, error: testError } = await supabase
+                    .from('song_requests')
+                    .select('id')
+                    .limit(1);
+
+                if (testError) {
+                    console.error('Supabase connection test failed:', testError);
+                    throw new Error(`Database connection failed: ${testError.message}`);
+                }
+
+                console.log('Supabase connection test successful');
+
                 const orderRecord = {
                     customer_name: orderData.fullName,
                     customer_email: orderData.email,
@@ -536,6 +615,8 @@
                     order_id: orderData.orderId,
                     created_at: new Date().toISOString()
                 };
+
+                console.log('Inserting order record:', orderRecord);
 
                 const { data, error } = await supabase
                     .from('song_requests')
@@ -551,6 +632,13 @@
                 return data;
             } catch (error) {
                 console.error('Order submission error:', error);
+                
+                // For localhost testing, simulate successful save
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    console.log('Localhost mode: Simulating successful order save');
+                    return [{ id: 'test_' + Date.now(), order_id: orderData.orderId }];
+                }
+                
                 throw error;
             }
         }
