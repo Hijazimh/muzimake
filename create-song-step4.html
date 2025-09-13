@@ -266,6 +266,11 @@
         // Ziina API configuration
         const ZIINA_API_KEY = 'ICBwiSb7cUWIBkczgyyGWMd4IqGN8kk0JdlLMylkwqA2M3BbRGhdRKbADGkHnen4';
         const ZIINA_BASE_URL = 'https://api.ziina.com/api'; // Ziina API base URL
+        
+        console.log('Ziina API Configuration:', {
+            baseUrl: ZIINA_BASE_URL,
+            apiKey: ZIINA_API_KEY.substring(0, 10) + '...' // Show only first 10 chars for security
+        });
 
         // DOM elements
         const navbar = document.getElementById('navbar');
@@ -582,7 +587,7 @@
                 // Use the correct Ziina API endpoint and structure
                 const ziinaPaymentData = {
                     amount: paymentData.amount, // Amount in fils
-                    currency: paymentData.currency,
+                    currency_code: paymentData.currency, // Ziina expects currency_code, not currency
                     description: paymentData.description,
                     success_url: paymentData.success_url,
                     cancel_url: paymentData.cancel_url,
@@ -663,6 +668,12 @@
                         error: 'Access denied by payment service. Please contact support.'
                     };
                 } else if (error.message.includes('400') || error.message.includes('Bad Request')) {
+                    if (error.message.includes('currency_code')) {
+                        return {
+                            success: false,
+                            error: 'Payment configuration error. Please contact support.'
+                        };
+                    }
                     return {
                         success: false,
                         error: 'Invalid payment request. Please try again or contact support.'
