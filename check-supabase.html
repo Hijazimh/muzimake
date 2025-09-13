@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Project Check</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .error { color: red; font-weight: bold; }
+        .success { color: green; font-weight: bold; }
+        .info { color: blue; }
+        .warning { color: orange; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Supabase Project Check</h1>
+    
+    <div class="container">
+        <h2>Current Configuration</h2>
+        <p><strong>Project URL:</strong> https://ubvamxnoycciskqzbblc.supabase.co</p>
+        <p><strong>Project ID:</strong> ubvamxnoycciskqzbblc</p>
+        <p><strong>API Key:</strong> eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVidmFteG5veWNjaXNrcXpiYmxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3MDQ5MDMsImV4cCI6MjA3MzI4MDkwM30.5PBF0VOccNblPCbYOV7cMeAvQUKPh4pn3ob_Q-l3xfE</p>
+    </div>
+
+    <div class="container">
+        <h2>Test Connection</h2>
+        <button onclick="testConnection()">Test Connection</button>
+        <div id="results" class="log"></div>
+    </div>
+
+    <div class="container">
+        <h2>Possible Issues & Solutions</h2>
+        <div class="warning">
+            <h3>❌ Issue Found: Project URL Not Found</h3>
+            <p>The DNS lookup for <code>ubvamxnoycciskqzbblc.supabase.co</code> failed. This means:</p>
+            <ul>
+                <li>The Supabase project might have been deleted</li>
+                <li>The project ID might be incorrect</li>
+                <li>The project might be paused or suspended</li>
+            </ul>
+        </div>
+        
+        <div class="info">
+            <h3>✅ Solutions:</h3>
+            <ol>
+                <li><strong>Check your Supabase dashboard:</strong> Go to <a href="https://supabase.com/dashboard" target="_blank">https://supabase.com/dashboard</a></li>
+                <li><strong>Verify the project exists:</strong> Look for a project with ID <code>ubvamxnoycciskqzbblc</code></li>
+                <li><strong>Check project status:</strong> Make sure it's not paused or deleted</li>
+                <li><strong>Get correct credentials:</strong> If the project exists, copy the correct URL and API key</li>
+                <li><strong>Create new project:</strong> If it doesn't exist, create a new Supabase project</li>
+            </ol>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Next Steps</h2>
+        <p>Please:</p>
+        <ol>
+            <li>Go to your Supabase dashboard</li>
+            <li>Check if the project <code>ubvamxnoycciskqzbblc</code> exists</li>
+            <li>If it exists, verify it's active and get the correct URL/API key</li>
+            <li>If it doesn't exist, create a new project</li>
+            <li>Update the configuration with the correct credentials</li>
+        </ol>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info';
+            results.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            results.scrollTop = results.scrollHeight;
+        }
+
+        async function testConnection() {
+            log('Testing Supabase connection...', 'info');
+            
+            const supabaseUrl = 'https://ubvamxnoycciskqzbblc.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVidmFteG5veWNjaXNrcXpiYmxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3MDQ5MDMsImV4cCI6MjA3MzI4MDkwM30.5PBF0VOccNblPCbYOV7cMeAvQUKPh4pn3ob_Q-l3xfE';
+            
+            try {
+                const response = await fetch(`${supabaseUrl}/rest/v1/`, {
+                    headers: {
+                        'apikey': supabaseKey,
+                        'Authorization': `Bearer ${supabaseKey}`
+                    }
+                });
+
+                if (response.ok) {
+                    log('✅ Connection successful!', 'success');
+                    log(`Response status: ${response.status}`, 'info');
+                } else {
+                    log(`❌ Connection failed with status: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Connection error: ${error.message}`, 'error');
+                if (error.message.includes('Failed to fetch')) {
+                    log('This confirms the project URL is not accessible.', 'warning');
+                }
+            }
+        }
+
+        // Auto-run test on page load
+        window.addEventListener('load', function() {
+            log('Page loaded. The DNS lookup shows the project URL is not found.', 'warning');
+            log('Please check your Supabase dashboard for the correct project details.', 'info');
+        });
+    </script>
+</body>
+</html>
