@@ -14,7 +14,7 @@
 
 [[redirects]]
   from = "/dashboard"
-  to = "/admin-dashboard.html"
+  to = "/admin-dashboard-new.html"
   status = 301
 
 [[redirects]]

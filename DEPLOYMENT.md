@@ -100,7 +100,7 @@ git push -u origin main
 1. Get your production Supabase URL and API key
 2. Update the keys in all HTML files:
    - `create-song-step3.html`
-   - `admin-dashboard.html`
+   - `admin-dashboard-new.html`
    - `supabase-test.html`
 
 ## 🔒 SSL Certificate
