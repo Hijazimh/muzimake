@@ -109,7 +109,7 @@
     <!-- Main Container -->
     <div class="flex h-screen">
         <!-- Sidebar Navigation -->
-        <div class="w-60 bg-admin-sidebar rounded-tl-xl flex-shrink-0">
+        <div id="sidebar" class="w-60 bg-admin-sidebar rounded-tl-xl flex-shrink-0 transition-all duration-300 ease-in-out">
             <div class="h-full overflow-auto custom-scrollbar rounded-tl-xl">
                 <div class="p-3">
                     <!-- Navigation List -->
@@ -165,12 +165,16 @@
         <div class="flex-1 flex flex-col">
             <!-- Header -->
             <header class="bg-admin-header h-14 flex items-center justify-between px-6 shadow-sm">
-                <!-- Logo -->
+                <!-- Left side with toggle and logo -->
                 <div class="flex items-center">
-                    <div class="w-8 h-8 bg-custom-orange rounded-lg flex items-center justify-center mr-3">
-                        <span class="text-white font-bold text-sm">M</span>
-                    </div>
-                    <span class="text-white font-bold text-lg">muzimake</span>
+                    <!-- Sidebar Toggle -->
+                    <button id="sidebarToggle" class="w-8 h-8 bg-gray-700 rounded-lg flex items-center justify-center hover:bg-gray-600 transition-colors mr-3">
+                        <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                    <!-- Logo -->
+                    <img src="media/logo-horiz-white.png" alt="Muzimake" class="h-8">
                 </div>
                 
                 <!-- Header Actions -->
@@ -987,6 +991,39 @@
                     localStorage.clear();
                     sessionStorage.clear();
                     window.location.href = 'admin-login.html';
+                }
+            });
+            
+            // Sidebar toggle functionality
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            let sidebarCollapsed = false;
+            
+            sidebarToggle.addEventListener('click', function() {
+                sidebarCollapsed = !sidebarCollapsed;
+                
+                if (sidebarCollapsed) {
+                    // Collapse sidebar
+                    sidebar.classList.remove('w-60');
+                    sidebar.classList.add('w-0', 'overflow-hidden');
+                    
+                    // Update toggle icon to show expand
+                    sidebarToggle.innerHTML = `
+                        <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    `;
+                } else {
+                    // Expand sidebar
+                    sidebar.classList.remove('w-0', 'overflow-hidden');
+                    sidebar.classList.add('w-60');
+                    
+                    // Update toggle icon to show collapse
+                    sidebarToggle.innerHTML = `
+                        <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    `;
                 }
             });
             
