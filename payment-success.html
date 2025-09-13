@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Successful - Muzimake</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'custom-beige': '#f3f1eb',
+                        'custom-dark': '#080808',
+                        'custom-gray': '#232321',
+                        'custom-blue': '#0056fc',
+                        'custom-orange': '#fc6900',
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        .font-inter { font-family: 'Inter', sans-serif; }
+        .font-extrabold { font-weight: 800; }
+        .font-bold { font-weight: 700; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        
+        .success-animation {
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-custom-beige min-h-screen flex items-center justify-center">
+    <div class="max-w-md mx-auto p-8 text-center">
+        <!-- Success Icon -->
+        <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 success-animation">
+            <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+        </div>
+        
+        <!-- Success Message -->
+        <h1 class="text-custom-dark text-3xl font-bold mb-4">Payment Successful!</h1>
+        <p class="text-custom-gray text-lg mb-8">Your order has been confirmed and payment processed successfully.</p>
+        
+        <!-- Order Details -->
+        <div class="bg-white rounded-2xl p-6 mb-8 shadow-sm border border-gray-100">
+            <h2 class="text-custom-dark text-xl font-bold mb-4">What's Next?</h2>
+            <div class="space-y-3 text-sm text-custom-gray text-left">
+                <div class="flex items-start gap-3">
+                    <div class="w-6 h-6 bg-custom-orange text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</div>
+                    <p>You'll receive a confirmation email with your order details</p>
+                </div>
+                <div class="flex items-start gap-3">
+                    <div class="w-6 h-6 bg-custom-orange text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">2</div>
+                    <p>Our team will start working on your custom song</p>
+                </div>
+                <div class="flex items-start gap-3">
+                    <div class="w-6 h-6 bg-custom-orange text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">3</div>
+                    <p>You'll receive your completed song within 3 days</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="space-y-4">
+            <button onclick="goToHome()" class="w-full bg-custom-orange text-white px-8 py-4 rounded-full font-semibold hover:bg-orange-600 transition-colors">
+                Go to Homepage
+            </button>
+            <button onclick="goToHowItWorks()" class="w-full bg-white text-custom-dark px-8 py-4 rounded-full font-semibold border border-gray-300 hover:bg-gray-50 transition-colors">
+                Learn More About Our Process
+            </button>
+        </div>
+        
+        <!-- Contact Info -->
+        <div class="mt-8 pt-6 border-t border-gray-200">
+            <p class="text-sm text-custom-gray mb-2">Questions about your order?</p>
+            <p class="text-sm text-custom-gray">Contact us at <a href="mailto:support@muzimake.com" class="text-custom-orange hover:underline">support@muzimake.com</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Handle payment success
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get payment ID from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const paymentId = urlParams.get('payment_id') || urlParams.get('id');
+            
+            if (paymentId) {
+                console.log('Payment successful with ID:', paymentId);
+                // Update order status in Supabase
+                updateOrderStatus(paymentId);
+            }
+            
+            // Clear form data
+            clearFormData();
+        });
+
+        // Clear form data
+        function clearFormData() {
+            localStorage.removeItem('songPreferences');
+            localStorage.removeItem('songFormData');
+            localStorage.removeItem('contactData');
+        }
+
+        // Update order status
+        async function updateOrderStatus(paymentId) {
+            try {
+                // You can add Supabase integration here to update the order status
+                console.log('Updating order status for payment:', paymentId);
+            } catch (error) {
+                console.error('Error updating order status:', error);
+            }
+        }
+
+        // Navigation functions
+        function goToHome() {
+            window.location.href = 'index.html';
+        }
+
+        function goToHowItWorks() {
+            window.location.href = 'how-it-works.html';
+        }
+    </script>
+</body>
+</html>

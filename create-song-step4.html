@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - Muzimake</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'custom-beige': '#f3f1eb',
+                        'custom-dark': '#080808',
+                        'custom-gray': '#232321',
+                        'custom-blue': '#0056fc',
+                        'custom-orange': '#fc6900',
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        .font-inter { font-family: 'Inter', sans-serif; }
+        .font-extrabold { font-weight: 800; }
+        .font-bold { font-weight: 700; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        
+        /* Navigation scroll effects */
+        #navbar.scrolled {
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Navigation link colors */
+        .nav-link {
+            transition: color 0.3s ease-in-out;
+        }
+        
+        /* When navbar is scrolled, change link colors to dark */
+        #navbar.scrolled .nav-link {
+            color: #232321 !important;
+        }
+        
+        /* Smooth transitions */
+        #top-banner, #navbar {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        /* Modal styles */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #fc6900;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Payment button styles */
+        .payment-button {
+            background: linear-gradient(135deg, #fc6900 0%, #ff8c00 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .payment-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(252, 105, 0, 0.3);
+        }
+        
+        .payment-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body class="font-inter bg-custom-beige min-h-screen">
+    <!-- Top Banner -->
+    <div id="top-banner" class="bg-custom-orange text-white text-center py-2 text-sm font-medium">
+        🎵 Create your custom song in just 3 days - AED 30 only!
+    </div>
+
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed top-0 left-0 right-0 bg-black/20 backdrop-blur-md z-50 h-20 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-8 h-full flex items-center justify-between">
+            <!-- Logo -->
+            <div class="h-12 w-40">
+                <img id="logo" src="media/logo-horiz-white.png" alt="Muzimake" class="h-full w-full object-contain">
+            </div>
+            
+            <!-- Navigation Links -->
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="how-it-works.html" class="nav-link text-white text-sm font-medium hover:text-custom-orange transition-colors">How it works</a>
+                <a href="create-song.html" class="bg-custom-orange text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-orange-600 transition-colors">Create your song</a>
+            </div>
+            
+            <!-- Mobile Menu Button -->
+            <button id="mobileMenuBtn" class="md:hidden text-white">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="md:hidden absolute top-full left-0 right-0 bg-white shadow-lg hidden">
+            <div class="px-8 py-4 space-y-4">
+                <a href="how-it-works.html" class="block text-custom-dark text-sm font-medium hover:text-custom-orange transition-colors">How it works</a>
+                <a href="create-song.html" class="block bg-custom-orange text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-orange-600 transition-colors text-center">Create your song</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-20 pb-16">
+        <div class="max-w-4xl mx-auto px-8">
+            <!-- Progress Indicator -->
+            <div class="text-center mb-8 relative">
+                <div class="inline-flex items-center border border-gray-300 rounded-full px-4 py-2 bg-white">
+                    <span class="text-custom-dark text-xs font-bold tracking-wider uppercase">Step 4 of 4</span>
+                </div>
+                <button id="backBtn" class="absolute left-8 top-0 w-6 h-6">
+                    <img src="media/back-button-small.svg" alt="Back" class="w-full h-full">
+                </button>
+                <button id="closeBtn" class="absolute right-8 top-0 w-6 h-6">
+                    <img src="media/close-button-small.svg" alt="Close" class="w-full h-full">
+                </button>
+            </div>
+
+            <!-- Payment Container -->
+            <div class="p-8">
+                <!-- Header -->
+                <div class="text-center mb-8">
+                    <h1 class="text-custom-dark text-4xl font-bold mb-4">Complete Your Order</h1>
+                    <p class="text-custom-gray text-lg">Review your song details and proceed to payment</p>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="bg-white rounded-2xl p-8 mb-8 shadow-sm border border-gray-100">
+                    <h2 class="text-custom-dark text-2xl font-bold mb-6">Order Summary</h2>
+                    
+                    <div id="orderSummary" class="space-y-4">
+                        <!-- Order details will be populated by JavaScript -->
+                    </div>
+                    
+                    <div class="border-t border-gray-200 pt-6 mt-6">
+                        <div class="flex justify-between items-center text-lg font-semibold">
+                            <span class="text-custom-dark">Total</span>
+                            <span class="text-custom-orange" id="totalAmount">AED 31.50</span>
+                        </div>
+                        <p class="text-sm text-custom-gray mt-2">Including 5% VAT</p>
+                    </div>
+                </div>
+
+                <!-- Payment Section -->
+                <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+                    <h2 class="text-custom-dark text-2xl font-bold mb-6">Payment</h2>
+                    
+                    <div class="text-center">
+                        <div class="mb-6">
+                            <img src="https://ziina.com/assets/logo.svg" alt="Ziina" class="h-12 mx-auto mb-4">
+                            <p class="text-custom-gray">Secure payment powered by Ziina</p>
+                        </div>
+                        
+                        <button id="payButton" class="payment-button text-white px-12 py-4 rounded-full text-lg font-semibold w-full max-w-md mx-auto flex items-center justify-center gap-3">
+                            <span id="payButtonText">Pay with Ziina</span>
+                            <div id="loadingSpinner" class="spinner hidden"></div>
+                        </button>
+                        
+                        <p class="text-xs text-custom-gray mt-4">
+                            Your payment is secure and encrypted. You'll receive a confirmation email after successful payment.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Exit Confirmation Modal -->
+    <div id="exitModal" class="fixed inset-0 modal-overlay z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="modal-content w-full max-w-md p-6">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-custom-gray text-lg font-bold tracking-tight">Progress will be lost</h3>
+                    <button id="closeModalBtn" class="w-6 h-6">
+                        <img src="media/close-button-small.svg" alt="Close" class="w-full h-full">
+                    </button>
+                </div>
+                
+                <!-- Modal Content -->
+                <p class="text-custom-gray text-sm leading-relaxed mb-6">
+                    If you leave this page, all your progress will be lost. Are you sure you want to continue?
+                </p>
+                
+                <!-- Modal Actions -->
+                <div class="flex gap-3">
+                    <button id="cancelExitBtn" class="flex-1 bg-custom-gray/12 text-custom-dark px-6 py-3 rounded-full font-medium hover:bg-custom-gray/20 transition-colors">
+                        Stay on page
+                    </button>
+                    <button id="confirmExitBtn" class="flex-1 bg-custom-gray text-white px-6 py-3 rounded-full font-medium hover:bg-custom-gray/90 transition-colors">
+                        Leave anyway
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="fixed inset-0 modal-overlay z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="modal-content w-full max-w-md p-8 text-center">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h3 class="text-custom-dark text-2xl font-bold mb-2">Payment Successful!</h3>
+                <p class="text-custom-gray text-sm mb-6">Your order has been confirmed. You'll receive a confirmation email shortly.</p>
+                <button id="goToHomeBtn" class="bg-custom-orange text-white px-8 py-3 rounded-full font-medium hover:bg-orange-600 transition-colors">
+                    Go to Homepage
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        // Supabase configuration
+        const supabaseUrl = 'https://ubvamxnoycciskqzbblc.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVidmFteG5veWNjaXNrcXpiYmxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3MDQ5MDMsImV4cCI6MjA3MzI4MDkwM30.5PBF0VOccNblPCbYOV7cMeAvQUKPh4pn3ob_Q-l3xfE';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Ziina API configuration
+        const ZIINA_API_KEY = 'cYE49B8AG4cOVoAW4t13rBNem2C46F1M5+qK+Q3XHPRm4gZ8B6+GNuNgLguztWvm';
+        const ZIINA_BASE_URL = 'https://api.ziina.com/v1'; // Update with actual Ziina API URL
+
+        // DOM elements
+        const navbar = document.getElementById('navbar');
+        const logo = document.getElementById('logo');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const backBtn = document.getElementById('backBtn');
+        const closeBtn = document.getElementById('closeBtn');
+        const payButton = document.getElementById('payButton');
+        const payButtonText = document.getElementById('payButtonText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const orderSummary = document.getElementById('orderSummary');
+        const totalAmount = document.getElementById('totalAmount');
+
+        // Modal elements
+        const exitModal = document.getElementById('exitModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelExitBtn = document.getElementById('cancelExitBtn');
+        const confirmExitBtn = document.getElementById('confirmExitBtn');
+        const successModal = document.getElementById('successModal');
+        const goToHomeBtn = document.getElementById('goToHomeBtn');
+
+        // Form data
+        let orderData = {};
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadOrderData();
+            populateOrderSummary();
+            setupEventListeners();
+            setupNavigation();
+        });
+
+        // Load order data from localStorage
+        function loadOrderData() {
+            const songPreferences = JSON.parse(localStorage.getItem('songPreferences') || '{}');
+            const songFormData = JSON.parse(localStorage.getItem('songFormData') || '{}');
+            const contactData = JSON.parse(localStorage.getItem('contactData') || '{}');
+
+            orderData = {
+                ...songPreferences,
+                ...songFormData,
+                ...contactData,
+                orderId: generateOrderId(),
+                timestamp: new Date().toISOString()
+            };
+
+            console.log('Order data loaded:', orderData);
+        }
+
+        // Generate unique order ID
+        function generateOrderId() {
+            return 'MZ' + Date.now() + Math.random().toString(36).substr(2, 5).toUpperCase();
+        }
+
+        // Populate order summary
+        function populateOrderSummary() {
+            const summaryHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="font-semibold text-custom-dark mb-2">Song Details</h3>
+                        <div class="space-y-1 text-sm text-custom-gray">
+                            <p><span class="font-medium">Celebration:</span> ${orderData.celebration || 'N/A'}</p>
+                            <p><span class="font-medium">Genre:</span> ${orderData.genre || 'N/A'}</p>
+                            <p><span class="font-medium">For:</span> ${orderData.recipientName || 'N/A'}</p>
+                            <p><span class="font-medium">Gender:</span> ${orderData.recipientGender || 'N/A'}</p>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-custom-dark mb-2">Contact Information</h3>
+                        <div class="space-y-1 text-sm text-custom-gray">
+                            <p><span class="font-medium">Name:</span> ${orderData.fullName || 'N/A'}</p>
+                            <p><span class="font-medium">Email:</span> ${orderData.email || 'N/A'}</p>
+                            <p><span class="font-medium">Phone:</span> ${orderData.countryCode || ''}${orderData.phoneNumber || 'N/A'}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-custom-gray">Song Creation</span>
+                        <span class="text-custom-dark">AED 30.00</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-custom-gray">VAT (5%)</span>
+                        <span class="text-custom-dark">AED 1.50</span>
+                    </div>
+                </div>
+            `;
+            
+            orderSummary.innerHTML = summaryHTML;
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Exit modal functionality
+            closeBtn.addEventListener('click', function() {
+                exitModal.classList.remove('hidden');
+            });
+
+            closeModalBtn.addEventListener('click', function() {
+                exitModal.classList.add('hidden');
+            });
+
+            cancelExitBtn.addEventListener('click', function() {
+                exitModal.classList.add('hidden');
+            });
+
+            confirmExitBtn.addEventListener('click', function() {
+                clearFormData();
+                window.location.href = 'index.html';
+            });
+
+            // Back button
+            backBtn.addEventListener('click', function() {
+                window.location.href = 'create-song-step3.html';
+            });
+
+            // Payment button
+            payButton.addEventListener('click', function() {
+                processPayment();
+            });
+
+            // Success modal
+            goToHomeBtn.addEventListener('click', function() {
+                clearFormData();
+                window.location.href = 'index.html';
+            });
+
+            // Close modal when clicking outside
+            exitModal.addEventListener('click', function(e) {
+                if (e.target === exitModal) {
+                    exitModal.classList.add('hidden');
+                }
+            });
+
+            successModal.addEventListener('click', function(e) {
+                if (e.target === successModal) {
+                    successModal.classList.add('hidden');
+                }
+            });
+        }
+
+        // Setup navigation
+        function setupNavigation() {
+            // Mobile menu toggle
+            mobileMenuBtn.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!mobileMenuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+                    mobileMenu.classList.add('hidden');
+                }
+            });
+
+            // Navbar scroll effect
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('scrolled');
+                    logo.src = 'media/logo-horiz-black.png';
+                } else {
+                    navbar.classList.remove('scrolled');
+                    logo.src = 'media/logo-horiz-white.png';
+                }
+            });
+        }
+
+        // Process payment with Ziina
+        async function processPayment() {
+            try {
+                // Show loading state
+                payButton.disabled = true;
+                payButtonText.textContent = 'Processing...';
+                loadingSpinner.classList.remove('hidden');
+
+                // Prepare payment data for Ziina
+                const paymentData = {
+                    amount: 31.50, // AED 30 + 5% VAT
+                    currency: 'AED',
+                    order_id: orderData.orderId,
+                    customer: {
+                        name: orderData.fullName,
+                        email: orderData.email,
+                        phone: `${orderData.countryCode}${orderData.phoneNumber}`
+                    },
+                    description: `Custom song for ${orderData.recipientName} - ${orderData.celebration}`,
+                    metadata: {
+                        celebration: orderData.celebration,
+                        genre: orderData.genre,
+                        recipient_name: orderData.recipientName,
+                        recipient_gender: orderData.recipientGender,
+                        order_type: 'custom_song'
+                    },
+                    success_url: `${window.location.origin}/payment-success.html`,
+                    cancel_url: `${window.location.origin}/create-song-step4.html`
+                };
+
+                console.log('Payment data prepared:', paymentData);
+
+                // Create payment with Ziina
+                const paymentResponse = await createZiinaPayment(paymentData);
+                
+                if (paymentResponse.success) {
+                    // Save order to Supabase
+                    await saveOrderToSupabase();
+                    
+                    // Redirect to Ziina payment page
+                    window.location.href = paymentResponse.payment_url;
+                } else {
+                    throw new Error(paymentResponse.error || 'Payment creation failed');
+                }
+
+            } catch (error) {
+                console.error('Payment error:', error);
+                alert(`Payment failed: ${error.message}. Please try again.`);
+                
+                // Reset button state
+                payButton.disabled = false;
+                payButtonText.textContent = 'Pay with Ziina';
+                loadingSpinner.classList.add('hidden');
+            }
+        }
+
+        // Create payment with Ziina API
+        async function createZiinaPayment(paymentData) {
+            try {
+                const response = await fetch(`${ZIINA_BASE_URL}/payments`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${ZIINA_API_KEY}`,
+                        'X-API-Key': ZIINA_API_KEY
+                    },
+                    body: JSON.stringify(paymentData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    return {
+                        success: true,
+                        payment_url: result.payment_url || result.url,
+                        payment_id: result.id || result.payment_id
+                    };
+                } else {
+                    return {
+                        success: false,
+                        error: result.message || result.error || 'Payment creation failed'
+                    };
+                }
+            } catch (error) {
+                console.error('Ziina API error:', error);
+                return {
+                    success: false,
+                    error: 'Network error. Please check your connection and try again.'
+                };
+            }
+        }
+
+        // Save order to Supabase
+        async function saveOrderToSupabase() {
+            try {
+                const orderRecord = {
+                    customer_name: orderData.fullName,
+                    customer_email: orderData.email,
+                    customer_phone: `${orderData.countryCode}${orderData.phoneNumber}`,
+                    celebration: orderData.celebration,
+                    genre: orderData.genre,
+                    recipient_name: orderData.recipientName,
+                    recipient_gender: orderData.recipientGender,
+                    status: 'pending_payment',
+                    price: 31.50,
+                    order_id: orderData.orderId,
+                    created_at: new Date().toISOString()
+                };
+
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .insert([orderRecord])
+                    .select();
+
+                if (error) {
+                    console.error('Error saving order:', error);
+                    throw new Error(`Failed to save order: ${error.message}`);
+                }
+
+                console.log('Order saved successfully:', data);
+                return data;
+            } catch (error) {
+                console.error('Order submission error:', error);
+                throw error;
+            }
+        }
+
+        // Clear form data
+        function clearFormData() {
+            localStorage.removeItem('songPreferences');
+            localStorage.removeItem('songFormData');
+            localStorage.removeItem('contactData');
+        }
+
+        // Handle payment success (called from payment-success.html)
+        window.handlePaymentSuccess = function(paymentId) {
+            successModal.classList.remove('hidden');
+            // Update order status to paid
+            updateOrderStatus(orderData.orderId, 'paid');
+        };
+
+        // Update order status
+        async function updateOrderStatus(orderId, status) {
+            try {
+                const { error } = await supabase
+                    .from('song_requests')
+                    .update({ status: status })
+                    .eq('order_id', orderId);
+
+                if (error) {
+                    console.error('Error updating order status:', error);
+                } else {
+                    console.log('Order status updated successfully');
+                }
+            } catch (error) {
+                console.error('Error updating order status:', error);
+            }
+        }
+    </script>
+</body>
+</html>

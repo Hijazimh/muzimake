@@ -707,8 +707,8 @@
                     };
                     localStorage.setItem('contactData', JSON.stringify(contactData));
                     
-                    // Save to Supabase
-                    await saveOrderToSupabase(contactData);
+                    // Navigate to payment page
+                    window.location.href = 'create-song-step4.html';
                 } catch (error) {
                     // Reset button state on error
                     this.textContent = originalText;
