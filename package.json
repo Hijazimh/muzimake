@@ -1,22 +1,25 @@
 {
-  "name": "muzimake",
+  "name": "muzimake-webhook-server",
   "version": "1.0.0",
-  "description": "Muzimake - Custom Song Creation Platform",
-  "main": "index.html",
+  "description": "WhatsApp Business API webhook server for Muzimake",
+  "main": "webhook-server.js",
   "scripts": {
-    "build": "echo 'Static site - no build required'",
-    "start": "python3 -m http.server 8080",
-    "dev": "python3 -m http.server 8080"
+    "start": "node webhook-server.js",
+    "dev": "nodemon webhook-server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
   },
   "keywords": [
-    "music",
-    "custom-songs",
-    "ziina",
-    "supabase"
+    "whatsapp",
+    "webhook",
+    "api",
+    "muzimake"
   ],
   "author": "Muzimake",
-  "license": "MIT",
-  "engines": {
-    "node": ">=18.0.0"
-  }
+  "license": "MIT"
 }
