@@ -591,7 +591,7 @@
         async function loadSongRequests() {
             try {
                 const { data, error } = await supabase
-                    .from('admin_song_requests')
+                    .from('song_requests')
                     .select('*')
                     .order('created_at', { ascending: false });
 
