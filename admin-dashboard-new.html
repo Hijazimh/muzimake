@@ -59,6 +59,18 @@
             background-color: #fef3c7;
             color: #92400e;
         }
+        .status-in_progress {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        .status-complete {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .status-sent {
+            background-color: #e0e7ff;
+            color: #3730a3;
+        }
         .status-processing {
             background-color: #dbeafe;
             color: #1e40af;
@@ -70,6 +82,26 @@
         .status-paid {
             background-color: #d1fae5;
             color: #065f46;
+        }
+        
+        /* Modal animations */
+        .modal-enter {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        .modal-enter-active {
+            opacity: 1;
+            transform: scale(1);
+            transition: opacity 200ms, transform 200ms;
+        }
+        .modal-exit {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .modal-exit-active {
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 200ms, transform 200ms;
         }
     </style>
 </head>
@@ -228,7 +260,15 @@
                             <div class="flex items-center justify-between mb-4">
                                 <h2 class="text-lg font-semibold text-gray-800">All Song Requests</h2>
                                 <div class="flex items-center space-x-3">
-                                    <input type="text" placeholder="Search requests..." class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-custom-orange focus:border-transparent">
+                                    <!-- Status Filter -->
+                                    <select id="statusFilter" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-custom-orange focus:border-transparent">
+                                        <option value="">All Statuses</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="in_progress">In Progress</option>
+                                        <option value="complete">Complete</option>
+                                        <option value="sent">Sent</option>
+                                    </select>
+                                    <input type="text" id="searchInput" placeholder="Search requests..." class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-custom-orange focus:border-transparent">
                                     <button class="px-4 py-2 bg-custom-orange text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors">
                                         Export
                                     </button>
@@ -279,6 +319,131 @@
         </div>
     </div>
 
+    <!-- Order Details Modal -->
+    <div id="orderModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-800">Order Details</h2>
+                <button id="closeModal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Modal Content -->
+            <div class="p-6">
+                <!-- Order Info -->
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-600 mb-2">Order Information</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Order ID:</span>
+                                <span class="text-sm font-medium text-gray-800" id="modalOrderId">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Date:</span>
+                                <span class="text-sm font-medium text-gray-800" id="modalDate">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Status:</span>
+                                <span class="text-sm font-medium" id="modalStatus">-</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-600 mb-2">Customer Information</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Name:</span>
+                                <span class="text-sm font-medium text-gray-800" id="modalCustomerName">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Email:</span>
+                                <span class="text-sm font-medium text-gray-800" id="modalCustomerEmail">-</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-sm text-gray-600">Phone:</span>
+                                <span class="text-sm font-medium text-gray-800" id="modalCustomerPhone">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recipient Info -->
+                <div class="mb-6">
+                    <h3 class="text-sm font-semibold text-gray-600 mb-2">Recipient Information</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">Name:</span>
+                            <span class="text-sm font-medium text-gray-800" id="modalRecipientName">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">Relationship:</span>
+                            <span class="text-sm font-medium text-gray-800" id="modalRelationship">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Song Details -->
+                <div class="mb-6">
+                    <h3 class="text-sm font-semibold text-gray-600 mb-2">Song Details</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">Celebration:</span>
+                            <span class="text-sm font-medium text-gray-800" id="modalCelebration">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">Genre:</span>
+                            <span class="text-sm font-medium text-gray-800" id="modalGenre">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">Mood:</span>
+                            <span class="text-sm font-medium text-gray-800" id="modalMood">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">Duration:</span>
+                            <span class="text-sm font-medium text-gray-800" id="modalDuration">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Special Instructions -->
+                <div class="mb-6">
+                    <h3 class="text-sm font-semibold text-gray-600 mb-2">Special Instructions</h3>
+                    <p class="text-sm text-gray-800 bg-gray-50 p-3 rounded-lg" id="modalInstructions">-</p>
+                </div>
+                
+                <!-- Audio Files -->
+                <div class="mb-6" id="audioSection">
+                    <h3 class="text-sm font-semibold text-gray-600 mb-2">Audio Files</h3>
+                    <div class="space-y-2" id="audioFiles">
+                        <!-- Audio files will be populated here -->
+                    </div>
+                </div>
+                
+                <!-- Status Management -->
+                <div class="border-t border-gray-200 pt-6">
+                    <h3 class="text-sm font-semibold text-gray-600 mb-4">Update Status</h3>
+                    <div class="flex space-x-3">
+                        <button id="markInProgress" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            Mark In Progress
+                        </button>
+                        <button id="markComplete" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            Mark Complete
+                        </button>
+                        <button id="markSent" class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            Mark Sent
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         // Supabase configuration
@@ -301,9 +466,11 @@
                 }
 
                 if (data && data.length > 0) {
+                    allRequests = data; // Store in global variable
                     populateTable(data);
                     updateMetrics(data);
                 } else {
+                    allRequests = [];
                     showEmptyState();
                 }
             } catch (error) {
@@ -369,11 +536,15 @@
                 case 'pending':
                 case 'pending_payment':
                     return 'status-pending';
+                case 'in_progress':
                 case 'processing':
-                    return 'status-processing';
+                    return 'status-in_progress';
+                case 'complete':
                 case 'completed':
                 case 'paid':
-                    return 'status-completed';
+                    return 'status-complete';
+                case 'sent':
+                    return 'status-sent';
                 default:
                     return 'status-pending';
             }
@@ -388,16 +559,202 @@
             emptyState.classList.remove('hidden');
         }
 
+        // Global variables
+        let allRequests = [];
+        let currentRequest = null;
+
         // View request details
         function viewRequest(requestId) {
-            // TODO: Implement view request modal or redirect to detail page
-            console.log('View request:', requestId);
-            alert('View request functionality will be implemented');
+            currentRequest = allRequests.find(r => r.id === requestId);
+            if (currentRequest) {
+                showOrderModal(currentRequest);
+            }
+        }
+
+        // Show order modal
+        function showOrderModal(request) {
+            // Populate modal with request data
+            document.getElementById('modalOrderId').textContent = request.order_id || 'N/A';
+            document.getElementById('modalDate').textContent = new Date(request.created_at).toLocaleDateString();
+            document.getElementById('modalCustomerName').textContent = request.customer_name || 'N/A';
+            document.getElementById('modalCustomerEmail').textContent = request.customer_email || 'N/A';
+            document.getElementById('modalCustomerPhone').textContent = request.customer_phone || 'N/A';
+            document.getElementById('modalRecipientName').textContent = request.recipient_name || 'N/A';
+            document.getElementById('modalRelationship').textContent = request.relationship || 'N/A';
+            document.getElementById('modalCelebration').textContent = request.celebration || 'N/A';
+            document.getElementById('modalGenre').textContent = request.genre || 'N/A';
+            document.getElementById('modalMood').textContent = request.mood || 'N/A';
+            document.getElementById('modalDuration').textContent = request.duration || 'N/A';
+            document.getElementById('modalInstructions').textContent = request.special_instructions || 'No special instructions provided.';
+            
+            // Update status badge
+            const statusElement = document.getElementById('modalStatus');
+            statusElement.textContent = request.status || 'pending';
+            statusElement.className = `text-sm font-medium px-2 py-1 rounded-full ${getStatusClass(request.status)}`;
+            
+            // Update status buttons
+            updateStatusButtons(request.status);
+            
+            // Handle audio files
+            populateAudioFiles(request);
+            
+            // Show modal
+            const modal = document.getElementById('orderModal');
+            modal.classList.remove('hidden');
+        }
+
+        // Update status buttons based on current status
+        function updateStatusButtons(currentStatus) {
+            const inProgressBtn = document.getElementById('markInProgress');
+            const completeBtn = document.getElementById('markComplete');
+            const sentBtn = document.getElementById('markSent');
+            
+            // Reset all buttons
+            inProgressBtn.disabled = false;
+            completeBtn.disabled = false;
+            sentBtn.disabled = false;
+            
+            // Disable buttons based on current status
+            switch (currentStatus) {
+                case 'in_progress':
+                    inProgressBtn.disabled = true;
+                    break;
+                case 'complete':
+                    inProgressBtn.disabled = true;
+                    completeBtn.disabled = true;
+                    break;
+                case 'sent':
+                    inProgressBtn.disabled = true;
+                    completeBtn.disabled = true;
+                    sentBtn.disabled = true;
+                    break;
+            }
+        }
+
+        // Populate audio files section
+        function populateAudioFiles(request) {
+            const audioSection = document.getElementById('audioSection');
+            const audioFiles = document.getElementById('audioFiles');
+            
+            if (request.audio_files && request.audio_files.length > 0) {
+                audioFiles.innerHTML = '';
+                request.audio_files.forEach((file, index) => {
+                    const audioDiv = document.createElement('div');
+                    audioDiv.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-lg';
+                    audioDiv.innerHTML = `
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path>
+                            </svg>
+                            <span class="text-sm text-gray-800">Audio File ${index + 1}</span>
+                        </div>
+                        <a href="${file}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800">Download</a>
+                    `;
+                    audioFiles.appendChild(audioDiv);
+                });
+                audioSection.classList.remove('hidden');
+            } else {
+                audioSection.classList.add('hidden');
+            }
+        }
+
+        // Update order status
+        async function updateOrderStatus(newStatus) {
+            if (!currentRequest) return;
+            
+            try {
+                const { error } = await supabase
+                    .from('song_requests')
+                    .update({ status: newStatus })
+                    .eq('id', currentRequest.id);
+                
+                if (error) {
+                    console.error('Error updating status:', error);
+                    alert('Failed to update status. Please try again.');
+                    return;
+                }
+                
+                // Update local data
+                currentRequest.status = newStatus;
+                const requestIndex = allRequests.findIndex(r => r.id === currentRequest.id);
+                if (requestIndex !== -1) {
+                    allRequests[requestIndex].status = newStatus;
+                }
+                
+                // Update UI
+                updateStatusButtons(newStatus);
+                document.getElementById('modalStatus').textContent = newStatus;
+                document.getElementById('modalStatus').className = `text-sm font-medium px-2 py-1 rounded-full ${getStatusClass(newStatus)}`;
+                
+                // Refresh table
+                populateTable(allRequests);
+                updateMetrics(allRequests);
+                
+                alert(`Order status updated to ${newStatus.replace('_', ' ')}`);
+                
+            } catch (error) {
+                console.error('Error updating status:', error);
+                alert('Failed to update status. Please try again.');
+            }
+        }
+
+        // Filter and search functionality
+        function filterAndSearch() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            let filteredRequests = allRequests;
+            
+            // Filter by status
+            if (statusFilter) {
+                filteredRequests = filteredRequests.filter(request => request.status === statusFilter);
+            }
+            
+            // Filter by search term
+            if (searchTerm) {
+                filteredRequests = filteredRequests.filter(request => 
+                    (request.customer_name && request.customer_name.toLowerCase().includes(searchTerm)) ||
+                    (request.recipient_name && request.recipient_name.toLowerCase().includes(searchTerm)) ||
+                    (request.celebration && request.celebration.toLowerCase().includes(searchTerm)) ||
+                    (request.order_id && request.order_id.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            populateTable(filteredRequests);
         }
 
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
             loadSongRequests();
+            
+            // Modal event listeners
+            document.getElementById('closeModal').addEventListener('click', function() {
+                document.getElementById('orderModal').classList.add('hidden');
+            });
+            
+            // Close modal when clicking outside
+            document.getElementById('orderModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.add('hidden');
+                }
+            });
+            
+            // Status update buttons
+            document.getElementById('markInProgress').addEventListener('click', function() {
+                updateOrderStatus('in_progress');
+            });
+            
+            document.getElementById('markComplete').addEventListener('click', function() {
+                updateOrderStatus('complete');
+            });
+            
+            document.getElementById('markSent').addEventListener('click', function() {
+                updateOrderStatus('sent');
+            });
+            
+            // Filter and search event listeners
+            document.getElementById('statusFilter').addEventListener('change', filterAndSearch);
+            document.getElementById('searchInput').addEventListener('input', filterAndSearch);
         });
     </script>
 </body>

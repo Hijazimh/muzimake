@@ -11,9 +11,14 @@ CREATE TABLE IF NOT EXISTS song_requests (
     genre TEXT,
     recipient_name TEXT,
     recipient_gender TEXT,
+    relationship TEXT,
     story TEXT,
     vibe TEXT,
-    status TEXT DEFAULT 'pending',
+    mood TEXT,
+    duration TEXT,
+    special_instructions TEXT,
+    audio_files TEXT[],
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'complete', 'sent')),
     price DECIMAL(10,2),
     order_id TEXT UNIQUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -49,9 +54,14 @@ INSERT INTO song_requests (
     celebration, 
     genre, 
     recipient_name, 
-    recipient_gender, 
+    recipient_gender,
+    relationship,
+    mood,
+    duration,
+    special_instructions,
     status, 
-    price
+    price,
+    order_id
 ) VALUES 
 (
     'Ahmed Al-Rashid',
@@ -61,8 +71,13 @@ INSERT INTO song_requests (
     'Pop',
     'Fatima Al-Rashid',
     'Female',
+    'Wife',
+    'Romantic',
+    '3-4 minutes',
+    'Please include our wedding song melody in the beginning',
     'pending',
-    31.50
+    31.50,
+    'ORD-001'
 ),
 (
     'Sarah Johnson',
@@ -72,8 +87,13 @@ INSERT INTO song_requests (
     'Rock',
     'Mike Johnson',
     'Male',
-    'processing',
-    31.50
+    'Brother',
+    'Energetic',
+    '2-3 minutes',
+    'He loves classic rock, please make it upbeat',
+    'in_progress',
+    31.50,
+    'ORD-002'
 ),
 (
     'Omar Hassan',
@@ -83,8 +103,29 @@ INSERT INTO song_requests (
     'Hip-Hop',
     'Layla Hassan',
     'Female',
-    'completed',
-    31.50
+    'Sister',
+    'Celebratory',
+    '3-4 minutes',
+    'Include some Arabic lyrics if possible',
+    'complete',
+    31.50,
+    'ORD-003'
+),
+(
+    'Fatima Al-Zahra',
+    'fatima@example.com',
+    '+971504567890',
+    'Mother''s Day',
+    'Classical',
+    'Amina Al-Zahra',
+    'Female',
+    'Mother',
+    'Emotional',
+    '4-5 minutes',
+    'Make it very emotional and touching',
+    'sent',
+    31.50,
+    'ORD-004'
 );
 
 -- Create a function to automatically update the updated_at timestamp
