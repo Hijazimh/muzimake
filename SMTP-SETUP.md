@@ -7,9 +7,25 @@ This guide explains how to set up SMTP email sending for Muzimake using Maileroo
 - **Host**: smtp.maileroo.com
 - **Port**: 587 (STARTTLS) or 465 (SSL/TLS)
 - **Authentication**: Yes
-- **Email**: hello@muzimake.com
-- **Password**: ef848dc8124c46364511bed9
+- **Email**: [Set via SMTP_USER environment variable]
+- **Password**: [Set via SMTP_PASS environment variable]
 - **Encryption**: STARTTLS (port 587) or SSL/TLS (port 465)
+
+## 🔐 **Environment Variables Setup**
+
+### **For Vercel Production:**
+1. Go to your Vercel project dashboard
+2. Navigate to Settings → Environment Variables
+3. Add the following variables:
+   - `SMTP_HOST` = `smtp.maileroo.com`
+   - `SMTP_PORT` = `587`
+   - `SMTP_USER` = `hello@muzimake.com`
+   - `SMTP_PASS` = `[your_actual_smtp_password]`
+
+### **For Local Development:**
+1. Copy `env.example` to `.env.local`
+2. Fill in your actual SMTP credentials
+3. The application will automatically use these environment variables
 
 ## 🚀 **Deployment Steps**
 

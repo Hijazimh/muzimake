@@ -41,14 +41,14 @@ module.exports = async (req, res) => {
         
         console.log('All required fields present - proceeding with email setup');
 
-    // Create SMTP transporter with Maileroo credentials
+    // Create SMTP transporter with Maileroo credentials - using environment variables
     const transporter = nodemailer.createTransport({
-        host: 'smtp.maileroo.com',
-        port: 587, // Using port 587 with STARTTLS
+        host: process.env.SMTP_HOST || 'smtp.maileroo.com',
+        port: parseInt(process.env.SMTP_PORT) || 587,
         secure: false, // true for 465, false for other ports
         auth: {
-            user: 'hello@muzimake.com',
-            pass: 'ef848dc8124c46364511bed9'
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS
         },
         tls: {
             rejectUnauthorized: false
@@ -91,7 +91,7 @@ module.exports = async (req, res) => {
     `;
 
     const mailOptions = {
-        from: 'hello@muzimake.com',
+        from: process.env.SMTP_USER || 'hello@muzimake.com',
         to,
         subject,
         html: emailHtml,
@@ -102,9 +102,9 @@ module.exports = async (req, res) => {
             console.log('To:', to);
             console.log('Subject:', subject);
             console.log('SMTP Config:', {
-                host: 'smtp.maileroo.com',
-                port: 587,
-                user: 'hello@muzimake.com'
+                host: process.env.SMTP_HOST || 'smtp.maileroo.com',
+                port: parseInt(process.env.SMTP_PORT) || 587,
+                user: process.env.SMTP_USER ? '***@muzimake.com' : 'hello@muzimake.com'
             });
             
             await transporter.sendMail(mailOptions);
