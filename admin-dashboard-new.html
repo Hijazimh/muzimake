@@ -1185,7 +1185,7 @@
                     // Clear existing content and create new Figma-matching UI
                     uploadedFileInfo.innerHTML = `
                         <div class="bg-gray-100 rounded-lg p-3 relative">
-                            <button id="deleteAudioBtn" class="absolute top-2 right-2 p-1 text-gray-600 hover:text-red-600 transition-colors" title="Delete audio file">
+                            <button id="deleteAudioBtn" class="absolute top-2 right-2 p-1 text-gray-600 hover:text-red-600 transition-colors cursor-pointer" title="Delete audio file" type="button">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                 </svg>
@@ -1982,6 +1982,22 @@
                     closeBucketFileModal();
                 }
             });
+            
+            // Use event delegation for delete buttons (more reliable for dynamic content)
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('#deleteAudioBtn')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Delete button clicked via event delegation');
+                    
+                    if (confirm('Are you sure you want to delete this audio file from the order? This action cannot be undone.')) {
+                        console.log('User confirmed deletion via event delegation');
+                        deleteAudioFromOrder();
+                    } else {
+                        console.log('User cancelled deletion via event delegation');
+                    }
+                }
+            });
         });
 
         // Setup audio player functionality
@@ -1989,15 +2005,30 @@
             const audioPlayer = document.getElementById('audioPlayer');
             const deleteButton = document.getElementById('deleteAudioBtn');
             
-            if (!audioPlayer) return;
+            console.log('Setting up audio player - delete button found:', !!deleteButton);
             
             // Delete audio functionality
             if (deleteButton) {
-                deleteButton.addEventListener('click', function() {
+                // Remove any existing event listeners to prevent duplicates
+                deleteButton.replaceWith(deleteButton.cloneNode(true));
+                const newDeleteButton = document.getElementById('deleteAudioBtn');
+                
+                newDeleteButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('Delete button clicked');
+                    
                     if (confirm('Are you sure you want to delete this audio file from the order? This action cannot be undone.')) {
+                        console.log('User confirmed deletion');
                         deleteAudioFromOrder();
+                    } else {
+                        console.log('User cancelled deletion');
                     }
                 });
+                
+                console.log('Delete button event listener attached');
+            } else {
+                console.error('Delete button not found when setting up audio player');
             }
         }
         
@@ -2176,7 +2207,7 @@
                 if (uploadedFileInfo) {
                     uploadedFileInfo.innerHTML = `
                         <div class="bg-gray-100 rounded-lg p-3 relative">
-                            <button id="deleteAudioBtn" class="absolute top-2 right-2 p-1 text-gray-600 hover:text-red-600 transition-colors" title="Delete audio file">
+                            <button id="deleteAudioBtn" class="absolute top-2 right-2 p-1 text-gray-600 hover:text-red-600 transition-colors cursor-pointer" title="Delete audio file" type="button">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                 </svg>
