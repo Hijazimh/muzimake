@@ -1,18 +1,12 @@
 {
-  "name": "muzimake",
+  "name": "muzimake-api",
   "version": "1.0.0",
-  "description": "Muzimake - Custom Songs by Real Artists",
-  "main": "index.html",
+  "description": "API for Muzimake custom song platform",
+  "main": "api/send-email.js",
   "scripts": {
-    "dev": "python3 -m http.server 8000",
-    "build": "echo 'No build step required'",
-    "start": "python3 -m http.server 8000"
+    "start": "node api/send-email.js"
   },
   "dependencies": {
-    "nodemailer": "^6.9.7"
-  },
-  "devDependencies": {},
-  "keywords": ["music", "custom-songs", "artists"],
-  "author": "Muzimake",
-  "license": "MIT"
+    "nodemailer": "^6.9.14"
+  }
 }
