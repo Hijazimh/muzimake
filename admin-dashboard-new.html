@@ -648,6 +648,8 @@
 
                 if (data && data.length > 0) {
                     allRequests = data; // Store in global variable
+                    console.log('Loaded song requests:', data.length);
+                    console.log('Status values loaded:', data.map(r => ({ id: r.id, status: r.status, audio_file_url: r.audio_file_url })));
                     populateTable(data);
                     updateMetrics(data);
                     updateHomeMetrics();
@@ -828,6 +830,24 @@
         let allRequests = [];
         let currentRequest = null;
         let uploadedAudioUrl = null;
+        
+        // Function to test if an audio URL is accessible
+        async function testAudioUrlAccessibility(url) {
+            try {
+                console.log('Testing audio URL accessibility:', url);
+                const response = await fetch(url, { method: 'HEAD' });
+                console.log('URL test result:', {
+                    url: url,
+                    status: response.status,
+                    accessible: response.ok,
+                    headers: Object.fromEntries(response.headers.entries())
+                });
+                return response.ok;
+            } catch (error) {
+                console.error('URL accessibility test failed:', error);
+                return false;
+            }
+        }
         
         // Test Supabase storage connection
         async function testStorageConnection() {
@@ -1032,6 +1052,12 @@
                     .getPublicUrl(fileName);
                 
                 uploadedAudioUrl = urlData.publicUrl;
+                console.log('Generated public URL:', uploadedAudioUrl);
+                console.log('URL structure check:', {
+                    fileName: fileName,
+                    bucketName: 'audio-files',
+                    fullUrl: uploadedAudioUrl
+                });
                 
                 // Update progress to 100%
                 document.getElementById('progressBar').style.width = '100%';
@@ -1166,6 +1192,11 @@
                     voiceGender: currentRequest.recipient_gender
                 }, null, 2));
                 
+                console.log('AUDIO URL DEBUG:');
+                console.log('- uploadedAudioUrl:', uploadedAudioUrl);
+                console.log('- currentRequest.audio_file_url:', currentRequest.audio_file_url);
+                console.log('- URL accessible test needed');
+                
                 // Check each field individually
                 console.log('Field validation:');
                 console.log('- to:', emailData.to);
@@ -1226,7 +1257,12 @@
 
         // Update order status
         async function updateOrderStatus(newStatus) {
-            if (!currentRequest) return;
+            if (!currentRequest) {
+                console.error('No current request selected');
+                return;
+            }
+            
+            console.log('Updating status for request ID:', currentRequest.id, 'to status:', newStatus);
             
             try {
                 const { error } = await supabase
@@ -1239,6 +1275,8 @@
                     alert('Failed to update status. Please try again.');
                     return;
                 }
+                
+                console.log('Status updated successfully in database');
                 
                 // Update local data
                 currentRequest.status = newStatus;
