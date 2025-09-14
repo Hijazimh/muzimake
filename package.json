@@ -1,0 +1,25 @@
+{
+  "name": "muzimake-admin",
+  "version": "1.0.0",
+  "description": "Muzimake Admin Dashboard with MP3 upload and email functionality",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step required for static files'",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "muzimake",
+    "admin",
+    "dashboard",
+    "music",
+    "custom-songs"
+  ],
+  "author": "Muzimake Team",
+  "license": "MIT"
+}
