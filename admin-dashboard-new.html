@@ -317,6 +317,13 @@
                             <h1 class="text-2xl font-semibold text-gray-800">Song Requests</h1>
                         </div>
                         <div class="flex items-center space-x-3">
+                            <!-- Refresh Button -->
+                            <button onclick="refreshAllData()" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors" title="Refresh data">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                </svg>
+                                Refresh
+                            </button>
                             <span class="text-sm text-gray-600">More actions</span>
                             <button class="w-4 h-4 text-gray-600 hover:text-gray-800">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -849,6 +856,53 @@
             }
         }
         
+        // Function to refresh data from database
+        async function refreshRequestData(requestId) {
+            try {
+                console.log('Refreshing data for request ID:', requestId);
+                
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .select('*')
+                    .eq('id', requestId)
+                    .single();
+                
+                if (error) {
+                    console.error('Error refreshing request data:', error);
+                    return null;
+                }
+                
+                // Update the request in allRequests array
+                const requestIndex = allRequests.findIndex(r => r.id === requestId);
+                if (requestIndex !== -1) {
+                    allRequests[requestIndex] = data;
+                    console.log('Updated request data in allRequests array');
+                }
+                
+                // Update currentRequest if it's the same request
+                if (currentRequest && currentRequest.id === requestId) {
+                    currentRequest = data;
+                    console.log('Updated currentRequest with fresh data');
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('Error refreshing request data:', error);
+                return null;
+            }
+        }
+        
+        // Function to refresh the entire list from database
+        async function refreshAllData() {
+            try {
+                console.log('Refreshing all data from database...');
+                await loadSongRequests();
+                console.log('All data refreshed successfully');
+            } catch (error) {
+                console.error('Error refreshing all data:', error);
+            }
+        }
+        
         // Test Supabase storage connection
         async function testStorageConnection() {
             try {
@@ -877,9 +931,20 @@
         }
 
         // View request details
-        function viewRequest(requestId) {
+        async function viewRequest(requestId) {
+            console.log('Opening request details for ID:', requestId);
+            
+            // First try to find in local data
             currentRequest = allRequests.find(r => r.id == requestId);
-            if (currentRequest) {
+            
+            // Refresh data from database to ensure we have the latest information
+            const freshData = await refreshRequestData(requestId);
+            
+            if (freshData) {
+                currentRequest = freshData;
+                showOrderModal(currentRequest);
+            } else if (currentRequest) {
+                // Fallback to local data if refresh fails
                 showOrderModal(currentRequest);
             } else {
                 console.error('Request not found with ID:', requestId);
@@ -889,6 +954,14 @@
 
         // Show order modal
         function showOrderModal(request) {
+            console.log('Opening modal for request:', request.id, 'with audio_file_url:', request.audio_file_url);
+            
+            // Clear any existing upload indicators
+            const existingIndicator = document.querySelector('.audio-attached-indicator');
+            if (existingIndicator) {
+                existingIndicator.remove();
+            }
+            
             // Reset upload UI
             document.getElementById('uploadContainer').classList.remove('hidden');
             document.getElementById('uploadedFileInfo').classList.add('hidden');
@@ -906,7 +979,10 @@
                 // Add a visual indicator that the file is already uploaded
                 const uploadSection = document.querySelector('#uploadSection');
                 if (uploadSection) {
-                    uploadSection.innerHTML += '<div class="mt-2 text-green-600 text-sm font-medium">✅ Audio file already attached to this request</div>';
+                    const indicator = document.createElement('div');
+                    indicator.className = 'audio-attached-indicator mt-2 text-green-600 text-sm font-medium';
+                    indicator.textContent = '✅ Audio file already attached to this request';
+                    uploadSection.appendChild(indicator);
                 }
                 
                 console.log('Loaded existing audio file:', request.audio_file_url);
@@ -1087,9 +1163,14 @@
         
         // Update audio file URL in database
         async function updateAudioFileUrl(audioUrl) {
-            if (!currentRequest) return;
+            if (!currentRequest) {
+                console.error('No current request selected for audio update');
+                return;
+            }
             
             try {
+                console.log('Updating audio file URL in database for request ID:', currentRequest.id);
+                
                 const { error } = await supabase
                     .from('song_requests')
                     .update({ audio_file_url: audioUrl })
@@ -1100,8 +1181,26 @@
                     throw error;
                 }
                 
-                // Update local data
+                console.log('Audio file URL updated successfully in database');
+                
+                // Update local data in both currentRequest and allRequests array
                 currentRequest.audio_file_url = audioUrl;
+                
+                // Find and update the request in the allRequests array
+                const requestIndex = allRequests.findIndex(r => r.id === currentRequest.id);
+                if (requestIndex !== -1) {
+                    allRequests[requestIndex].audio_file_url = audioUrl;
+                    console.log('Updated audio URL in allRequests array at index:', requestIndex);
+                } else {
+                    console.error('Could not find request in allRequests array to update');
+                }
+                
+                // Refresh the table to show the updated audio indicator
+                populateTable(allRequests);
+                
+                // Show success message
+                alert('Audio file uploaded and saved successfully!');
+                
             } catch (error) {
                 console.error('Error updating audio file URL:', error);
                 throw error;
