@@ -461,55 +461,67 @@
             gender: null
         };
 
-        document.querySelectorAll('.option-button').forEach(button => {
-            button.addEventListener('click', function() {
-                const option = this.dataset.option;
-                const question = this.closest('.mb-12');
-                
-                // Determine which question this button belongs to
-                const questionText = question.querySelector('h2').textContent.toLowerCase();
-                
-                if (questionText.includes('moment') && questionText.includes('celebrating')) {
-                    // Single selection for moment
-                    document.querySelectorAll('[data-option]').forEach(btn => {
-                        if (btn.closest('.mb-12') === question) {
-                            btn.classList.remove('selected');
-                        }
-                    });
-                    this.classList.add('selected');
-                    selectedOptions.moment = option;
-                } else if (questionText.includes('vibe')) {
-                    // Multiple selection for vibe (up to 2)
-                    if (this.classList.contains('selected')) {
-                        this.classList.remove('selected');
-                        selectedOptions.vibe = selectedOptions.vibe.filter(v => v !== option);
-                    } else if (selectedOptions.vibe.length < 2) {
+        function setupFormListeners() {
+            document.querySelectorAll('.option-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const option = this.dataset.option;
+                    const question = this.closest('.mb-12');
+                    
+                    // Determine which question this button belongs to
+                    const questionText = question.querySelector('h2').textContent.toLowerCase();
+                    
+                    if (questionText.includes('moment') && questionText.includes('celebrating')) {
+                        // Single selection for moment
+                        document.querySelectorAll('[data-option]').forEach(btn => {
+                            if (btn.closest('.mb-12') === question) {
+                                btn.classList.remove('selected');
+                            }
+                        });
                         this.classList.add('selected');
-                        selectedOptions.vibe.push(option);
+                        selectedOptions.moment = option;
+                    } else if (questionText.includes('vibe')) {
+                        // Multiple selection for vibe (up to 2)
+                        if (this.classList.contains('selected')) {
+                            this.classList.remove('selected');
+                            selectedOptions.vibe = selectedOptions.vibe.filter(v => v !== option);
+                        } else if (selectedOptions.vibe.length < 2) {
+                            this.classList.add('selected');
+                            selectedOptions.vibe.push(option);
+                        }
+                    } else if (questionText.includes('genre') && questionText.includes('prefer')) {
+                        // Single selection for genre
+                        document.querySelectorAll('[data-option]').forEach(btn => {
+                            if (btn.closest('.mb-12') === question) {
+                                btn.classList.remove('selected');
+                            }
+                        });
+                        this.classList.add('selected');
+                        selectedOptions.genre = option;
+                    } else if (questionText.includes('male or female') && questionText.includes('vocals')) {
+                        // Single selection for gender
+                        document.querySelectorAll('[data-option]').forEach(btn => {
+                            if (btn.closest('.mb-12') === question) {
+                                btn.classList.remove('selected');
+                            }
+                        });
+                        this.classList.add('selected');
+                        selectedOptions.gender = option;
                     }
-                } else if (questionText.includes('genre') && questionText.includes('prefer')) {
-                    // Single selection for genre
-                    document.querySelectorAll('[data-option]').forEach(btn => {
-                        if (btn.closest('.mb-12') === question) {
-                            btn.classList.remove('selected');
-                        }
-                    });
-                    this.classList.add('selected');
-                    selectedOptions.genre = option;
-                } else if (questionText.includes('male or female') && questionText.includes('vocals')) {
-                    // Single selection for gender
-                    document.querySelectorAll('[data-option]').forEach(btn => {
-                        if (btn.closest('.mb-12') === question) {
-                            btn.classList.remove('selected');
-                        }
-                    });
-                    this.classList.add('selected');
-                    selectedOptions.gender = option;
-                }
-                
-                updateNextButton();
+                    
+                    updateNextButton();
+                });
             });
-        });
+            
+            // Next button functionality
+            document.getElementById('nextBtn').addEventListener('click', function() {
+                if (!this.disabled) {
+                    // Store the selected options in localStorage for the next step
+                    localStorage.setItem('songPreferences', JSON.stringify(selectedOptions));
+                    // Navigate to step 2
+                    window.location.href = 'create-song-step2.html';
+                }
+            });
+        }
 
         function updateNextButton() {
             const nextBtn = document.getElementById('nextBtn');
@@ -524,15 +536,6 @@
             }
         }
 
-        // Next button functionality
-        document.getElementById('nextBtn').addEventListener('click', function() {
-            if (!this.disabled) {
-                // Store the selected options in localStorage for the next step
-                localStorage.setItem('songPreferences', JSON.stringify(selectedOptions));
-                // Navigate to step 2
-                window.location.href = 'create-song-step2.html';
-            }
-        });
 
         // Exit modal functionality
         const exitModal = document.getElementById('exitModal');
@@ -640,17 +643,19 @@
             indicators = document.querySelectorAll('.review-indicator');
             reviewContent = document.querySelector('.review-content');
             
+            console.log('Trying to initialize carousel:', {
+                slider: reviewSlider,
+                indicators: indicators.length,
+                content: reviewContent
+            });
+            
             if (!reviewSlider || !indicators.length) {
                 console.log('Carousel elements not found, retrying...');
                 setTimeout(initCarousel, 100);
                 return;
             }
             
-            console.log('Carousel initialized:', {
-                slider: reviewSlider,
-                indicators: indicators.length,
-                content: reviewContent
-            });
+            console.log('Carousel initialized successfully!');
             
             // Start with first review (index 0)
             currentReviewIndex = 0;
@@ -658,7 +663,9 @@
             
             // Add click handlers for indicators
             indicators.forEach((indicator, index) => {
-                indicator.addEventListener('click', function() {
+                console.log('Adding click handler for indicator', index);
+                indicator.addEventListener('click', function(e) {
+                    e.preventDefault();
                     console.log('Indicator clicked:', index);
                     goToReview(index);
                 });
@@ -666,6 +673,7 @@
             
             // Auto-rotate reviews every 5 seconds
             autoRotateInterval = setInterval(function() {
+                console.log('Auto-rotating to next review...');
                 nextReview();
             }, 5000);
             
@@ -752,12 +760,16 @@
             updateReview();
         }
 
-        // Initialize
-        loadSavedData();
-        updateNextButton();
-        
-        // Initialize carousel after DOM is ready
+        // Initialize everything after DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing...');
+            
+            // Initialize form functionality
+            setupFormListeners();
+            loadSavedData();
+            updateNextButton();
+            
+            // Initialize carousel
             initCarousel();
         });
     </script>
