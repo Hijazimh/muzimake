@@ -1116,8 +1116,12 @@
                 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
                 const apiUrl = isLocal ? 'https://muzimake-7ksft7ar1-mahmoudhijazi95-gmailcoms-projects.vercel.app/api/send-email' : '/api/send-email';
                 
-                console.log('Using API URL:', apiUrl);
-                const response = await fetch(apiUrl, {
+                // Add cache-busting parameter
+                const cacheBuster = '?v=' + Date.now();
+                const finalApiUrl = apiUrl + cacheBuster;
+                
+                console.log('Using API URL:', finalApiUrl);
+                const response = await fetch(finalApiUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
