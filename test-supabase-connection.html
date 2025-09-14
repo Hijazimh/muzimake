@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Connection Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            max-width: 1200px; 
+            margin: 0 auto; 
+        }
+        .test-section { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            background: #f9f9f9;
+        }
+        .success { 
+            background-color: #d4edda; 
+            border-color: #c3e6cb; 
+            color: #155724;
+        }
+        .error { 
+            background-color: #f8d7da; 
+            border-color: #f5c6cb; 
+            color: #721c24;
+        }
+        .info { 
+            background-color: #d1ecf1; 
+            border-color: #bee5eb; 
+            color: #0c5460;
+        }
+        button { 
+            padding: 10px 15px; 
+            margin: 5px; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 14px;
+        }
+        button:hover { 
+            background: #0056b3; 
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        pre { 
+            background: #f8f9fa; 
+            padding: 10px; 
+            border-radius: 5px; 
+            overflow-x: auto; 
+            font-size: 12px;
+            border: 1px solid #e9ecef;
+        }
+        .credentials {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .step {
+            margin: 10px 0;
+            padding: 10px;
+            border-left: 4px solid #007bff;
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Supabase Connection & Audio Upload Test</h1>
+    
+    <div class="credentials">
+        <h3>📋 Current Supabase Configuration</h3>
+        <p><strong>URL:</strong> https://lchleopfdvrgunbrlngh.supabase.co</p>
+        <p><strong>Status:</strong> <span id="configStatus">Checking...</span></p>
+    </div>
+
+    <div class="test-section">
+        <h3>🔗 Step 1: Test Supabase Connection</h3>
+        <button onclick="testConnection()">Test Database Connection</button>
+        <button onclick="testStorageConnection()">Test Storage Connection</button>
+        <div id="connectionResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>📊 Step 2: Check Table Structure</h3>
+        <button onclick="checkTableStructure()">Check song_requests Table</button>
+        <button onclick="checkAudioColumns()">Check Audio Columns</button>
+        <div id="structureResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>🔐 Step 3: Test Database Permissions</h3>
+        <button onclick="testUpdatePermissions()">Test Update Permissions</button>
+        <button onclick="testRLSPolicies()">Check RLS Policies</button>
+        <div id="permissionResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>🎵 Step 4: Test Audio File Upload</h3>
+        <button onclick="testAudioUpload()">Test Audio Upload to Storage</button>
+        <button onclick="testAudioDatabaseUpdate()">Test Audio Database Update</button>
+        <div id="audioResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>🧪 Step 5: Complete Audio Upload Test</h3>
+        <p>This will test the complete flow: upload file → save to database → verify persistence</p>
+        <button onclick="runCompleteTest()">Run Complete Test</button>
+        <div id="completeTestResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>📝 Instructions</h3>
+        <div class="step">
+            <strong>1. Run SQL Script:</strong> Copy and run the contents of <code>fix-audio-update-permissions.sql</code> in your Supabase SQL Editor
+        </div>
+        <div class="step">
+            <strong>2. Test Connection:</strong> Run all tests above to verify everything is working
+        </div>
+        <div class="step">
+            <strong>3. Upload Audio:</strong> Go to your admin dashboard and try uploading an audio file
+        </div>
+        <div class="step">
+            <strong>4. Check Console:</strong> Look for detailed logs showing success or failure
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Supabase configuration (same as your admin dashboard)
+        const SUPABASE_URL = 'https://lchleopfdvrgunbrlngh.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxjaGxlb3BmZHZyZ3VuYnJsbmdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3NTYwNjgsImV4cCI6MjA3MzMzMjA2OH0.U4NkKdXFgK3Im78oz_SaEHkWQqGzhlaeA83Rom4oD7A';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Update config status
+        document.getElementById('configStatus').innerHTML = '<span style="color: green;">✅ Configured</span>';
+
+        async function testConnection() {
+            const resultDiv = document.getElementById('connectionResult');
+            resultDiv.innerHTML = '<p>Testing database connection...</p>';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .select('id')
+                    .limit(1);
+                
+                if (error) {
+                    resultDiv.innerHTML = `<div class="error"><h4>❌ Database Connection Failed</h4><p><strong>Error:</strong> ${error.message}</p><p><strong>Code:</strong> ${error.code || 'Unknown'}</p><p><strong>Details:</strong> ${error.details || 'None'}</p></div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="success"><h4>✅ Database Connection Successful</h4><p>Successfully connected to Supabase database!</p><p><strong>Test query result:</strong> ${data ? `${data.length} records found` : 'No data returned'}</p></div>`;
+                }
+            } catch (err) {
+                resultDiv.innerHTML = `<div class="error"><h4>❌ Connection Error</h4><p><strong>Error:</strong> ${err.message}</p></div>`;
+            }
+        }
+
+        async function testStorageConnection() {
+            const resultDiv = document.getElementById('connectionResult');
+            resultDiv.innerHTML += '<p>Testing storage connection...</p>';
+            
+            try {
+                const { data, error } = await supabase.storage.listBuckets();
+                
+                if (error) {
+                    resultDiv.innerHTML += `<div class="error"><h4>❌ Storage Connection Failed</h4><p><strong>Error:</strong> ${error.message}</p></div>`;
+                } else {
+                    const audioBucket = data.find(bucket => bucket.name === 'audio-files');
+                    if (audioBucket) {
+                        resultDiv.innerHTML += `<div class="success"><h4>✅ Storage Connection Successful</h4><p>Audio-files bucket found and accessible!</p><p><strong>Bucket:</strong> ${audioBucket.name}</p></div>`;
+                    } else {
+                        resultDiv.innerHTML += `<div class="error"><h4>❌ Audio Bucket Not Found</h4><p>The 'audio-files' bucket doesn't exist or isn't accessible.</p></div>`;
+                    }
+                }
+            } catch (err) {
+                resultDiv.innerHTML += `<div class="error"><h4>❌ Storage Error</h4><p><strong>Error:</strong> ${err.message}</p></div>`;
+            }
+        }
+
+        async function checkTableStructure() {
+            const resultDiv = document.getElementById('structureResult');
+            resultDiv.innerHTML = '<p>Checking table structure...</p>';
+            
+            try {
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .select('*')
+                    .limit(1);
+                
+                if (error) {
+                    resultDiv.innerHTML = `<div class="error"><h4>❌ Table Access Failed</h4><p><strong>Error:</strong> ${error.message}</p></div>`;
+                    return;
+                }
+                
+                if (data && data.length > 0) {
+                    const columns = Object.keys(data[0]);
+                    const audioColumns = columns.filter(col => col.includes('audio'));
+                    
+                    let html = '<div class="info"><h4>📋 Table Structure</h4>';
+                    html += '<p><strong>All columns:</strong></p><pre>' + JSON.stringify(columns, null, 2) + '</pre>';
+                    
+                    if (audioColumns.length > 0) {
+                        html += '<p><strong>Audio-related columns:</strong></p><pre>' + JSON.stringify(audioColumns, null, 2) + '</pre>';
+                    } else {
+                        html += '<p><strong>❌ No audio-related columns found!</strong></p>';
+                    }
+                    
+                    html += '</div>';
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = '<div class="info"><h4>📋 Table is Empty</h4><p>No data found in song_requests table.</p></div>';
+                }
+                
+            } catch (err) {
+                resultDiv.innerHTML = `<div class="error"><h4>❌ Error</h4><p><strong>Error:</strong> ${err.message}</p></div>`;
+            }
+        }
+
+        async function checkAudioColumns() {
+            const resultDiv = document.getElementById('structureResult');
+            resultDiv.innerHTML += '<p>Checking audio columns specifically...</p>';
+            
+            try {
+                // Try to select audio columns specifically
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .select('id, audio_file_url, audio_file_id, audio_file_name, audio_file_size, audio_uploaded_at')
+                    .limit(1);
+                
+                if (error) {
+                    if (error.message.includes('column') && error.message.includes('does not exist')) {
+                        resultDiv.innerHTML += `<div class="error"><h4>❌ Audio Columns Missing</h4><p>The audio columns don't exist yet. Run the <code>improve-audio-persistence.sql</code> script first.</p></div>`;
+                    } else {
+                        resultDiv.innerHTML += `<div class="error"><h4>❌ Audio Column Check Failed</h4><p><strong>Error:</strong> ${error.message}</p></div>`;
+                    }
+                } else {
+                    resultDiv.innerHTML += `<div class="success"><h4>✅ Audio Columns Exist</h4><p>All audio-related columns are present and accessible!</p></div>`;
+                }
+                
+            } catch (err) {
+                resultDiv.innerHTML += `<div class="error"><h4>❌ Error</h4><p><strong>Error:</strong> ${err.message}</p></div>`;
+            }
+        }
+
+        async function testUpdatePermissions() {
+            const resultDiv = document.getElementById('permissionResult');
+            resultDiv.innerHTML = '<p>Testing update permissions...</p>';
+            
+            try {
+                // First, get a request ID to test with
+                const { data: requests, error: fetchError } = await supabase
+                    .from('song_requests')
+                    .select('id')
+                    .limit(1);
+                
+                if (fetchError) {
+                    resultDiv.innerHTML = `<div class="error"><h4>❌ Cannot Fetch Requests</h4><p><strong>Error:</strong> ${fetchError.message}</p></div>`;
+                    return;
+                }
+                
+                if (!requests || requests.length === 0) {
+                    resultDiv.innerHTML = '<div class="info"><h4>📋 No Requests Found</h4><p>Create a song request first to test update permissions.</p></div>';
+                    return;
+                }
+                
+                const testRequestId = requests[0].id;
+                
+                // Try to update with test data
+                const { data: updateData, error: updateError } = await supabase
+                    .from('song_requests')
+                    .update({ audio_file_url: 'https://test.example.com/permission-test.mp3' })
+                    .eq('id', testRequestId)
+                    .select();
+                
+                if (updateError) {
+                    resultDiv.innerHTML = `<div class="error"><h4>❌ Update Permission Denied</h4><p><strong>Error:</strong> ${updateError.message}</p><p><strong>Code:</strong> ${updateError.code || 'Unknown'}</p><p>This indicates an RLS policy or permission issue. Run the <code>fix-audio-update-permissions.sql</code> script.</p></div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="success"><h4>✅ Update Permissions OK</h4><p>Successfully updated request ID ${testRequestId}!</p><p><strong>Update result:</strong></p><pre>${JSON.stringify(updateData, null, 2)}</pre></div>`;
+                }
+                
+            } catch (err) {
+                resultDiv.innerHTML = `<div class="error"><h4>❌ Permission Test Error</h4><p><strong>Error:</strong> ${err.message}</p></div>`;
+            }
+        }
+
+        async function testRLSPolicies() {
+            const resultDiv = document.getElementById('permissionResult');
+            resultDiv.innerHTML += '<p>Checking RLS policies...</p>';
+            
+            try {
+                // This would require a server-side query, so we'll provide instructions
+                resultDiv.innerHTML += `<div class="info"><h4>📋 RLS Policy Check</h4><p>To check RLS policies, run this SQL in your Supabase SQL Editor:</p><pre>SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual, with_check
+FROM pg_policies 
+WHERE tablename = 'song_requests';</pre></div>`;
+            } catch (err) {
+                resultDiv.innerHTML += `<div class="error"><h4>❌ Error</h4><p><strong>Error:</strong> ${err.message}</p></div>`;
+            }
+        }
+
+        async function testAudioUpload() {
+            const resultDiv = document.getElementById('audioResult');
+            resultDiv.innerHTML = '<p>Testing audio upload to storage...</p>';
+            
+            try {
+                // Create a test file
+                const testContent = 'This is a test audio file content';
+                const testFile = new Blob([testContent], { type: 'audio/mpeg' });
+                const fileName = `test_audio_${Date.now()}.mp3`;
+                
+                const { data, error } = await supabase.storage
+                    .from('audio-files')
+                    .upload(fileName, testFile);
+                
+                if (error) {
+                    resultDiv.innerHTML = `<div class="error"><h4>❌ Audio Upload Failed</h4><p><strong>Error:</strong> ${error.message}</p></div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="success"><h4>✅ Audio Upload Successful</h4><p>Test file uploaded successfully!</p><p><strong>File:</strong> ${fileName}</p><p><strong>Upload result:</strong></p><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+                }
+                
+            } catch (err) {
+                resultDiv.innerHTML = `<div class="error"><h4>❌ Upload Error</h4><p><strong>Error:</strong> ${err.message}</p></div>`;
+            }
+        }
+
+        async function testAudioDatabaseUpdate() {
+            const resultDiv = document.getElementById('audioResult');
+            resultDiv.innerHTML += '<p>Testing audio database update...</p>';
+            
+            try {
+                // Get a request ID to test with
+                const { data: requests, error: fetchError } = await supabase
+                    .from('song_requests')
+                    .select('id')
+                    .limit(1);
+                
+                if (fetchError || !requests || requests.length === 0) {
+                    resultDiv.innerHTML += '<div class="info"><h4>📋 No Requests to Test</h4><p>Create a song request first to test audio database updates.</p></div>';
+                    return;
+                }
+                
+                const testRequestId = requests[0].id;
+                const testAudioData = {
+                    audio_file_url: 'https://test.example.com/audio-db-test.mp3',
+                    audio_file_id: 'test_db_123',
+                    audio_file_name: 'audio-db-test.mp3',
+                    audio_file_size: 1024000,
+                    audio_uploaded_at: new Date().toISOString()
+                };
+                
+                const { data: updateData, error: updateError } = await supabase
+                    .from('song_requests')
+                    .update(testAudioData)
+                    .eq('id', testRequestId)
+                    .select();
+                
+                if (updateError) {
+                    resultDiv.innerHTML += `<div class="error"><h4>❌ Audio Database Update Failed</h4><p><strong>Error:</strong> ${updateError.message}</p><p>This indicates the audio columns don't exist or there's a permission issue.</p></div>`;
+                } else {
+                    resultDiv.innerHTML += `<div class="success"><h4>✅ Audio Database Update Successful</h4><p>Successfully updated request ID ${testRequestId} with audio data!</p><p><strong>Update result:</strong></p><pre>${JSON.stringify(updateData, null, 2)}</pre></div>`;
+                }
+                
+            } catch (err) {
+                resultDiv.innerHTML += `<div class="error"><h4>❌ Database Update Error</h4><p><strong>Error:</strong> ${err.message}</p></div>`;
+            }
+        }
+
+        async function runCompleteTest() {
+            const resultDiv = document.getElementById('completeTestResult');
+            resultDiv.innerHTML = '<p>Running complete audio upload test...</p>';
+            
+            try {
+                // Step 1: Test connection
+                resultDiv.innerHTML += '<p>1. Testing database connection...</p>';
+                const { data: requests, error: fetchError } = await supabase
+                    .from('song_requests')
+                    .select('id')
+                    .limit(1);
+                
+                if (fetchError || !requests || requests.length === 0) {
+                    resultDiv.innerHTML += '<div class="error"><p>❌ Cannot find requests to test with</p></div>';
+                    return;
+                }
+                
+                const testRequestId = requests[0].id;
+                resultDiv.innerHTML += `<p>✅ Found request ID: ${testRequestId}</p>`;
+                
+                // Step 2: Test storage upload
+                resultDiv.innerHTML += '<p>2. Testing storage upload...</p>';
+                const testContent = 'Complete test audio file';
+                const testFile = new Blob([testContent], { type: 'audio/mpeg' });
+                const fileName = `complete_test_${Date.now()}.mp3`;
+                
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from('audio-files')
+                    .upload(fileName, testFile);
+                
+                if (uploadError) {
+                    resultDiv.innerHTML += `<div class="error"><p>❌ Storage upload failed: ${uploadError.message}</p></div>`;
+                    return;
+                }
+                
+                resultDiv.innerHTML += `<p>✅ Storage upload successful: ${fileName}</p>`;
+                
+                // Step 3: Get public URL
+                resultDiv.innerHTML += '<p>3. Getting public URL...</p>';
+                const { data: urlData } = supabase.storage
+                    .from('audio-files')
+                    .getPublicUrl(fileName);
+                
+                const publicUrl = urlData.publicUrl;
+                resultDiv.innerHTML += `<p>✅ Public URL: ${publicUrl}</p>`;
+                
+                // Step 4: Update database
+                resultDiv.innerHTML += '<p>4. Updating database...</p>';
+                const audioData = {
+                    audio_file_url: publicUrl,
+                    audio_file_id: `complete_test_${Date.now()}`,
+                    audio_file_name: fileName,
+                    audio_file_size: testFile.size,
+                    audio_uploaded_at: new Date().toISOString()
+                };
+                
+                const { data: updateData, error: updateError } = await supabase
+                    .from('song_requests')
+                    .update(audioData)
+                    .eq('id', testRequestId)
+                    .select();
+                
+                if (updateError) {
+                    resultDiv.innerHTML += `<div class="error"><p>❌ Database update failed: ${updateError.message}</p></div>`;
+                    return;
+                }
+                
+                resultDiv.innerHTML += `<p>✅ Database update successful</p>`;
+                
+                // Step 5: Verify persistence
+                resultDiv.innerHTML += '<p>5. Verifying persistence...</p>';
+                const { data: verifyData, error: verifyError } = await supabase
+                    .from('song_requests')
+                    .select('audio_file_url, audio_file_id, audio_file_name, audio_file_size, audio_uploaded_at')
+                    .eq('id', testRequestId)
+                    .single();
+                
+                if (verifyError) {
+                    resultDiv.innerHTML += `<div class="error"><p>❌ Persistence verification failed: ${verifyError.message}</p></div>`;
+                    return;
+                }
+                
+                resultDiv.innerHTML += `<div class="success"><h4>🎉 Complete Test Successful!</h4><p>All steps completed successfully:</p><ul><li>✅ Database connection</li><li>✅ Storage upload</li><li>✅ Public URL generation</li><li>✅ Database update</li><li>✅ Persistence verification</li></ul><p><strong>Final data:</strong></p><pre>${JSON.stringify(verifyData, null, 2)}</pre></div>`;
+                
+            } catch (err) {
+                resultDiv.innerHTML += `<div class="error"><p>❌ Complete test failed: ${err.message}</p></div>`;
+            }
+        }
+
+        // Auto-run connection test on page load
+        window.onload = function() {
+            testConnection();
+        };
+    </script>
+</body>
+</html>
