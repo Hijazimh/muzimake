@@ -903,6 +903,63 @@
             }
         }
         
+        // Function to verify audio file persistence in database
+        async function verifyAudioPersistence(requestId) {
+            try {
+                console.log('Verifying audio file persistence for request ID:', requestId);
+                
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .select('id, audio_file_url, audio_file_id, audio_file_name, audio_file_size, audio_uploaded_at')
+                    .eq('id', requestId)
+                    .single();
+                
+                if (error) {
+                    console.error('Error verifying audio persistence:', error);
+                    return null;
+                }
+                
+                console.log('Audio persistence verification result:', data);
+                
+                if (data.audio_file_url) {
+                    console.log('✅ Audio file is properly saved in database');
+                    return data;
+                } else {
+                    console.log('❌ No audio file found in database');
+                    return null;
+                }
+                
+            } catch (error) {
+                console.error('Error verifying audio persistence:', error);
+                return null;
+            }
+        }
+        
+        // Function to test audio file accessibility from database URL
+        async function testAudioFileAccessibility(requestId) {
+            try {
+                const audioData = await verifyAudioPersistence(requestId);
+                if (!audioData || !audioData.audio_file_url) {
+                    console.log('No audio file to test');
+                    return false;
+                }
+                
+                console.log('Testing accessibility of audio file:', audioData.audio_file_url);
+                const isAccessible = await testAudioUrlAccessibility(audioData.audio_file_url);
+                
+                if (isAccessible) {
+                    console.log('✅ Audio file is accessible from database URL');
+                } else {
+                    console.log('❌ Audio file is not accessible from database URL');
+                }
+                
+                return isAccessible;
+            } catch (error) {
+                console.error('Error testing audio file accessibility:', error);
+                return false;
+            }
+        }
+        
         // Test Supabase storage connection
         async function testStorageConnection() {
             try {
@@ -973,7 +1030,13 @@
                 uploadedAudioUrl = request.audio_file_url;
                 document.getElementById('uploadContainer').classList.add('hidden');
                 document.getElementById('uploadedFileInfo').classList.remove('hidden');
-                document.getElementById('uploadedFileName').textContent = 'Audio file uploaded';
+                
+                // Display detailed audio file information
+                const fileName = request.audio_file_name || 'Audio file uploaded';
+                const fileSize = request.audio_file_size ? `(${(request.audio_file_size / 1024 / 1024).toFixed(2)} MB)` : '';
+                const uploadDate = request.audio_uploaded_at ? new Date(request.audio_uploaded_at).toLocaleString() : '';
+                
+                document.getElementById('uploadedFileName').textContent = `${fileName} ${fileSize}`;
                 document.getElementById('uploadedFileUrl').textContent = request.audio_file_url;
                 
                 // Add a visual indicator that the file is already uploaded
@@ -981,11 +1044,20 @@
                 if (uploadSection) {
                     const indicator = document.createElement('div');
                     indicator.className = 'audio-attached-indicator mt-2 text-green-600 text-sm font-medium';
-                    indicator.textContent = '✅ Audio file already attached to this request';
+                    indicator.innerHTML = `
+                        ✅ Audio file already attached to this request<br>
+                        <span class="text-xs text-gray-500">Uploaded: ${uploadDate}</span>
+                    `;
                     uploadSection.appendChild(indicator);
                 }
                 
-                console.log('Loaded existing audio file:', request.audio_file_url);
+                console.log('Loaded existing audio file:', {
+                    url: request.audio_file_url,
+                    name: request.audio_file_name,
+                    size: request.audio_file_size,
+                    id: request.audio_file_id,
+                    uploadedAt: request.audio_uploaded_at
+                });
             } else {
                 // Reset upload state if no audio file exists
                 uploadedAudioUrl = null;
@@ -1102,9 +1174,11 @@
                 document.getElementById('uploadContainer').classList.add('hidden');
                 document.getElementById('uploadedFileInfo').classList.add('hidden');
                 
-                // Create a unique filename
+                // Create a unique filename with better tracking
                 const timestamp = Date.now();
-                const fileName = `audio_${currentRequest.id}_${timestamp}.${file.name.split('.').pop()}`;
+                const fileExtension = file.name.split('.').pop();
+                const fileName = `audio_${currentRequest.id}_${timestamp}.${fileExtension}`;
+                const audioFileId = `audio_${currentRequest.id}_${timestamp}`;
                 
                 // Upload to Supabase Storage
                 console.log('Uploading to Supabase Storage with filename:', fileName);
@@ -1146,8 +1220,18 @@
                     document.getElementById('uploadedFileUrl').textContent = uploadedAudioUrl;
                 }, 500);
                 
-                // Update the database with the audio file URL
-                await updateAudioFileUrl(uploadedAudioUrl);
+                // Update the database with comprehensive audio file information
+                await updateAudioFileInfo(uploadedAudioUrl, file.name, file.size, audioFileId);
+                
+                // Verify the data was saved correctly
+                setTimeout(async () => {
+                    const verification = await verifyAudioPersistence(currentRequest.id);
+                    if (verification) {
+                        console.log('✅ Audio file persistence verified successfully');
+                    } else {
+                        console.error('❌ Audio file persistence verification failed');
+                    }
+                }, 1000);
                 
                 return uploadedAudioUrl;
             } catch (error) {
@@ -1161,36 +1245,50 @@
             }
         }
         
-        // Update audio file URL in database
-        async function updateAudioFileUrl(audioUrl) {
+        // Update audio file information in database with comprehensive tracking
+        async function updateAudioFileInfo(audioUrl, fileName, fileSize, audioFileId) {
             if (!currentRequest) {
                 console.error('No current request selected for audio update');
                 return;
             }
             
             try {
-                console.log('Updating audio file URL in database for request ID:', currentRequest.id);
+                console.log('Updating audio file info in database for request ID:', currentRequest.id);
+                console.log('Audio file details:', {
+                    url: audioUrl,
+                    fileName: fileName,
+                    fileSize: fileSize,
+                    audioFileId: audioFileId
+                });
+                
+                const audioData = {
+                    audio_file_url: audioUrl,
+                    audio_file_id: audioFileId,
+                    audio_file_name: fileName,
+                    audio_file_size: fileSize,
+                    audio_uploaded_at: new Date().toISOString()
+                };
                 
                 const { error } = await supabase
                     .from('song_requests')
-                    .update({ audio_file_url: audioUrl })
+                    .update(audioData)
                     .eq('id', currentRequest.id);
                 
                 if (error) {
-                    console.error('Error updating audio file URL:', error);
+                    console.error('Error updating audio file info:', error);
                     throw error;
                 }
                 
-                console.log('Audio file URL updated successfully in database');
+                console.log('Audio file info updated successfully in database');
                 
                 // Update local data in both currentRequest and allRequests array
-                currentRequest.audio_file_url = audioUrl;
+                Object.assign(currentRequest, audioData);
                 
                 // Find and update the request in the allRequests array
                 const requestIndex = allRequests.findIndex(r => r.id === currentRequest.id);
                 if (requestIndex !== -1) {
-                    allRequests[requestIndex].audio_file_url = audioUrl;
-                    console.log('Updated audio URL in allRequests array at index:', requestIndex);
+                    Object.assign(allRequests[requestIndex], audioData);
+                    console.log('Updated audio info in allRequests array at index:', requestIndex);
                 } else {
                     console.error('Could not find request in allRequests array to update');
                 }
@@ -1202,7 +1300,7 @@
                 alert('Audio file uploaded and saved successfully!');
                 
             } catch (error) {
-                console.error('Error updating audio file URL:', error);
+                console.error('Error updating audio file info:', error);
                 throw error;
             }
         }
