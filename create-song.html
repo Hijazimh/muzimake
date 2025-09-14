@@ -382,25 +382,25 @@
                 <div class="border border-gray-200 rounded-xl p-6 mb-8">
                     <div class="flex justify-center mb-4">
                         <div class="flex space-x-1">
-                            <button class="review-indicator w-2 h-2 bg-gray-300 rounded-full transition-all duration-300 hover:scale-110 cursor-pointer" data-review="0"></button>
+                            <button class="review-indicator w-2 h-2 bg-custom-dark rounded-full transition-all duration-300 hover:scale-110 cursor-pointer" data-review="0"></button>
                             <button class="review-indicator w-2 h-2 bg-gray-300 rounded-full transition-all duration-300 hover:scale-110 cursor-pointer" data-review="1"></button>
-                            <button class="review-indicator w-2 h-2 bg-custom-dark rounded-full transition-all duration-300 hover:scale-110 cursor-pointer" data-review="2"></button>
+                            <button class="review-indicator w-2 h-2 bg-gray-300 rounded-full transition-all duration-300 hover:scale-110 cursor-pointer" data-review="2"></button>
                         </div>
                     </div>
-                    <div class="review-content relative overflow-hidden">
-                        <div class="review-slider flex transition-transform duration-500 ease-in-out" id="reviewSlider">
-                            <div class="review-slide w-full flex-shrink-0">
-                                <p class="text-custom-dark text-sm leading-relaxed text-center">
+                    <div class="review-content relative overflow-hidden" style="height: 80px;">
+                        <div class="review-slider flex transition-transform duration-500 ease-in-out" id="reviewSlider" style="width: 300%;">
+                            <div class="review-slide w-1/3 flex-shrink-0 flex items-center justify-center">
+                                <p class="text-custom-dark text-sm leading-relaxed text-center px-4">
                                     ❤️ "Loved the song they made for my sister, it was so personal and sweet. She cried when she heard it ❤️."
                                 </p>
                             </div>
-                            <div class="review-slide w-full flex-shrink-0">
-                                <p class="text-custom-dark text-sm leading-relaxed text-center">
+                            <div class="review-slide w-1/3 flex-shrink-0 flex items-center justify-center">
+                                <p class="text-custom-dark text-sm leading-relaxed text-center px-4">
                                     Honestly didn't expect it to be this good. Sent them a few details and got back a song my friend keeps replaying.
                                 </p>
                             </div>
-                            <div class="review-slide w-full flex-shrink-0">
-                                <p class="text-custom-dark text-sm leading-relaxed text-center">
+                            <div class="review-slide w-1/3 flex-shrink-0 flex items-center justify-center">
+                                <p class="text-custom-dark text-sm leading-relaxed text-center px-4">
                                     Such a unique gift. I surprised my fiancé with a song and he said it's the best present he's ever had.
                                 </p>
                             </div>
@@ -635,95 +635,42 @@
 
         // Review carousel functionality
         let currentReviewIndex = 0;
-        let reviewSlider, indicators, reviewContent;
+        let reviewSlider, indicators;
         let autoRotateInterval;
         
         function initCarousel() {
             reviewSlider = document.getElementById('reviewSlider');
             indicators = document.querySelectorAll('.review-indicator');
-            reviewContent = document.querySelector('.review-content');
-            
-            console.log('Trying to initialize carousel:', {
-                slider: reviewSlider,
-                indicators: indicators.length,
-                content: reviewContent
-            });
             
             if (!reviewSlider || !indicators.length) {
-                console.log('Carousel elements not found, retrying...');
                 setTimeout(initCarousel, 100);
                 return;
             }
             
-            console.log('Carousel initialized successfully!');
+            console.log('Carousel initialized!');
             
-            // Start with first review (index 0)
-            currentReviewIndex = 0;
-            updateReview();
+            // Set initial position (show first review)
+            updateCarousel();
             
             // Add click handlers for indicators
             indicators.forEach((indicator, index) => {
-                console.log('Adding click handler for indicator', index);
-                indicator.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    console.log('Indicator clicked:', index);
+                indicator.addEventListener('click', function() {
                     goToReview(index);
                 });
             });
             
-            // Auto-rotate reviews every 5 seconds
-            autoRotateInterval = setInterval(function() {
-                console.log('Auto-rotating to next review...');
-                nextReview();
-            }, 5000);
-            
-            // Touch/swipe support for mobile
-            if (reviewContent) {
-                let touchStartX = 0;
-                let touchEndX = 0;
-                
-                reviewContent.addEventListener('touchstart', function(e) {
-                    touchStartX = e.changedTouches[0].screenX;
-                });
-                
-                reviewContent.addEventListener('touchend', function(e) {
-                    touchEndX = e.changedTouches[0].screenX;
-                    handleSwipe();
-                });
-                
-                function handleSwipe() {
-                    const swipeThreshold = 50;
-                    const diff = touchStartX - touchEndX;
-                    
-                    if (Math.abs(diff) > swipeThreshold) {
-                        if (diff > 0) {
-                            // Swipe left - next review
-                            nextReview();
-                        } else {
-                            // Swipe right - previous review
-                            prevReview();
-                        }
-                        
-                        // Reset auto-rotate timer after manual swipe
-                        clearInterval(autoRotateInterval);
-                        autoRotateInterval = setInterval(function() {
-                            nextReview();
-                        }, 5000);
-                    }
-                }
-            }
+            // Start auto-rotation
+            startAutoRotation();
         }
         
-        function updateReview() {
+        function updateCarousel() {
             if (!reviewSlider || !indicators.length) return;
             
-            // Animate slider to current review
-            const translateX = -currentReviewIndex * 100;
+            // Move slider to show current review
+            const translateX = -currentReviewIndex * 33.333; // 33.333% per slide
             reviewSlider.style.transform = `translateX(${translateX}%)`;
             
-            console.log('Updating review:', currentReviewIndex, 'translateX:', translateX);
-            
-            // Update indicators with smooth animation
+            // Update indicators
             indicators.forEach((indicator, index) => {
                 if (index === currentReviewIndex) {
                     indicator.classList.remove('bg-gray-300');
@@ -739,25 +686,27 @@
         
         function goToReview(index) {
             currentReviewIndex = index;
-            updateReview();
+            updateCarousel();
             
-            // Reset auto-rotate timer after manual click
-            if (autoRotateInterval) {
-                clearInterval(autoRotateInterval);
-                autoRotateInterval = setInterval(function() {
-                    nextReview();
-                }, 5000);
-            }
+            // Restart auto-rotation after manual click
+            startAutoRotation();
         }
         
         function nextReview() {
-            currentReviewIndex = (currentReviewIndex + 1) % indicators.length;
-            updateReview();
+            currentReviewIndex = (currentReviewIndex + 1) % 3;
+            updateCarousel();
         }
         
-        function prevReview() {
-            currentReviewIndex = currentReviewIndex === 0 ? indicators.length - 1 : currentReviewIndex - 1;
-            updateReview();
+        function startAutoRotation() {
+            // Clear existing interval
+            if (autoRotateInterval) {
+                clearInterval(autoRotateInterval);
+            }
+            
+            // Start new interval
+            autoRotateInterval = setInterval(function() {
+                nextReview();
+            }, 5000);
         }
 
         // Initialize everything after DOM is ready
