@@ -1,25 +1,45 @@
 const nodemailer = require('nodemailer');
 
 module.exports = async (req, res) => {
-    // Enable CORS
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    try {
+        console.log('=== EMAIL API START ===');
+        console.log('Request method:', req.method);
+        console.log('Request body:', req.body);
+        
+        // Enable CORS
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
+        if (req.method === 'OPTIONS') {
+            console.log('OPTIONS request - returning 200');
+            return res.status(200).end();
+        }
 
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method Not Allowed' });
-    }
+        if (req.method !== 'POST') {
+            console.log('Invalid method:', req.method);
+            return res.status(405).json({ error: 'Method Not Allowed' });
+        }
 
-    const { to, subject, audioUrl, customerName, recipientName, celebration, genre, voiceGender } = req.body;
+        const { to, subject, audioUrl, customerName, recipientName, celebration, genre, voiceGender } = req.body;
 
-    // Validate required fields
-    if (!to || !subject || !audioUrl || !customerName || !recipientName || !celebration || !genre || !voiceGender) {
-        return res.status(400).json({ error: 'Missing required fields' });
-    }
+        console.log('Extracted fields:');
+        console.log('- to:', to);
+        console.log('- subject:', subject);
+        console.log('- audioUrl:', audioUrl);
+        console.log('- customerName:', customerName);
+        console.log('- recipientName:', recipientName);
+        console.log('- celebration:', celebration);
+        console.log('- genre:', genre);
+        console.log('- voiceGender:', voiceGender);
+
+        // Validate required fields
+        if (!to || !subject || !audioUrl || !customerName || !recipientName || !celebration || !genre || !voiceGender) {
+            console.log('Missing required fields validation failed');
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+        
+        console.log('All required fields present - proceeding with email setup');
 
     // Create SMTP transporter with Maileroo credentials
     const transporter = nodemailer.createTransporter({
@@ -77,25 +97,48 @@ module.exports = async (req, res) => {
         html: emailHtml,
     };
 
-    try {
-        console.log('Attempting to send email via SMTP...');
-        console.log('To:', to);
-        console.log('Subject:', subject);
+        try {
+            console.log('Attempting to send email via SMTP...');
+            console.log('To:', to);
+            console.log('Subject:', subject);
+            console.log('SMTP Config:', {
+                host: 'smtp.maileroo.com',
+                port: 587,
+                user: 'hello@muzimake.com'
+            });
+            
+            await transporter.sendMail(mailOptions);
+            console.log('Email sent successfully via SMTP');
+            
+            res.status(200).json({ 
+                message: 'Email sent successfully',
+                method: 'SMTP',
+                timestamp: new Date().toISOString()
+            });
+        } catch (smtpError) {
+            console.error('SMTP Error details:', smtpError);
+            console.error('SMTP Error message:', smtpError.message);
+            console.error('SMTP Error code:', smtpError.code);
+            res.status(500).json({ 
+                error: 'Failed to send email via SMTP', 
+                details: smtpError.message,
+                code: smtpError.code,
+                method: 'SMTP'
+            });
+        }
         
-        await transporter.sendMail(mailOptions);
-        console.log('Email sent successfully via SMTP');
+    } catch (apiError) {
+        console.error('=== EMAIL API ERROR ===');
+        console.error('API Error:', apiError);
+        console.error('API Error message:', apiError.message);
+        console.error('API Error stack:', apiError.stack);
         
-        res.status(200).json({ 
-            message: 'Email sent successfully',
-            method: 'SMTP',
-            timestamp: new Date().toISOString()
-        });
-    } catch (error) {
-        console.error('Error sending email via SMTP:', error);
         res.status(500).json({ 
-            error: 'Failed to send email', 
-            details: error.message,
-            method: 'SMTP'
+            error: 'Internal server error', 
+            details: apiError.message,
+            method: 'API'
         });
     }
+    
+    console.log('=== EMAIL API END ===');
 };
