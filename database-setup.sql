@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS song_requests (
     duration TEXT,
     special_instructions TEXT,
     audio_files TEXT[],
+    audio_file_url TEXT,
     status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'complete', 'sent')),
     price DECIMAL(10,2),
     order_id TEXT UNIQUE,
