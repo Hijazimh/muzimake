@@ -572,6 +572,19 @@
                 <!-- MP3 File Section -->
                 <div class="mb-8">
                     <h3 class="text-[13px] font-semibold text-[#303030] mb-4">mp3 File</h3>
+                    
+                    <!-- Upload Source Selection -->
+                    <div class="mb-4">
+                        <div class="flex gap-4">
+                            <button id="uploadFromComputerBtn" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                                Upload from Computer
+                            </button>
+                            <button id="selectFromBucketBtn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors">
+                                Select from Media
+                            </button>
+                        </div>
+                    </div>
+                    
                     <div class="flex items-center gap-4">
                         <div id="uploadContainer" class="bg-[#f0f0f0] flex flex-col items-center justify-center rounded-[10px] w-[115px] h-[60px] cursor-pointer hover:bg-[#e8e8e8] transition-colors">
                             <input type="file" id="audioFileInput" accept=".mp3,.wav,.m4a" class="hidden" />
@@ -631,6 +644,31 @@
         </div>
     </div>
 
+    <!-- Bucket File Selection Modal -->
+    <div id="bucketFileModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Select Audio File from Media</h3>
+                <button id="closeBucketModal" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto">
+                <div id="bucketFileList" class="space-y-2">
+                    <!-- Bucket files will be loaded here -->
+                </div>
+            </div>
+            
+            <div class="flex justify-end gap-3 mt-4 pt-4 border-t">
+                <button id="cancelBucketSelection" class="px-4 py-2 text-gray-600 hover:text-gray-800">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
@@ -1141,23 +1179,20 @@
                 // Create audio attachment UI matching Figma design exactly
                 console.log('Creating Figma-matching audio UI for:', fileName);
                 
-                // Replace the uploadedFileInfo content with Figma-matching design
+                // Update the uploadedFileInfo content with Figma-matching design
                 const uploadedFileInfo = document.getElementById('uploadedFileInfo');
                 if (uploadedFileInfo) {
                     // Clear existing content and create new Figma-matching UI
                     uploadedFileInfo.innerHTML = `
-                        <div class="flex items-center space-x-4">
-                            <span class="text-sm font-medium text-gray-900">mp3 File</span>
-                            <div class="relative bg-gray-100 rounded-lg p-3 flex-1">
-                                <button id="deleteAudioBtn" class="absolute top-2 right-2 p-1 text-gray-600 hover:text-red-600 transition-colors" title="Delete audio file">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                    </svg>
-                                </button>
-                                <div class="pr-8">
-                                    <div class="text-sm font-medium text-gray-900" id="audioFileName">${fileName}</div>
-                                    <div class="text-xs text-gray-500 mt-1 break-all" id="audioFileUrl">${request.audio_file_url}</div>
-                                </div>
+                        <div class="bg-gray-100 rounded-lg p-3 relative">
+                            <button id="deleteAudioBtn" class="absolute top-2 right-2 p-1 text-gray-600 hover:text-red-600 transition-colors" title="Delete audio file">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                            <div class="pr-8">
+                                <div class="text-sm font-medium text-gray-900" id="audioFileName">${fileName}</div>
+                                <div class="text-xs text-gray-500 mt-1 break-all" id="audioFileUrl">${request.audio_file_url}</div>
                             </div>
                         </div>
                         <audio id="audioPlayer" class="hidden" preload="metadata">
@@ -1927,6 +1962,26 @@
                     this.style.height = Math.max(109, this.scrollHeight) + 'px';
                 });
             }
+            
+            // Upload source selection functionality
+            document.getElementById('uploadFromComputerBtn').addEventListener('click', function() {
+                document.getElementById('audioFileInput').click();
+            });
+            
+            document.getElementById('selectFromBucketBtn').addEventListener('click', function() {
+                openBucketFileModal();
+            });
+            
+            // Bucket file modal functionality
+            document.getElementById('closeBucketModal').addEventListener('click', closeBucketFileModal);
+            document.getElementById('cancelBucketSelection').addEventListener('click', closeBucketFileModal);
+            
+            // Close modal when clicking outside
+            document.getElementById('bucketFileModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeBucketFileModal();
+                }
+            });
         });
 
         // Setup audio player functionality
@@ -2031,6 +2086,127 @@
             } catch (error) {
                 console.error('Error deleting audio file:', error);
                 alert('Failed to delete audio file. Please try again.');
+            }
+        }
+        
+        // Bucket file selection functionality
+        async function openBucketFileModal() {
+            console.log('Opening bucket file selection modal');
+            const modal = document.getElementById('bucketFileModal');
+            const fileList = document.getElementById('bucketFileList');
+            
+            try {
+                // Load files from audio-files bucket
+                const { data: files, error } = await supabase.storage
+                    .from('audio-files')
+                    .list('', {
+                        limit: 100,
+                        offset: 0,
+                        sortBy: { column: 'created_at', order: 'desc' }
+                    });
+                
+                if (error) {
+                    console.error('Error loading bucket files:', error);
+                    alert('Failed to load media files. Please try again.');
+                    return;
+                }
+                
+                // Clear existing files
+                fileList.innerHTML = '';
+                
+                if (files.length === 0) {
+                    fileList.innerHTML = '<p class="text-gray-500 text-center py-4">No audio files found in media library.</p>';
+                } else {
+                    // Display files
+                    files.forEach(file => {
+                        const fileItem = document.createElement('div');
+                        fileItem.className = 'flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer';
+                        fileItem.innerHTML = `
+                            <div class="flex-1">
+                                <div class="font-medium text-gray-900">${file.name}</div>
+                                <div class="text-sm text-gray-500">${(file.metadata?.size / 1024 / 1024).toFixed(2)} MB</div>
+                            </div>
+                            <button class="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700" onclick="selectBucketFile('${file.name}')">
+                                Select
+                            </button>
+                        `;
+                        fileList.appendChild(fileItem);
+                    });
+                }
+                
+                modal.classList.remove('hidden');
+            } catch (error) {
+                console.error('Error opening bucket modal:', error);
+                alert('Failed to open media library. Please try again.');
+            }
+        }
+        
+        function closeBucketFileModal() {
+            document.getElementById('bucketFileModal').classList.add('hidden');
+        }
+        
+        async function selectBucketFile(fileName) {
+            try {
+                console.log('Selecting bucket file:', fileName);
+                
+                // Get public URL for the selected file
+                const { data } = supabase.storage
+                    .from('audio-files')
+                    .getPublicUrl(fileName);
+                
+                const fileUrl = data.publicUrl;
+                
+                // Get file size from metadata
+                const { data: fileData } = await supabase.storage
+                    .from('audio-files')
+                    .download(fileName);
+                
+                const fileSize = fileData ? fileData.size : 0;
+                const fileSizeMB = (fileSize / 1024 / 1024).toFixed(2);
+                
+                // Update the UI with selected file
+                uploadedAudioUrl = fileUrl;
+                
+                // Hide upload container and show file info
+                document.getElementById('uploadContainer').classList.add('hidden');
+                document.getElementById('uploadedFileInfo').classList.remove('hidden');
+                
+                // Update file info display
+                const uploadedFileInfo = document.getElementById('uploadedFileInfo');
+                if (uploadedFileInfo) {
+                    uploadedFileInfo.innerHTML = `
+                        <div class="bg-gray-100 rounded-lg p-3 relative">
+                            <button id="deleteAudioBtn" class="absolute top-2 right-2 p-1 text-gray-600 hover:text-red-600 transition-colors" title="Delete audio file">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                            <div class="pr-8">
+                                <div class="text-sm font-medium text-gray-900" id="audioFileName">${fileName} (${fileSizeMB} MB)</div>
+                                <div class="text-xs text-gray-500 mt-1 break-all" id="audioFileUrl">${fileUrl}</div>
+                            </div>
+                        </div>
+                        <audio id="audioPlayer" class="hidden" preload="metadata">
+                            <source src="${fileUrl}" type="audio/mpeg">
+                            <source src="${fileUrl}" type="audio/wav">
+                            <source src="${fileUrl}" type="audio/m4a">
+                            <source src="${fileUrl}" type="audio/mp4">
+                            Your browser does not support the audio element.
+                        </audio>
+                    `;
+                    
+                    // Setup delete functionality
+                    setupAudioPlayer();
+                }
+                
+                // Close the modal
+                closeBucketFileModal();
+                
+                console.log('Bucket file selected successfully:', fileName);
+                
+            } catch (error) {
+                console.error('Error selecting bucket file:', error);
+                alert('Failed to select file. Please try again.');
             }
         }
     </script>
