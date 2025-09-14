@@ -1002,6 +1002,21 @@
     </script>
     
     <!-- Crisp Chat Widget -->
-    <script type="text/javascript">window.$crisp=[];window.CRISP_WEBSITE_ID="55074e39-8662-48a2-bc60-3ba573382582";(function(){d=document;s=d.createElement("script");s.src="https://client.crisp.chat/l.js";s.async=1;d.getElementsByTagName("head")[0].appendChild(s);})();</script>
+    <script type="text/javascript">
+        window.$crisp=[];
+        window.CRISP_WEBSITE_ID="55074e39-8662-48a2-bc60-3ba573382582";
+        
+        // Customize Crisp widget appearance
+        window.$crisp.push(["set", "color:primary", "#FF6B35"]); // Orange color
+        window.$crisp.push(["set", "color:accent", "#FF6B35"]); // Orange accent
+        
+        (function(){
+            d=document;
+            s=d.createElement("script");
+            s.src="https://client.crisp.chat/l.js";
+            s.async=1;
+            d.getElementsByTagName("head")[0].appendChild(s);
+        })();
+    </script>
 </body>
 </html>

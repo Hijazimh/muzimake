@@ -371,7 +371,7 @@
                 <div>
                     <h4 class="text-white text-xs font-bold tracking-wider uppercase mb-4">Customer</h4>
                     <ul class="space-y-3">
-                        <li><a href="#" class="text-white text-sm opacity-75 hover:opacity-100 transition-opacity">Support</a></li>
+                        <li><a href="#" onclick="window.$crisp.push(['do', 'chat:open']); return false;" class="text-white text-sm opacity-75 hover:opacity-100 transition-opacity cursor-pointer">Support</a></li>
                         <li><a href="#" class="text-white text-sm opacity-75 hover:opacity-100 transition-opacity">Song Revision Policy</a></li>
                         <li><a href="#" class="text-white text-sm opacity-75 hover:opacity-100 transition-opacity">Privacy Policy</a></li>
                         <li><a href="#" class="text-white text-sm opacity-75 hover:opacity-100 transition-opacity">Terms of Use</a></li>
@@ -551,6 +551,24 @@
                 burgerMenu.classList.remove('open');
             }
         });
+    </script>
+    
+    <!-- Crisp Chat Widget -->
+    <script type="text/javascript">
+        window.$crisp=[];
+        window.CRISP_WEBSITE_ID="55074e39-8662-48a2-bc60-3ba573382582";
+        
+        // Customize Crisp widget appearance
+        window.$crisp.push(["set", "color:primary", "#FF6B35"]); // Orange color
+        window.$crisp.push(["set", "color:accent", "#FF6B35"]); // Orange accent
+        
+        (function(){
+            d=document;
+            s=d.createElement("script");
+            s.src="https://client.crisp.chat/l.js";
+            s.async=1;
+            d.getElementsByTagName("head")[0].appendChild(s);
+        })();
     </script>
 </body>
 </html>
