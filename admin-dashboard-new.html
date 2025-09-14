@@ -1067,6 +1067,9 @@
                 return;
             }
             
+            console.log('Preparing to send email to:', currentRequest.customer_email);
+            console.log('Audio URL:', uploadedAudioUrl);
+            
             try {
                 // Prepare email data
                 const emailData = {
@@ -1107,17 +1110,22 @@
                 };
                 
                 // Send email via Maileroo API
+                console.log('Sending email with data:', emailData);
                 const response = await fetch('https://api.maileroo.com/send', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer YOUR_MAILEROO_API_KEY' // Replace with actual API key
+                        'Authorization': 'Bearer 33bac85213e874ed550be246cd7057783e865417286239a695a1ce8dfad491d4'
                     },
                     body: JSON.stringify(emailData)
                 });
                 
+                console.log('Maileroo response status:', response.status);
+                const responseData = await response.json();
+                console.log('Maileroo response:', responseData);
+                
                 if (!response.ok) {
-                    throw new Error('Failed to send email');
+                    throw new Error(`Failed to send email: ${responseData.message || response.statusText}`);
                 }
                 
                 // Update status to sent
