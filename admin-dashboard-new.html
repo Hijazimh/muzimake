@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Muzimake</title>
-    <!-- Cache bust: v2.2 - Force refresh -->
+    <!-- Cache bust: v2.3 - Comprehensive debugging -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -1071,8 +1071,11 @@
                 return;
             }
             
+            console.log('=== EMAIL DEBUG START ===');
             console.log('Preparing to send email to:', currentRequest.customer_email);
             console.log('Audio URL:', uploadedAudioUrl);
+            console.log('Current request object:', currentRequest);
+            console.log('Uploaded audio URL:', uploadedAudioUrl);
             
             try {
                 // Prepare email data
@@ -1126,6 +1129,7 @@
                 console.log('Sending email via Maileroo API v2...');
                 console.log('Using API endpoint: https://smtp.maileroo.com/api/v2/emails');
                 console.log('Cache bust timestamp:', new Date().toISOString());
+                console.log('Email data being sent:', JSON.stringify(emailData, null, 2));
                 
                 const response = await fetch('https://smtp.maileroo.com/api/v2/emails', {
                     method: 'POST',
@@ -1137,8 +1141,19 @@
                 });
                 
                 console.log('Maileroo API response status:', response.status);
-                const responseData = await response.json();
-                console.log('Maileroo API response:', responseData);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+                
+                let responseData;
+                try {
+                    responseData = await response.json();
+                    console.log('Maileroo API response:', responseData);
+                } catch (jsonError) {
+                    console.error('Failed to parse JSON response:', jsonError);
+                    const responseText = await response.text();
+                    console.log('Raw response text:', responseText);
+                    throw new Error(`Invalid JSON response: ${responseText}`);
+                }
+                console.log('=== EMAIL DEBUG END ===');
                 
                 if (!response.ok) {
                     throw new Error(`Failed to send email: ${responseData.error || response.statusText}`);
