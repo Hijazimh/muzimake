@@ -1139,11 +1139,13 @@
                 document.getElementById('uploadedFileUrl').textContent = request.audio_file_url;
                 
                 // Create audio attachment UI matching Figma design exactly
-                const uploadSection = document.querySelector('#uploadSection');
-                if (uploadSection) {
-                    const indicator = document.createElement('div');
-                    indicator.className = 'audio-attached-indicator mt-4';
-                    indicator.innerHTML = `
+                console.log('Creating Figma-matching audio UI for:', fileName);
+                
+                // Replace the uploadedFileInfo content with Figma-matching design
+                const uploadedFileInfo = document.getElementById('uploadedFileInfo');
+                if (uploadedFileInfo) {
+                    // Clear existing content and create new Figma-matching UI
+                    uploadedFileInfo.innerHTML = `
                         <div class="flex items-center space-x-4">
                             <span class="text-sm font-medium text-gray-900">mp3 File</span>
                             <div class="relative bg-gray-100 rounded-lg p-3 flex-1">
@@ -1166,10 +1168,12 @@
                             Your browser does not support the audio element.
                         </audio>
                     `;
-                    uploadSection.appendChild(indicator);
+                    console.log('Figma-matching audio UI created and appended');
                     
                     // Setup audio player functionality
                     setupAudioPlayer();
+                } else {
+                    console.error('Uploaded file info element not found!');
                 }
                 
                 console.log('Loaded existing audio file:', {
