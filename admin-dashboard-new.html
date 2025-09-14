@@ -1027,6 +1027,38 @@
         // Make test function available globally for console testing
         window.testDatabaseUpdate = testDatabaseUpdate;
         
+        // Simple test function to manually update a record with audio data
+        window.testAudioUpdate = async function(requestId = 21) {
+            console.log('Testing audio update for request ID:', requestId);
+            
+            const testData = {
+                audio_file_url: 'https://test.example.com/manual-test.mp3',
+                audio_file_id: 'manual_test_123',
+                audio_file_name: 'manual-test.mp3',
+                audio_file_size: 2048000,
+                audio_uploaded_at: new Date().toISOString()
+            };
+            
+            try {
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .update(testData)
+                    .eq('id', requestId)
+                    .select();
+                
+                if (error) {
+                    console.error('❌ Manual test failed:', error);
+                } else {
+                    console.log('✅ Manual test successful:', data);
+                }
+                
+                return { data, error };
+            } catch (err) {
+                console.error('❌ Manual test exception:', err);
+                return { error: err };
+            }
+        };
+        
         // Test Supabase storage connection
         async function testStorageConnection() {
             try {
@@ -1234,7 +1266,15 @@
         // File upload functionality
         async function uploadAudioFile(file) {
             try {
+                console.log('=== AUDIO UPLOAD START ===');
                 console.log('Starting upload for file:', file.name, 'Size:', file.size, 'Type:', file.type);
+                console.log('Current request:', currentRequest);
+                
+                if (!currentRequest || !currentRequest.id) {
+                    throw new Error('No request selected for audio upload');
+                }
+                
+                console.log('Uploading audio for request ID:', currentRequest.id);
                 
                 // Show progress
                 document.getElementById('uploadProgress').classList.remove('hidden');
@@ -1288,13 +1328,24 @@
                 }, 500);
                 
                 // Update the database with comprehensive audio file information
+                console.log('=== CALLING DATABASE UPDATE ===');
+                console.log('Audio URL:', uploadedAudioUrl);
+                console.log('File name:', file.name);
+                console.log('File size:', file.size);
+                console.log('Audio file ID:', audioFileId);
+                console.log('Target request ID:', currentRequest.id);
+                
                 await updateAudioFileInfo(uploadedAudioUrl, file.name, file.size, audioFileId);
+                
+                console.log('=== DATABASE UPDATE COMPLETED ===');
                 
                 // Verify the data was saved correctly
                 setTimeout(async () => {
+                    console.log('=== VERIFYING PERSISTENCE ===');
                     const verification = await verifyAudioPersistence(currentRequest.id);
                     if (verification) {
                         console.log('✅ Audio file persistence verified successfully');
+                        console.log('Verification data:', verification);
                     } else {
                         console.error('❌ Audio file persistence verification failed');
                     }
