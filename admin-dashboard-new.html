@@ -1261,6 +1261,7 @@
                     audioFileId: audioFileId
                 });
                 
+                // First, try to update with the new comprehensive audio data
                 const audioData = {
                     audio_file_url: audioUrl,
                     audio_file_id: audioFileId,
@@ -1269,28 +1270,57 @@
                     audio_uploaded_at: new Date().toISOString()
                 };
                 
+                console.log('Attempting to update with comprehensive audio data:', audioData);
+                
                 const { error } = await supabase
                     .from('song_requests')
                     .update(audioData)
                     .eq('id', currentRequest.id);
                 
                 if (error) {
-                    console.error('Error updating audio file info:', error);
-                    throw error;
-                }
-                
-                console.log('Audio file info updated successfully in database');
-                
-                // Update local data in both currentRequest and allRequests array
-                Object.assign(currentRequest, audioData);
-                
-                // Find and update the request in the allRequests array
-                const requestIndex = allRequests.findIndex(r => r.id === currentRequest.id);
-                if (requestIndex !== -1) {
-                    Object.assign(allRequests[requestIndex], audioData);
-                    console.log('Updated audio info in allRequests array at index:', requestIndex);
+                    console.error('Comprehensive update failed, trying basic update:', error);
+                    
+                    // If comprehensive update fails, try with just the basic audio_file_url
+                    const basicAudioData = {
+                        audio_file_url: audioUrl
+                    };
+                    
+                    console.log('Attempting basic update with just audio_file_url:', basicAudioData);
+                    
+                    const { error: basicError } = await supabase
+                        .from('song_requests')
+                        .update(basicAudioData)
+                        .eq('id', currentRequest.id);
+                    
+                    if (basicError) {
+                        console.error('Basic update also failed:', basicError);
+                        throw basicError;
+                    } else {
+                        console.log('✅ Basic audio file URL saved successfully');
+                        // Update local data with basic info
+                        currentRequest.audio_file_url = audioUrl;
+                        
+                        // Find and update the request in the allRequests array
+                        const requestIndex = allRequests.findIndex(r => r.id === currentRequest.id);
+                        if (requestIndex !== -1) {
+                            allRequests[requestIndex].audio_file_url = audioUrl;
+                            console.log('Updated basic audio info in allRequests array at index:', requestIndex);
+                        }
+                    }
                 } else {
-                    console.error('Could not find request in allRequests array to update');
+                    console.log('✅ Comprehensive audio file info saved successfully');
+                    
+                    // Update local data in both currentRequest and allRequests array
+                    Object.assign(currentRequest, audioData);
+                    
+                    // Find and update the request in the allRequests array
+                    const requestIndex = allRequests.findIndex(r => r.id === currentRequest.id);
+                    if (requestIndex !== -1) {
+                        Object.assign(allRequests[requestIndex], audioData);
+                        console.log('Updated comprehensive audio info in allRequests array at index:', requestIndex);
+                    } else {
+                        console.error('Could not find request in allRequests array to update');
+                    }
                 }
                 
                 // Refresh the table to show the updated audio indicator
@@ -1301,6 +1331,7 @@
                 
             } catch (error) {
                 console.error('Error updating audio file info:', error);
+                alert('Audio file uploaded but failed to save to database. Please refresh and try again.');
                 throw error;
             }
         }
