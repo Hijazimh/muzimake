@@ -1985,16 +1985,29 @@
             
             // Use event delegation for delete buttons (more reliable for dynamic content)
             document.addEventListener('click', function(e) {
-                if (e.target.closest('#deleteAudioBtn')) {
+                // Check if the clicked element is the delete button or inside it
+                const deleteButton = e.target.closest('#deleteAudioBtn');
+                if (deleteButton) {
                     e.preventDefault();
                     e.stopPropagation();
-                    console.log('Delete button clicked via event delegation');
+                    console.log('Delete button clicked');
+                    
+                    // Prevent multiple rapid clicks
+                    if (deleteButton.dataset.processing === 'true') {
+                        console.log('Delete already in progress, ignoring click');
+                        return;
+                    }
+                    
+                    deleteButton.dataset.processing = 'true';
                     
                     if (confirm('Are you sure you want to delete this audio file from the order? This action cannot be undone.')) {
-                        console.log('User confirmed deletion via event delegation');
-                        deleteAudioFromOrder();
+                        console.log('User confirmed deletion');
+                        deleteAudioFromOrder().finally(() => {
+                            deleteButton.dataset.processing = 'false';
+                        });
                     } else {
-                        console.log('User cancelled deletion via event delegation');
+                        console.log('User cancelled deletion');
+                        deleteButton.dataset.processing = 'false';
                     }
                 }
             });
@@ -2007,29 +2020,8 @@
             
             console.log('Setting up audio player - delete button found:', !!deleteButton);
             
-            // Delete audio functionality
-            if (deleteButton) {
-                // Remove any existing event listeners to prevent duplicates
-                deleteButton.replaceWith(deleteButton.cloneNode(true));
-                const newDeleteButton = document.getElementById('deleteAudioBtn');
-                
-                newDeleteButton.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('Delete button clicked');
-                    
-                    if (confirm('Are you sure you want to delete this audio file from the order? This action cannot be undone.')) {
-                        console.log('User confirmed deletion');
-                        deleteAudioFromOrder();
-                    } else {
-                        console.log('User cancelled deletion');
-                    }
-                });
-                
-                console.log('Delete button event listener attached');
-            } else {
-                console.error('Delete button not found when setting up audio player');
-            }
+            // Note: Delete functionality is handled by event delegation in the main event listener
+            // No need to attach additional event listeners here
         }
         
         // Format duration from seconds to MM:SS
