@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Audio Persistence Fix</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .step { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        .log { background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 3px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Audio Persistence Fix Test</h1>
+    
+    <div id="status" class="step info">
+        <h3>Status: Ready to test</h3>
+        <p>This page will test if the audio file persistence issue has been fixed.</p>
+    </div>
+
+    <div class="step">
+        <h3>Step 1: Run Database Permission Fix</h3>
+        <p>First, you need to run the SQL script to fix the RLS policies:</p>
+        <ol>
+            <li>Go to your Supabase SQL Editor</li>
+            <li>Copy and paste the contents of <code>fix-audio-update-permissions.sql</code></li>
+            <li>Run the SQL script</li>
+            <li>Click "Test Database Connection" below</li>
+        </ol>
+        <button onclick="testDatabaseConnection()">Test Database Connection</button>
+        <div id="dbTestResult" class="log" style="display: none;"></div>
+    </div>
+
+    <div class="step">
+        <h3>Step 2: Test Audio Update</h3>
+        <p>Test if we can now update audio file information in the database:</p>
+        <button onclick="testAudioUpdate()">Test Audio Update</button>
+        <div id="audioTestResult" class="log" style="display: none;"></div>
+    </div>
+
+    <div class="step">
+        <h3>Step 3: Test Complete Flow</h3>
+        <p>Test the complete audio upload and persistence flow:</p>
+        <input type="file" id="audioFile" accept="audio/*" style="margin: 10px 0;">
+        <button onclick="testCompleteUploadFlow()">Test Complete Upload Flow</button>
+        <div id="completeTestResult" class="log" style="display: none;"></div>
+    </div>
+
+    <div class="step">
+        <h3>Step 4: Verify in Admin Dashboard</h3>
+        <p>After running the tests above, go to your admin dashboard and:</p>
+        <ol>
+            <li>Upload an audio file to any order</li>
+            <li>Close the modal</li>
+            <li>Refresh the page</li>
+            <li>Reopen the same order - the audio file should still be there</li>
+        </ol>
+    </div>
+
+    <script>
+        // Supabase configuration (same as admin dashboard)
+        const supabaseUrl = 'https://lchleopfdvrgunbrlngh.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxjaGxlb3BmZHZyZ3VuYnJsbmdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3NTYwNjgsImV4cCI6MjA3MzMzMjA2OH0.U4NkKdXFgK3Im78oz_SaEHkWQqGzhlaeA83Rom4oD7A';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        function log(message, elementId) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.innerHTML += new Date().toLocaleTimeString() + ': ' + message + '\n';
+            console.log(message);
+        }
+
+        async function testDatabaseConnection() {
+            log('Testing database connection...', 'dbTestResult');
+            
+            try {
+                // Test if we can read data
+                const { data: readData, error: readError } = await supabase
+                    .from('song_requests')
+                    .select('id, customer_name, audio_file_url')
+                    .limit(1);
+
+                if (readError) {
+                    log('❌ READ ERROR: ' + readError.message, 'dbTestResult');
+                    return;
+                }
+
+                log('✅ Read test successful', 'dbTestResult');
+                log('Sample data: ' + JSON.stringify(readData), 'dbTestResult');
+
+                // Test if we can update data
+                const testUpdateData = {
+                    audio_file_url: 'https://test.example.com/connection-test.mp3',
+                    audio_file_id: 'connection_test_123',
+                    audio_file_name: 'connection-test.mp3',
+                    audio_file_size: 1024000,
+                    audio_uploaded_at: new Date().toISOString()
+                };
+
+                const { data: updateData, error: updateError } = await supabase
+                    .from('song_requests')
+                    .update(testUpdateData)
+                    .eq('id', 21) // Use a known test record
+                    .select();
+
+                if (updateError) {
+                    log('❌ UPDATE ERROR: ' + updateError.message, 'dbTestResult');
+                    log('Error details: ' + JSON.stringify(updateError), 'dbTestResult');
+                } else {
+                    log('✅ Update test successful', 'dbTestResult');
+                    log('Updated data: ' + JSON.stringify(updateData), 'dbTestResult');
+                }
+
+            } catch (error) {
+                log('❌ CONNECTION ERROR: ' + error.message, 'dbTestResult');
+            }
+        }
+
+        async function testAudioUpdate() {
+            log('Testing audio update functionality...', 'audioTestResult');
+            
+            try {
+                const testData = {
+                    audio_file_url: 'https://test.example.com/audio-update-test.mp3',
+                    audio_file_id: 'audio_update_test_456',
+                    audio_file_name: 'audio-update-test.mp3',
+                    audio_file_size: 2048000,
+                    audio_uploaded_at: new Date().toISOString()
+                };
+
+                log('Attempting to update record ID 21 with: ' + JSON.stringify(testData), 'audioTestResult');
+
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .update(testData)
+                    .eq('id', 21)
+                    .select();
+
+                if (error) {
+                    log('❌ AUDIO UPDATE ERROR: ' + error.message, 'audioTestResult');
+                    log('Error details: ' + JSON.stringify(error), 'audioTestResult');
+                } else {
+                    log('✅ Audio update successful!', 'audioTestResult');
+                    log('Updated record: ' + JSON.stringify(data), 'audioTestResult');
+                    
+                    // Verify the update by reading it back
+                    const { data: verifyData, error: verifyError } = await supabase
+                        .from('song_requests')
+                        .select('audio_file_url, audio_file_id, audio_file_name, audio_file_size, audio_uploaded_at')
+                        .eq('id', 21)
+                        .single();
+
+                    if (verifyError) {
+                        log('❌ VERIFICATION ERROR: ' + verifyError.message, 'audioTestResult');
+                    } else {
+                        log('✅ Verification successful!', 'audioTestResult');
+                        log('Verified data: ' + JSON.stringify(verifyData), 'audioTestResult');
+                    }
+                }
+
+            } catch (error) {
+                log('❌ AUDIO UPDATE EXCEPTION: ' + error.message, 'audioTestResult');
+            }
+        }
+
+        async function testCompleteUploadFlow() {
+            const fileInput = document.getElementById('audioFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                log('Please select an audio file first', 'completeTestResult');
+                return;
+            }
+
+            log('Testing complete upload flow...', 'completeTestResult');
+            log('Selected file: ' + file.name + ' (' + file.size + ' bytes)', 'completeTestResult');
+
+            try {
+                // Step 1: Upload to Supabase Storage
+                const timestamp = Date.now();
+                const fileExtension = file.name.split('.').pop();
+                const fileName = `test_audio_${timestamp}.${fileExtension}`;
+                const audioFileId = `test_audio_${timestamp}`;
+
+                log('Uploading to storage with filename: ' + fileName, 'completeTestResult');
+
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from('audio-files')
+                    .upload(fileName, file, {
+                        cacheControl: '3600',
+                        upsert: false
+                    });
+
+                if (uploadError) {
+                    log('❌ STORAGE UPLOAD ERROR: ' + uploadError.message, 'completeTestResult');
+                    return;
+                }
+
+                log('✅ Storage upload successful', 'completeTestResult');
+
+                // Step 2: Get public URL
+                const { data: urlData } = supabase.storage
+                    .from('audio-files')
+                    .getPublicUrl(fileName);
+
+                const audioUrl = urlData.publicUrl;
+                log('Generated public URL: ' + audioUrl, 'completeTestResult');
+
+                // Step 3: Update database record
+                const audioData = {
+                    audio_file_url: audioUrl,
+                    audio_file_id: audioFileId,
+                    audio_file_name: file.name,
+                    audio_file_size: file.size,
+                    audio_uploaded_at: new Date().toISOString()
+                };
+
+                log('Updating database with: ' + JSON.stringify(audioData), 'completeTestResult');
+
+                const { data: updateData, error: updateError } = await supabase
+                    .from('song_requests')
+                    .update(audioData)
+                    .eq('id', 21)
+                    .select();
+
+                if (updateError) {
+                    log('❌ DATABASE UPDATE ERROR: ' + updateError.message, 'completeTestResult');
+                } else {
+                    log('✅ Complete upload flow successful!', 'completeTestResult');
+                    log('Updated record: ' + JSON.stringify(updateData), 'completeTestResult');
+                }
+
+            } catch (error) {
+                log('❌ COMPLETE FLOW ERROR: ' + error.message, 'completeTestResult');
+            }
+        }
+
+        // Auto-run database connection test on page load
+        window.addEventListener('load', function() {
+            log('Page loaded. Ready to test audio persistence fix.', 'dbTestResult');
+        });
+    </script>
+</body>
+</html>
+

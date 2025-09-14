@@ -1,48 +1,33 @@
--- Fix Audio File Update Permissions
--- Run this SQL in your Supabase SQL Editor
+-- Fix RLS policies to allow anonymous users to update audio files
+-- This is needed because the admin dashboard uses the anon key
 
--- Step 1: Check current RLS policies
-SELECT schemaname, tablename, policyname, permissive, roles, cmd, qual, with_check
-FROM pg_policies 
-WHERE tablename = 'song_requests';
+-- Drop existing restrictive policies
+DROP POLICY IF EXISTS "Allow authenticated update" ON song_requests;
+DROP POLICY IF EXISTS "Allow authenticated read" ON song_requests;
 
--- Step 2: Create or replace policy for updating audio files
--- This allows authenticated users to update audio file fields
-CREATE POLICY "Allow audio file updates" ON song_requests
-FOR UPDATE USING (true)
-WITH CHECK (true);
+-- Create new policies that allow both authenticated and anonymous users
+CREATE POLICY "Allow all users to read" ON song_requests
+    FOR SELECT USING (true);
 
--- Step 3: Alternative - Create a more specific policy if the above is too permissive
--- Uncomment and use this instead if you want more security:
+CREATE POLICY "Allow all users to update" ON song_requests
+    FOR UPDATE USING (true) WITH CHECK (true);
 
-/*
--- More secure policy - only allow updates to audio file fields
-CREATE POLICY "Allow audio file field updates only" ON song_requests
-FOR UPDATE USING (true)
-WITH CHECK (
-    -- Only allow updates to audio-related fields
-    audio_file_url IS NOT NULL OR 
-    audio_file_id IS NOT NULL OR 
-    audio_file_name IS NOT NULL OR 
-    audio_file_size IS NOT NULL OR 
-    audio_uploaded_at IS NOT NULL
-);
-*/
+-- Grant explicit permissions to both roles
+GRANT SELECT, UPDATE ON song_requests TO authenticated;
+GRANT SELECT, UPDATE ON song_requests TO anon;
 
--- Step 4: Grant necessary permissions
-GRANT UPDATE ON song_requests TO authenticated;
-GRANT UPDATE ON song_requests TO anon;
+-- Also ensure we can update the updated_at timestamp
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
 
--- Step 5: Test the update permission
--- This should work after running the above commands
-UPDATE song_requests 
-SET audio_file_url = 'https://test.example.com/permission-test.mp3'
-WHERE id = 21;
-
--- Step 6: Verify the update worked
-SELECT id, audio_file_url, audio_file_id, audio_file_name, audio_file_size, audio_uploaded_at 
-FROM song_requests 
-WHERE id = 21;
-
--- Step 7: Check if RLS is enabled (should show 't' for true)
-SELECT relrowsecurity FROM pg_class WHERE relname = 'song_requests';
+-- Create trigger to automatically update updated_at
+DROP TRIGGER IF EXISTS update_song_requests_updated_at ON song_requests;
+CREATE TRIGGER update_song_requests_updated_at
+    BEFORE UPDATE ON song_requests
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at_column();
