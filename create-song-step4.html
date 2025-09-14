@@ -193,6 +193,13 @@
                             <div id="loadingSpinner" class="spinner hidden"></div>
                         </button>
                         
+                        <!-- Testing Notice -->
+                        <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <p class="text-xs text-blue-800 font-medium text-center">
+                                🧪 Testing Mode: Orders are created in production for testing purposes
+                            </p>
+                        </div>
+                        
                         <!-- Debug Information (only visible in test mode) -->
                         <div id="debugInfo" class="mt-4 p-4 bg-gray-100 rounded-lg text-sm text-gray-600 hidden">
                             <h4 class="font-semibold mb-2">Debug Information:</h4>
@@ -538,9 +545,31 @@
 
                 // Save order to Supabase first (before payment)
                 console.log('Saving order to database...');
-                await saveOrderToSupabase();
-                console.log('Order saved successfully');
+                const savedOrder = await saveOrderToSupabase();
+                console.log('Order saved successfully:', savedOrder);
 
+                // For testing purposes, always create the order in production
+                // Even if payment gateway isn't fully set up yet
+                const isProduction = !window.location.hostname.includes('localhost') && 
+                                   !window.location.hostname.includes('127.0.0.1') && 
+                                   !window.location.hostname.includes('vercel.app');
+                
+                if (isProduction) {
+                    console.log('Production mode: Order created successfully for testing');
+                    payButtonText.textContent = 'Order Created!';
+                    
+                    // Show success message
+                    setTimeout(() => {
+                        alert('✅ Order created successfully! During our testing phase, your order has been saved and will be processed. You will receive a confirmation email shortly.');
+                        
+                        // Redirect to success page
+                        window.location.href = `/payment-success.html?order_id=${orderData.orderId}&test_mode=true`;
+                    }, 1000);
+                    
+                    return;
+                }
+
+                // For localhost/Vercel preview, proceed with payment flow
                 // Create payment with Ziina
                 console.log('Creating payment with Ziina...');
                 const paymentResponse = await createZiinaPayment(paymentData);
@@ -733,6 +762,9 @@
                     return [{ id: 'test_' + Date.now(), order_id: orderData.orderId }];
                 }
                 
+                // In production, always save to real database
+                console.log('Production mode: Saving to real database');
+                
                 // Test Supabase connection first
                 const { data: testData, error: testError } = await supabase
                     .from('song_requests')
@@ -791,6 +823,8 @@
                     return [{ id: 'test_' + Date.now(), order_id: orderData.orderId }];
                 }
                 
+                // In production, don't simulate - throw the real error
+                console.error('Production mode: Failed to save order to database');
                 throw error;
             }
         }
