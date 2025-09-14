@@ -815,6 +815,33 @@
         let allRequests = [];
         let currentRequest = null;
         let uploadedAudioUrl = null;
+        
+        // Test Supabase storage connection
+        async function testStorageConnection() {
+            try {
+                console.log('Testing Supabase storage connection...');
+                const { data, error } = await supabase.storage.listBuckets();
+                
+                if (error) {
+                    console.error('Storage connection error:', error);
+                    return false;
+                }
+                
+                console.log('Available buckets:', data);
+                const audioBucket = data.find(bucket => bucket.name === 'audio-files');
+                
+                if (!audioBucket) {
+                    console.error('audio-files bucket not found');
+                    return false;
+                }
+                
+                console.log('audio-files bucket found:', audioBucket);
+                return true;
+            } catch (error) {
+                console.error('Storage test error:', error);
+                return false;
+            }
+        }
 
         // View request details
         function viewRequest(requestId) {
@@ -945,6 +972,8 @@
         // File upload functionality
         async function uploadAudioFile(file) {
             try {
+                console.log('Starting upload for file:', file.name, 'Size:', file.size, 'Type:', file.type);
+                
                 // Show progress
                 document.getElementById('uploadProgress').classList.remove('hidden');
                 document.getElementById('uploadContainer').classList.add('hidden');
@@ -955,6 +984,7 @@
                 const fileName = `audio_${currentRequest.id}_${timestamp}.${file.name.split('.').pop()}`;
                 
                 // Upload to Supabase Storage
+                console.log('Uploading to Supabase Storage with filename:', fileName);
                 const { data, error } = await supabase.storage
                     .from('audio-files')
                     .upload(fileName, file, {
@@ -963,8 +993,11 @@
                     });
                 
                 if (error) {
+                    console.error('Supabase upload error:', error);
                     throw error;
                 }
+                
+                console.log('Upload successful:', data);
                 
                 // Get public URL
                 const { data: urlData } = supabase.storage
@@ -1182,6 +1215,9 @@
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
             loadSongRequests();
+            
+            // Test storage connection
+            testStorageConnection();
             
             // Admin dropdown functionality
             const adminDropdownBtn = document.getElementById('adminDropdownBtn');
