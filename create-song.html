@@ -51,6 +51,24 @@
             transition: all 0.3s ease-in-out;
         }
         
+        /* Hint tooltip styles */
+        .hint-container:hover .tooltip {
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+        
+        /* Tooltip arrow */
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #080808 transparent transparent transparent;
+        }
+        
         /* Button selection styles */
         .option-button {
             transition: all 0.2s ease-in-out;
@@ -154,9 +172,17 @@
 
                 <!-- Question 1: What moment are you celebrating? -->
                 <div class="mb-12">
-                    <h2 class="text-custom-dark text-lg font-bold text-center mb-8">
-                        What moment are you celebrating?
-                    </h2>
+                    <div class="flex items-center justify-center gap-2 mb-8">
+                        <h2 class="text-custom-dark text-lg font-bold text-center">
+                            What moment are you celebrating?
+                        </h2>
+                        <div class="hint-container relative">
+                            <img src="media/hint-grey.svg" alt="Hint" class="w-4 h-4 cursor-pointer">
+                            <div class="tooltip absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-custom-dark text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap opacity-0 invisible transition-all duration-200 z-50">
+                                Choose the special occasion or reason for this custom song
+                            </div>
+                        </div>
+                    </div>
                     <div class="flex flex-wrap justify-center gap-3">
                         <button class="option-button px-4 py-2 rounded-full text-sm font-semibold" data-option="just-because">
                             Just Because ✨
@@ -215,8 +241,11 @@
                         <h2 class="text-custom-dark text-lg font-bold">
                             What vibe are you going for?
                         </h2>
-                        <div class="w-4 h-4">
-                            <img src="http://localhost:3845/assets/6a874c7c6ec5c9d6dc34f4f0ab436827099bccb4.svg" alt="Hint" class="w-full h-full">
+                        <div class="hint-container relative">
+                            <img src="media/hint-grey.svg" alt="Hint" class="w-4 h-4 cursor-pointer">
+                            <div class="tooltip absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-custom-dark text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap opacity-0 invisible transition-all duration-200 z-50">
+                                Select the emotional tone and mood for your song (choose up to 2)
+                            </div>
                         </div>
                     </div>
                     <p class="text-custom-dark text-sm text-center mb-6">
@@ -259,8 +288,11 @@
                         <h2 class="text-custom-dark text-lg font-bold">
                             What genre do you prefer ?
                         </h2>
-                        <div class="w-4 h-4">
-                            <img src="http://localhost:3845/assets/6a874c7c6ec5c9d6dc34f4f0ab436827099bccb4.svg" alt="Hint" class="w-full h-full">
+                        <div class="hint-container relative">
+                            <img src="media/hint-grey.svg" alt="Hint" class="w-4 h-4 cursor-pointer">
+                            <div class="tooltip absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-custom-dark text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap opacity-0 invisible transition-all duration-200 z-50">
+                                Choose the musical style and genre that fits your vision
+                            </div>
                         </div>
                     </div>
                     <div class="flex flex-wrap justify-center gap-3">
@@ -299,9 +331,17 @@
 
                 <!-- Question 4: Male or female artist? -->
                 <div class="mb-12">
-                    <h2 class="text-custom-dark text-lg font-bold text-center mb-8">
-                        Are you looking for a male or female vocals?
-                    </h2>
+                    <div class="flex items-center justify-center gap-2 mb-8">
+                        <h2 class="text-custom-dark text-lg font-bold text-center">
+                            Are you looking for a male or female vocals?
+                        </h2>
+                        <div class="hint-container relative">
+                            <img src="media/hint-grey.svg" alt="Hint" class="w-4 h-4 cursor-pointer">
+                            <div class="tooltip absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-custom-dark text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap opacity-0 invisible transition-all duration-200 z-50">
+                                Select the vocal gender that best matches your song's style
+                            </div>
+                        </div>
+                    </div>
                     <div class="flex justify-center gap-4">
                         <button class="option-button px-6 py-2 rounded-full text-sm font-semibold" data-option="male">
                             Male
