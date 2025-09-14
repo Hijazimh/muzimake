@@ -1132,7 +1132,7 @@
                 console.log('Email data being sent:', JSON.stringify({
                     to: emailData.to,
                     subject: emailData.subject,
-                    audioUrl: audioUrl,
+                    audioUrl: uploadedAudioUrl,
                     customerName: currentRequest.customer_name,
                     recipientName: currentRequest.recipient_name,
                     celebration: currentRequest.celebration,
@@ -1148,7 +1148,7 @@
                     body: JSON.stringify({
                         to: emailData.to,
                         subject: emailData.subject,
-                        audioUrl: audioUrl,
+                        audioUrl: uploadedAudioUrl,
                         customerName: currentRequest.customer_name,
                         recipientName: currentRequest.recipient_name,
                         celebration: currentRequest.celebration,
