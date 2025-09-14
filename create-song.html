@@ -548,13 +548,6 @@
             }
         });
 
-        // Close modal when clicking outside
-        exitModal.addEventListener('click', function(e) {
-            if (e.target === exitModal) {
-                exitModal.classList.add('hidden');
-            }
-        });
-
         // Load saved data when page loads
         function loadSavedData() {
             const savedPreferences = localStorage.getItem('songPreferences');
@@ -604,9 +597,9 @@
     </script>
 
     <!-- Exit Confirmation Modal -->
-    <div id="exitModal" class="fixed inset-0 modal-overlay z-50 hidden">
+    <div id="exitModal" class="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm z-50 hidden">
         <div class="flex items-center justify-center min-h-screen p-4">
-            <div class="modal-content w-full max-w-md p-6">
+            <div class="bg-white rounded-2xl w-full max-w-md p-6">
                 <!-- Modal Header -->
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-custom-gray text-lg font-bold tracking-tight">Progress will be lost</h3>
@@ -624,8 +617,8 @@
                 <div class="border-t border-gray-200 mb-6"></div>
                 
                 <!-- Modal Actions -->
-                <div class="flex gap-4">
-                    <button id="cancelExitBtn" class="flex-1 bg-custom-gray/12 text-custom-dark px-6 py-3 rounded-full font-medium hover:bg-custom-gray/20 transition-colors">
+                <div class="flex gap-3">
+                    <button id="cancelExitBtn" class="flex-1 bg-custom-gray text-white px-6 py-3 rounded-full font-medium hover:bg-custom-gray/90 transition-colors">
                         Cancel
                     </button>
                     <button id="confirmExitBtn" class="flex-1 bg-custom-gray text-white px-6 py-3 rounded-full font-medium hover:bg-custom-gray/90 transition-colors">
