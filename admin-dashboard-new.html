@@ -1129,6 +1129,9 @@
                 console.log('Sending email via Vercel API...');
                 console.log('Using API endpoint: /api/send-email');
                 console.log('Cache bust timestamp:', new Date().toISOString());
+                // Debug: Check what fields are available in currentRequest
+                console.log('Current request object:', currentRequest);
+                console.log('Available fields in currentRequest:', Object.keys(currentRequest));
                 console.log('Email data being sent:', JSON.stringify({
                     to: emailData.to,
                     subject: emailData.subject,
@@ -1137,8 +1140,19 @@
                     recipientName: currentRequest.recipient_name,
                     celebration: currentRequest.celebration,
                     genre: currentRequest.genre,
-                    voiceGender: currentRequest.voice_gender
+                    voiceGender: currentRequest.recipient_gender
                 }, null, 2));
+                
+                // Check each field individually
+                console.log('Field validation:');
+                console.log('- to:', emailData.to);
+                console.log('- subject:', emailData.subject);
+                console.log('- audioUrl:', uploadedAudioUrl);
+                console.log('- customerName:', currentRequest.customer_name);
+                console.log('- recipientName:', currentRequest.recipient_name);
+                console.log('- celebration:', currentRequest.celebration);
+                console.log('- genre:', currentRequest.genre);
+                console.log('- voiceGender:', currentRequest.recipient_gender);
                 
                 const response = await fetch('/api/send-email', {
                     method: 'POST',
@@ -1153,7 +1167,7 @@
                         recipientName: currentRequest.recipient_name,
                         celebration: currentRequest.celebration,
                         genre: currentRequest.genre,
-                        voiceGender: currentRequest.voice_gender
+                        voiceGender: currentRequest.recipient_gender
                     })
                 });
                 
