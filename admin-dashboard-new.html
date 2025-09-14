@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Muzimake</title>
-    <!-- Cache bust: v2.1 -->
+    <!-- Cache bust: v2.2 - Force refresh -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -1122,6 +1125,7 @@
                 // Send email via Maileroo API v2 with correct endpoint
                 console.log('Sending email with data:', emailData);
                 console.log('Using API endpoint: https://smtp.maileroo.com/api/v2/emails');
+                console.log('Cache bust timestamp:', new Date().toISOString());
                 
                 const response = await fetch('https://smtp.maileroo.com/api/v2/emails', {
                     method: 'POST',
