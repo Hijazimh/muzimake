@@ -1122,33 +1122,23 @@
                     `
                 };
                 
-                // Send email via SMTP serverless function
-                console.log('Sending email via SMTP...');
-                console.log('Using SMTP endpoint: /api/send-email');
+                // Send email via Maileroo API v2 with correct base URL
+                console.log('Sending email via Maileroo API v2...');
+                console.log('Using API endpoint: https://smtp.maileroo.com/api/v2/emails');
                 console.log('Cache bust timestamp:', new Date().toISOString());
                 
-                const smtpData = {
-                    to: currentRequest.customer_email,
-                    subject: `Your Custom Song is Ready - ${currentRequest.recipient_name}`,
-                    audioUrl: uploadedAudioUrl,
-                    customerName: currentRequest.customer_name,
-                    recipientName: currentRequest.recipient_name,
-                    celebration: currentRequest.celebration,
-                    genre: currentRequest.genre,
-                    voiceGender: currentRequest.recipient_gender
-                };
-                
-                const response = await fetch('/api/send-email', {
+                const response = await fetch('https://smtp.maileroo.com/api/v2/emails', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer d8a56f16cb3953ec95f8d0e8b8915ad52f8075983645b27f0581a5ed8a9187b0'
                     },
-                    body: JSON.stringify(smtpData)
+                    body: JSON.stringify(emailData)
                 });
                 
-                console.log('SMTP response status:', response.status);
+                console.log('Maileroo API response status:', response.status);
                 const responseData = await response.json();
-                console.log('SMTP response:', responseData);
+                console.log('Maileroo API response:', responseData);
                 
                 if (!response.ok) {
                     throw new Error(`Failed to send email: ${responseData.error || response.statusText}`);
