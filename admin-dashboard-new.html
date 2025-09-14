@@ -1401,7 +1401,7 @@
                 console.log('Update response error:', error);
                 
                 if (error) {
-                    console.error('Comprehensive update failed, trying basic update:', error);
+                    console.error('❌ COMPREHENSIVE UPDATE FAILED:', error);
                     console.error('Error details:', {
                         message: error.message,
                         details: error.details,
@@ -1426,16 +1426,22 @@
                     console.log('Basic update response error:', basicError);
                     
                     if (basicError) {
-                        console.error('Basic update also failed:', basicError);
+                        console.error('❌ BASIC UPDATE ALSO FAILED:', basicError);
                         console.error('Basic error details:', {
                             message: basicError.message,
                             details: basicError.details,
                             hint: basicError.hint,
                             code: basicError.code
                         });
-                        throw basicError;
+                        
+                        // Show user-friendly error message
+                        alert(`❌ Failed to save audio file to database: ${basicError.message}\n\nPlease check:\n1. Database connection\n2. Table permissions\n3. Row Level Security policies`);
+                        
+                        throw new Error(`Database update failed: ${basicError.message}`);
                     } else {
                         console.log('✅ Basic audio file URL saved successfully');
+                        console.log('Basic update data:', basicUpdateData);
+                        
                         // Update local data with basic info
                         currentRequest.audio_file_url = audioUrl;
                         
@@ -1444,10 +1450,19 @@
                         if (requestIndex !== -1) {
                             allRequests[requestIndex].audio_file_url = audioUrl;
                             console.log('Updated basic audio info in allRequests array at index:', requestIndex);
+                        } else {
+                            console.error('Could not find request in allRequests array to update');
                         }
                     }
                 } else {
                     console.log('✅ Comprehensive audio file info saved successfully');
+                    console.log('Comprehensive update data:', updateData);
+                    
+                    // Check if updateData actually contains the updated record
+                    if (!updateData || updateData.length === 0) {
+                        console.error('❌ Update succeeded but no data returned - this indicates a problem');
+                        throw new Error('Database update succeeded but no data returned');
+                    }
                     
                     // Update local data in both currentRequest and allRequests array
                     Object.assign(currentRequest, audioData);
