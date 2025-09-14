@@ -960,6 +960,73 @@
             }
         }
         
+        // Test database update function directly
+        async function testDatabaseUpdate(requestId = null) {
+            if (!requestId && currentRequest) {
+                requestId = currentRequest.id;
+            }
+            
+            if (!requestId) {
+                console.error('No request ID provided and no current request selected');
+                return;
+            }
+            
+            console.log('Testing database update for request ID:', requestId);
+            
+            const testAudioData = {
+                audio_file_url: 'https://test.example.com/audio.mp3',
+                audio_file_id: 'test_audio_123',
+                audio_file_name: 'test-audio.mp3',
+                audio_file_size: 1024000,
+                audio_uploaded_at: new Date().toISOString()
+            };
+            
+            try {
+                console.log('Testing comprehensive update...');
+                const { data: comprehensiveData, error: comprehensiveError } = await supabase
+                    .from('song_requests')
+                    .update(testAudioData)
+                    .eq('id', requestId)
+                    .select();
+                
+                console.log('Comprehensive update result:', { data: comprehensiveData, error: comprehensiveError });
+                
+                if (comprehensiveError) {
+                    console.log('Comprehensive update failed, testing basic update...');
+                    
+                    const basicAudioData = {
+                        audio_file_url: 'https://test.example.com/audio.mp3'
+                    };
+                    
+                    const { data: basicData, error: basicError } = await supabase
+                        .from('song_requests')
+                        .update(basicAudioData)
+                        .eq('id', requestId)
+                        .select();
+                    
+                    console.log('Basic update result:', { data: basicData, error: basicError });
+                    
+                    if (basicError) {
+                        console.error('❌ Both comprehensive and basic updates failed');
+                        return false;
+                    } else {
+                        console.log('✅ Basic update succeeded');
+                        return true;
+                    }
+                } else {
+                    console.log('✅ Comprehensive update succeeded');
+                    return true;
+                }
+                
+            } catch (error) {
+                console.error('❌ Test failed with exception:', error);
+                return false;
+            }
+        }
+        
+        // Make test function available globally for console testing
+        window.testDatabaseUpdate = testDatabaseUpdate;
+        
         // Test Supabase storage connection
         async function testStorageConnection() {
             try {
@@ -1271,14 +1338,25 @@
                 };
                 
                 console.log('Attempting to update with comprehensive audio data:', audioData);
+                console.log('Target request ID:', currentRequest.id);
                 
-                const { error } = await supabase
+                const { data: updateData, error } = await supabase
                     .from('song_requests')
                     .update(audioData)
-                    .eq('id', currentRequest.id);
+                    .eq('id', currentRequest.id)
+                    .select();
+                
+                console.log('Update response data:', updateData);
+                console.log('Update response error:', error);
                 
                 if (error) {
                     console.error('Comprehensive update failed, trying basic update:', error);
+                    console.error('Error details:', {
+                        message: error.message,
+                        details: error.details,
+                        hint: error.hint,
+                        code: error.code
+                    });
                     
                     // If comprehensive update fails, try with just the basic audio_file_url
                     const basicAudioData = {
@@ -1287,13 +1365,23 @@
                     
                     console.log('Attempting basic update with just audio_file_url:', basicAudioData);
                     
-                    const { error: basicError } = await supabase
+                    const { data: basicUpdateData, error: basicError } = await supabase
                         .from('song_requests')
                         .update(basicAudioData)
-                        .eq('id', currentRequest.id);
+                        .eq('id', currentRequest.id)
+                        .select();
+                    
+                    console.log('Basic update response data:', basicUpdateData);
+                    console.log('Basic update response error:', basicError);
                     
                     if (basicError) {
                         console.error('Basic update also failed:', basicError);
+                        console.error('Basic error details:', {
+                            message: basicError.message,
+                            details: basicError.details,
+                            hint: basicError.hint,
+                            code: basicError.code
+                        });
                         throw basicError;
                     } else {
                         console.log('✅ Basic audio file URL saved successfully');
