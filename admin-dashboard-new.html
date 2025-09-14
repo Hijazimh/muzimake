@@ -1138,29 +1138,25 @@
                 document.getElementById('uploadedFileName').textContent = `${fileName} ${fileSize}`;
                 document.getElementById('uploadedFileUrl').textContent = request.audio_file_url;
                 
-                // Create audio attachment UI matching Figma design
+                // Create audio attachment UI matching Figma design exactly
                 const uploadSection = document.querySelector('#uploadSection');
                 if (uploadSection) {
                     const indicator = document.createElement('div');
-                    indicator.className = 'audio-attached-indicator mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg';
+                    indicator.className = 'audio-attached-indicator mt-4';
                     indicator.innerHTML = `
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-3">
-                                <button id="playAudioBtn" class="flex-shrink-0 w-10 h-10 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center transition-colors">
-                                    <svg class="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M8 5v14l11-7z"/>
+                        <div class="flex items-center space-x-4">
+                            <span class="text-sm font-medium text-gray-900">mp3 File</span>
+                            <div class="relative bg-gray-100 rounded-lg p-3 flex-1">
+                                <button id="deleteAudioBtn" class="absolute top-2 right-2 p-1 text-gray-600 hover:text-red-600 transition-colors" title="Delete audio file">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                     </svg>
                                 </button>
-                                <div class="flex-1">
+                                <div class="pr-8">
                                     <div class="text-sm font-medium text-gray-900" id="audioFileName">${fileName}</div>
-                                    <div class="text-xs text-gray-500" id="audioDuration">Loading...</div>
+                                    <div class="text-xs text-gray-500 mt-1 break-all" id="audioFileUrl">${request.audio_file_url}</div>
                                 </div>
                             </div>
-                            <button id="deleteAudioBtn" class="flex-shrink-0 p-2 text-gray-400 hover:text-red-600 transition-colors" title="Delete audio file">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                </svg>
-                            </button>
                         </div>
                         <audio id="audioPlayer" class="hidden" preload="metadata">
                             <source src="${request.audio_file_url}" type="audio/mpeg">
@@ -1932,52 +1928,9 @@
         // Setup audio player functionality
         function setupAudioPlayer() {
             const audioPlayer = document.getElementById('audioPlayer');
-            const playButton = document.getElementById('playAudioBtn');
             const deleteButton = document.getElementById('deleteAudioBtn');
-            const durationElement = document.getElementById('audioDuration');
             
-            if (!audioPlayer || !playButton) return;
-            
-            let isPlaying = false;
-            
-            // Load audio metadata and display duration
-            audioPlayer.addEventListener('loadedmetadata', function() {
-                const duration = formatDuration(audioPlayer.duration);
-                if (durationElement) {
-                    durationElement.textContent = duration;
-                }
-            });
-            
-            // Play/pause functionality
-            playButton.addEventListener('click', function() {
-                if (isPlaying) {
-                    audioPlayer.pause();
-                    playButton.innerHTML = `
-                        <svg class="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z"/>
-                        </svg>
-                    `;
-                    isPlaying = false;
-                } else {
-                    audioPlayer.play();
-                    playButton.innerHTML = `
-                        <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
-                        </svg>
-                    `;
-                    isPlaying = true;
-                }
-            });
-            
-            // Handle audio end
-            audioPlayer.addEventListener('ended', function() {
-                playButton.innerHTML = `
-                    <svg class="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z"/>
-                    </svg>
-                `;
-                isPlaying = false;
-            });
+            if (!audioPlayer) return;
             
             // Delete audio functionality
             if (deleteButton) {
