@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Carousel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .review-indicator {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .review-indicator:hover {
+            transform: scale(1.1);
+        }
+        
+        .review-slider {
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .review-content {
+            height: 60px;
+        }
+        
+        .review-slide {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-md mx-auto bg-white rounded-xl p-6">
+        <h1 class="text-xl font-bold mb-4">Test Review Carousel</h1>
+        
+        <!-- Testimonial Section -->
+        <div class="border border-gray-200 rounded-xl p-6 mb-8">
+            <div class="flex justify-center mb-4">
+                <div class="flex space-x-1">
+                    <button class="review-indicator w-2 h-2 bg-gray-300 rounded-full transition-all duration-300 hover:scale-110 cursor-pointer" data-review="0"></button>
+                    <button class="review-indicator w-2 h-2 bg-gray-300 rounded-full transition-all duration-300 hover:scale-110 cursor-pointer" data-review="1"></button>
+                    <button class="review-indicator w-2 h-2 bg-gray-300 rounded-full transition-all duration-300 hover:scale-110 cursor-pointer" data-review="2"></button>
+                </div>
+            </div>
+            <div class="review-content relative overflow-hidden">
+                <div class="review-slider flex transition-transform duration-500 ease-in-out" id="reviewSlider">
+                    <div class="review-slide w-full flex-shrink-0">
+                        <p class="text-gray-800 text-sm leading-relaxed text-center">
+                            ❤️ "Loved the song they made for my sister, it was so personal and sweet. She cried when she heard it ❤️."
+                        </p>
+                    </div>
+                    <div class="review-slide w-full flex-shrink-0">
+                        <p class="text-gray-800 text-sm leading-relaxed text-center">
+                            Honestly didn't expect it to be this good. Sent them a few details and got back a song my friend keeps replaying.
+                        </p>
+                    </div>
+                    <div class="review-slide w-full flex-shrink-0">
+                        <p class="text-gray-800 text-sm leading-relaxed text-center">
+                            Such a unique gift. I surprised my fiancé with a song and he said it's the best present he's ever had.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center">
+            <p class="text-sm text-gray-600">Click the dots above or wait 5 seconds for auto-rotation</p>
+        </div>
+    </div>
+
+    <script>
+        // Review carousel functionality
+        let currentReviewIndex = 0;
+        let reviewSlider, indicators, reviewContent;
+        let autoRotateInterval;
+        
+        function initCarousel() {
+            reviewSlider = document.getElementById('reviewSlider');
+            indicators = document.querySelectorAll('.review-indicator');
+            reviewContent = document.querySelector('.review-content');
+            
+            if (!reviewSlider || !indicators.length) {
+                console.log('Carousel elements not found, retrying...');
+                setTimeout(initCarousel, 100);
+                return;
+            }
+            
+            console.log('Carousel initialized:', {
+                slider: reviewSlider,
+                indicators: indicators.length,
+                content: reviewContent
+            });
+            
+            // Start with first review (index 0)
+            currentReviewIndex = 0;
+            updateReview();
+            
+            // Add click handlers for indicators
+            indicators.forEach((indicator, index) => {
+                indicator.addEventListener('click', function() {
+                    console.log('Indicator clicked:', index);
+                    goToReview(index);
+                });
+            });
+            
+            // Auto-rotate reviews every 5 seconds
+            autoRotateInterval = setInterval(function() {
+                nextReview();
+            }, 5000);
+        }
+        
+        function updateReview() {
+            if (!reviewSlider || !indicators.length) return;
+            
+            // Animate slider to current review
+            const translateX = -currentReviewIndex * 100;
+            reviewSlider.style.transform = `translateX(${translateX}%)`;
+            
+            console.log('Updating review:', currentReviewIndex, 'translateX:', translateX);
+            
+            // Update indicators with smooth animation
+            indicators.forEach((indicator, index) => {
+                if (index === currentReviewIndex) {
+                    indicator.classList.remove('bg-gray-300');
+                    indicator.classList.add('bg-gray-800');
+                    indicator.style.transform = 'scale(1.2)';
+                } else {
+                    indicator.classList.remove('bg-gray-800');
+                    indicator.classList.add('bg-gray-300');
+                    indicator.style.transform = 'scale(1)';
+                }
+            });
+        }
+        
+        function goToReview(index) {
+            currentReviewIndex = index;
+            updateReview();
+            
+            // Reset auto-rotate timer after manual click
+            if (autoRotateInterval) {
+                clearInterval(autoRotateInterval);
+                autoRotateInterval = setInterval(function() {
+                    nextReview();
+                }, 5000);
+            }
+        }
+        
+        function nextReview() {
+            currentReviewIndex = (currentReviewIndex + 1) % indicators.length;
+            updateReview();
+        }
+        
+        function prevReview() {
+            currentReviewIndex = currentReviewIndex === 0 ? indicators.length - 1 : currentReviewIndex - 1;
+            updateReview();
+        }
+        
+        // Initialize carousel when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            initCarousel();
+        });
+    </script>
+</body>
+</html>
