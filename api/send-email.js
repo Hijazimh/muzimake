@@ -24,7 +24,7 @@ export default async function handler(req, res) {
             secure: false, // true for 465, false for other ports
             auth: {
                 user: 'hello@muzimake.com',
-                pass: 'ef848dc8124c46364511bed9'
+                pass: 'd8a56f16cb3953ec95f8d0e8b8915ad52f8075983645b27f0581a5ed8a9187b0'
             },
             tls: {
                 rejectUnauthorized: false
