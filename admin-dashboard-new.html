@@ -2195,6 +2195,54 @@
                 const fileSize = fileData ? fileData.size : 0;
                 const fileSizeMB = (fileSize / 1024 / 1024).toFixed(2);
                 
+                // Generate a unique audio file ID (similar to upload function)
+                const timestamp = Date.now();
+                const audioFileId = `audio_${currentRequest.id}_${timestamp}`;
+                
+                console.log('Saving selected bucket file to database:', {
+                    fileName: fileName,
+                    fileUrl: fileUrl,
+                    fileSize: fileSize,
+                    audioFileId: audioFileId,
+                    requestId: currentRequest.id
+                });
+                
+                // Save to database just like uploaded files
+                const audioData = {
+                    audio_file_url: fileUrl,
+                    audio_file_id: audioFileId,
+                    audio_file_name: fileName,
+                    audio_file_size: fileSize,
+                    audio_uploaded_at: new Date().toISOString()
+                };
+                
+                const { data: updateData, error } = await supabase
+                    .from('song_requests')
+                    .update(audioData)
+                    .eq('id', currentRequest.id)
+                    .select();
+                
+                if (error) {
+                    console.error('❌ Failed to save bucket file to database:', error);
+                    alert(`Failed to save selected file to database: ${error.message}`);
+                    return;
+                }
+                
+                console.log('✅ Bucket file saved to database successfully:', updateData);
+                
+                // Update current request data
+                currentRequest.audio_file_url = fileUrl;
+                currentRequest.audio_file_id = audioFileId;
+                currentRequest.audio_file_name = fileName;
+                currentRequest.audio_file_size = fileSize;
+                currentRequest.audio_uploaded_at = audioData.audio_uploaded_at;
+                
+                // Update the global requests array
+                const requestIndex = allRequests.findIndex(r => r.id === currentRequest.id);
+                if (requestIndex !== -1) {
+                    allRequests[requestIndex] = { ...currentRequest };
+                }
+                
                 // Update the UI with selected file
                 uploadedAudioUrl = fileUrl;
                 
@@ -2230,13 +2278,16 @@
                     setupAudioPlayer();
                 }
                 
+                // Refresh the main table to show the audio indicator
+                populateTable(allRequests);
+                
                 // Close the modal
                 closeBucketFileModal();
                 
-                console.log('Bucket file selected successfully:', fileName);
+                console.log('✅ Bucket file selected and saved successfully:', fileName);
                 
             } catch (error) {
-                console.error('Error selecting bucket file:', error);
+                console.error('❌ Error selecting bucket file:', error);
                 alert('Failed to select file. Please try again.');
             }
         }
