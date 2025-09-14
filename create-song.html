@@ -382,7 +382,7 @@
                 <div class="border border-gray-200 rounded-xl p-6 mb-8">
                     <div class="flex justify-center mb-4">
                         <div class="flex space-x-1">
-                            <button class="review-indicator w-2 h-2 bg-custom-dark rounded-full transition-all duration-300 hover:scale-110 cursor-pointer" data-review="0"></button>
+                            <button class="review-indicator w-2 h-2 bg-gray-800 rounded-full transition-all duration-300 hover:scale-110 cursor-pointer" data-review="0"></button>
                             <button class="review-indicator w-2 h-2 bg-gray-300 rounded-full transition-all duration-300 hover:scale-110 cursor-pointer" data-review="1"></button>
                             <button class="review-indicator w-2 h-2 bg-gray-300 rounded-full transition-all duration-300 hover:scale-110 cursor-pointer" data-review="2"></button>
                         </div>
@@ -674,10 +674,10 @@
             indicators.forEach((indicator, index) => {
                 if (index === currentReviewIndex) {
                     indicator.classList.remove('bg-gray-300');
-                    indicator.classList.add('bg-custom-dark');
+                    indicator.classList.add('bg-gray-800');
                     indicator.style.transform = 'scale(1.2)';
                 } else {
-                    indicator.classList.remove('bg-custom-dark');
+                    indicator.classList.remove('bg-gray-800');
                     indicator.classList.add('bg-gray-300');
                     indicator.style.transform = 'scale(1)';
                 }
