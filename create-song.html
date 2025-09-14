@@ -359,14 +359,16 @@
                 <div class="border border-gray-200 rounded-xl p-6 mb-8">
                     <div class="flex justify-center mb-4">
                         <div class="flex space-x-1">
-                            <div class="w-2 h-2 bg-gray-300 rounded-full"></div>
-                            <div class="w-2 h-2 bg-gray-300 rounded-full"></div>
-                            <div class="w-2 h-2 bg-custom-dark rounded-full"></div>
+                            <button class="review-indicator w-2 h-2 bg-gray-300 rounded-full transition-all duration-200" data-review="0"></button>
+                            <button class="review-indicator w-2 h-2 bg-gray-300 rounded-full transition-all duration-200" data-review="1"></button>
+                            <button class="review-indicator w-2 h-2 bg-custom-dark rounded-full transition-all duration-200" data-review="2"></button>
                         </div>
                     </div>
-                    <p class="text-custom-dark text-sm leading-relaxed text-center">
-                        🥰 "I loved working with Alexandra Adamoski—she truly listened, added amazing detail, and brought my vision to life. <strong>Her patience and willingness to rework things until the song was perfect set her apart</strong>. Her passion and talent made it perfect!" - Darlene S.
-                    </p>
+                    <div class="review-content">
+                        <p class="text-custom-dark text-sm leading-relaxed text-center" id="reviewText">
+                            ❤️ "Loved the song they made for my sister, it was so personal and sweet. She cried when she heard it ❤️."
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -591,9 +593,50 @@
             }
         }
 
+        // Review carousel functionality
+        const reviews = [
+            '❤️ "Loved the song they made for my sister, it was so personal and sweet. She cried when she heard it ❤️."',
+            'Honestly didn\'t expect it to be this good. Sent them a few details and got back a song my friend keeps replaying.',
+            'Such a unique gift. I surprised my fiancé with a song and he said it\'s the best present he\'s ever had.'
+        ];
+        
+        let currentReviewIndex = 0;
+        const reviewText = document.getElementById('reviewText');
+        const indicators = document.querySelectorAll('.review-indicator');
+        
+        function updateReview() {
+            reviewText.textContent = reviews[currentReviewIndex];
+            
+            // Update indicators
+            indicators.forEach((indicator, index) => {
+                if (index === currentReviewIndex) {
+                    indicator.classList.remove('bg-gray-300');
+                    indicator.classList.add('bg-custom-dark');
+                } else {
+                    indicator.classList.remove('bg-custom-dark');
+                    indicator.classList.add('bg-gray-300');
+                }
+            });
+        }
+        
+        // Add click handlers for indicators
+        indicators.forEach((indicator, index) => {
+            indicator.addEventListener('click', function() {
+                currentReviewIndex = index;
+                updateReview();
+            });
+        });
+        
+        // Auto-rotate reviews every 5 seconds
+        setInterval(function() {
+            currentReviewIndex = (currentReviewIndex + 1) % reviews.length;
+            updateReview();
+        }, 5000);
+
         // Initialize
         loadSavedData();
         updateNextButton();
+        updateReview();
     </script>
 
     <!-- Exit Confirmation Modal -->
