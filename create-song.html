@@ -69,6 +69,29 @@
             border-color: #080808 transparent transparent transparent;
         }
         
+        /* Review carousel animations */
+        .review-indicator {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .review-indicator:hover {
+            transform: scale(1.1);
+        }
+        
+        .review-slider {
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .review-content {
+            height: 60px; /* Fixed height to prevent layout shift */
+        }
+        
+        .review-slide {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
         /* Button selection styles */
         .option-button {
             transition: all 0.2s ease-in-out;
@@ -359,15 +382,29 @@
                 <div class="border border-gray-200 rounded-xl p-6 mb-8">
                     <div class="flex justify-center mb-4">
                         <div class="flex space-x-1">
-                            <button class="review-indicator w-2 h-2 bg-gray-300 rounded-full transition-all duration-200" data-review="0"></button>
-                            <button class="review-indicator w-2 h-2 bg-gray-300 rounded-full transition-all duration-200" data-review="1"></button>
-                            <button class="review-indicator w-2 h-2 bg-custom-dark rounded-full transition-all duration-200" data-review="2"></button>
+                            <button class="review-indicator w-2 h-2 bg-gray-300 rounded-full transition-all duration-300 hover:scale-110 cursor-pointer" data-review="0"></button>
+                            <button class="review-indicator w-2 h-2 bg-gray-300 rounded-full transition-all duration-300 hover:scale-110 cursor-pointer" data-review="1"></button>
+                            <button class="review-indicator w-2 h-2 bg-custom-dark rounded-full transition-all duration-300 hover:scale-110 cursor-pointer" data-review="2"></button>
                         </div>
                     </div>
-                    <div class="review-content">
-                        <p class="text-custom-dark text-sm leading-relaxed text-center" id="reviewText">
-                            ❤️ "Loved the song they made for my sister, it was so personal and sweet. She cried when she heard it ❤️."
-                        </p>
+                    <div class="review-content relative overflow-hidden">
+                        <div class="review-slider flex transition-transform duration-500 ease-in-out" id="reviewSlider">
+                            <div class="review-slide w-full flex-shrink-0">
+                                <p class="text-custom-dark text-sm leading-relaxed text-center">
+                                    ❤️ "Loved the song they made for my sister, it was so personal and sweet. She cried when she heard it ❤️."
+                                </p>
+                            </div>
+                            <div class="review-slide w-full flex-shrink-0">
+                                <p class="text-custom-dark text-sm leading-relaxed text-center">
+                                    Honestly didn't expect it to be this good. Sent them a few details and got back a song my friend keeps replaying.
+                                </p>
+                            </div>
+                            <div class="review-slide w-full flex-shrink-0">
+                                <p class="text-custom-dark text-sm leading-relaxed text-center">
+                                    Such a unique gift. I surprised my fiancé with a song and he said it's the best present he's ever had.
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -594,44 +631,90 @@
         }
 
         // Review carousel functionality
-        const reviews = [
-            '❤️ "Loved the song they made for my sister, it was so personal and sweet. She cried when she heard it ❤️."',
-            'Honestly didn\'t expect it to be this good. Sent them a few details and got back a song my friend keeps replaying.',
-            'Such a unique gift. I surprised my fiancé with a song and he said it\'s the best present he\'s ever had.'
-        ];
-        
         let currentReviewIndex = 0;
-        const reviewText = document.getElementById('reviewText');
+        const reviewSlider = document.getElementById('reviewSlider');
         const indicators = document.querySelectorAll('.review-indicator');
         
         function updateReview() {
-            reviewText.textContent = reviews[currentReviewIndex];
+            // Animate slider to current review
+            const translateX = -currentReviewIndex * 100;
+            reviewSlider.style.transform = `translateX(${translateX}%)`;
             
-            // Update indicators
+            // Update indicators with smooth animation
             indicators.forEach((indicator, index) => {
                 if (index === currentReviewIndex) {
                     indicator.classList.remove('bg-gray-300');
                     indicator.classList.add('bg-custom-dark');
+                    indicator.style.transform = 'scale(1.2)';
                 } else {
                     indicator.classList.remove('bg-custom-dark');
                     indicator.classList.add('bg-gray-300');
+                    indicator.style.transform = 'scale(1)';
                 }
             });
+        }
+        
+        function goToReview(index) {
+            currentReviewIndex = index;
+            updateReview();
+        }
+        
+        function nextReview() {
+            currentReviewIndex = (currentReviewIndex + 1) % indicators.length;
+            updateReview();
+        }
+        
+        function prevReview() {
+            currentReviewIndex = currentReviewIndex === 0 ? indicators.length - 1 : currentReviewIndex - 1;
+            updateReview();
         }
         
         // Add click handlers for indicators
         indicators.forEach((indicator, index) => {
             indicator.addEventListener('click', function() {
-                currentReviewIndex = index;
-                updateReview();
+                goToReview(index);
             });
         });
         
         // Auto-rotate reviews every 5 seconds
-        setInterval(function() {
-            currentReviewIndex = (currentReviewIndex + 1) % reviews.length;
-            updateReview();
+        let autoRotateInterval = setInterval(function() {
+            nextReview();
         }, 5000);
+        
+        // Touch/swipe support for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const reviewContent = document.querySelector('.review-content');
+        
+        reviewContent.addEventListener('touchstart', function(e) {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+        
+        reviewContent.addEventListener('touchend', function(e) {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+        
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    // Swipe left - next review
+                    nextReview();
+                } else {
+                    // Swipe right - previous review
+                    prevReview();
+                }
+                
+                // Reset auto-rotate timer after manual swipe
+                clearInterval(autoRotateInterval);
+                autoRotateInterval = setInterval(function() {
+                    nextReview();
+                }, 5000);
+            }
+        }
 
         // Initialize
         loadSavedData();
