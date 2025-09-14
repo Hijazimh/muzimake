@@ -548,6 +548,13 @@
             }
         });
 
+        // Close modal when clicking outside
+        exitModal.addEventListener('click', function(e) {
+            if (e.target === exitModal) {
+                exitModal.classList.add('hidden');
+            }
+        });
+
         // Load saved data when page loads
         function loadSavedData() {
             const savedPreferences = localStorage.getItem('songPreferences');
