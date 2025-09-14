@@ -496,35 +496,44 @@
         });
 
         // Exit modal functionality
-        const exitModal = document.getElementById('exitModal');
-        const closeBtn = document.getElementById('closeBtn');
-        const closeModalBtn = document.getElementById('closeModalBtn');
-        const cancelExitBtn = document.getElementById('cancelExitBtn');
-        const confirmExitBtn = document.getElementById('confirmExitBtn');
+        document.addEventListener('DOMContentLoaded', function() {
+            const exitModal = document.getElementById('exitModal');
+            const closeBtn = document.getElementById('closeBtn');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            const cancelExitBtn = document.getElementById('cancelExitBtn');
+            const confirmExitBtn = document.getElementById('confirmExitBtn');
 
-        // Show modal when close button is clicked
-        closeBtn.addEventListener('click', function() {
-            exitModal.classList.remove('hidden');
-        });
+            // Show modal when close button is clicked
+            closeBtn.addEventListener('click', function() {
+                exitModal.classList.remove('hidden');
+            });
 
-        // Close modal when X button is clicked
-        closeModalBtn.addEventListener('click', function() {
-            exitModal.classList.add('hidden');
-        });
+            // Close modal when X button is clicked
+            closeModalBtn.addEventListener('click', function() {
+                exitModal.classList.add('hidden');
+            });
 
-        // Cancel exit
-        cancelExitBtn.addEventListener('click', function() {
-            exitModal.classList.add('hidden');
-        });
+            // Cancel exit
+            cancelExitBtn.addEventListener('click', function() {
+                exitModal.classList.add('hidden');
+            });
 
-        // Confirm exit - go back to home
-        confirmExitBtn.addEventListener('click', function() {
-            // Clear localStorage to reset progress
-            localStorage.removeItem('songPreferences');
-            localStorage.removeItem('songFormData');
-            localStorage.removeItem('contactData');
-            // Navigate to home page
-            window.location.href = 'index.html';
+            // Confirm exit - go back to home
+            confirmExitBtn.addEventListener('click', function() {
+                // Clear localStorage to reset progress
+                localStorage.removeItem('songPreferences');
+                localStorage.removeItem('songFormData');
+                localStorage.removeItem('contactData');
+                // Navigate to home page
+                window.location.href = 'index.html';
+            });
+
+            // Close modal when clicking outside
+            exitModal.addEventListener('click', function(e) {
+                if (e.target === exitModal) {
+                    exitModal.classList.add('hidden');
+                }
+            });
         });
 
         // Function to clear all form data
@@ -535,17 +544,12 @@
         }
 
         // Clear form data when clicking logo or navigation links to home
-        document.querySelectorAll('a[href="index.html"]').forEach(link => {
-            link.addEventListener('click', function(e) {
-                clearAllFormData();
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('a[href="index.html"]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    clearAllFormData();
+                });
             });
-        });
-
-        // Close modal when clicking outside
-        exitModal.addEventListener('click', function(e) {
-            if (e.target === exitModal) {
-                exitModal.classList.add('hidden');
-            }
         });
 
         // Load saved data when page loads
