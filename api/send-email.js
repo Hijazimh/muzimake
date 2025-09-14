@@ -42,7 +42,7 @@ module.exports = async (req, res) => {
         console.log('All required fields present - proceeding with email setup');
 
     // Create SMTP transporter with Maileroo credentials
-    const transporter = nodemailer.createTransporter({
+    const transporter = nodemailer.createTransport({
         host: 'smtp.maileroo.com',
         port: 587, // Using port 587 with STARTTLS
         secure: false, // true for 465, false for other ports
