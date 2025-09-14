@@ -1109,23 +1109,31 @@
                     `
                 };
                 
-                // Send email via Maileroo API
+                // Send email via SMTP endpoint
                 console.log('Sending email with data:', emailData);
-                const response = await fetch('https://api.maileroo.com/send', {
+                const response = await fetch('/api/send-email', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer 33bac85213e874ed550be246cd7057783e865417286239a695a1ce8dfad491d4'
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(emailData)
+                    body: JSON.stringify({
+                        to: currentRequest.customer_email,
+                        subject: `Your Custom Song is Ready - ${currentRequest.recipient_name}`,
+                        audioUrl: uploadedAudioUrl,
+                        customerName: currentRequest.customer_name,
+                        recipientName: currentRequest.recipient_name,
+                        celebration: currentRequest.celebration,
+                        genre: currentRequest.genre,
+                        voiceGender: currentRequest.recipient_gender
+                    })
                 });
                 
-                console.log('Maileroo response status:', response.status);
+                console.log('SMTP response status:', response.status);
                 const responseData = await response.json();
-                console.log('Maileroo response:', responseData);
+                console.log('SMTP response:', responseData);
                 
                 if (!response.ok) {
-                    throw new Error(`Failed to send email: ${responseData.message || response.statusText}`);
+                    throw new Error(`Failed to send email: ${responseData.error || response.statusText}`);
                 }
                 
                 // Update status to sent
