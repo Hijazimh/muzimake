@@ -1073,7 +1073,16 @@
             try {
                 // Prepare email data
                 const emailData = {
-                    to: currentRequest.customer_email,
+                    from: {
+                        address: "hello@muzimake.com",
+                        display_name: "Muzimake"
+                    },
+                    to: [
+                        {
+                            address: currentRequest.customer_email,
+                            display_name: currentRequest.customer_name
+                        }
+                    ],
                     subject: `Your Custom Song is Ready - ${currentRequest.recipient_name}`,
                     html: `
                         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -1109,10 +1118,10 @@
                     `
                 };
                 
-                // Send email via Maileroo API with new sending key
+                // Send email via Maileroo API v2 with correct endpoint
                 console.log('Sending email with data:', emailData);
                 
-                const response = await fetch('https://api.maileroo.com/send', {
+                const response = await fetch('https://smtp.maileroo.com/api/v2/emails', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
