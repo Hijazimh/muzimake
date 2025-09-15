@@ -239,12 +239,6 @@
                         <a href="create-song.html" class="bg-orange-500 text-white px-6 py-3 rounded-full font-medium hover:bg-orange-600 transition-colors text-center">
                             Start your song
                         </a>
-                        <button class="border border-white/20 text-white px-6 py-3 rounded-full font-medium hover:bg-white/10 transition-colors flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M8 5v10l8-5-8-5z"/>
-                            </svg>
-                            Video
-                        </button>
                     </div>
                 </div>
             </div>
@@ -320,14 +314,14 @@
             <div class="mb-16">
                 <p class="text-white text-xs font-bold tracking-wider uppercase mb-4">EXCLUSIVELY ON MUZIMAKE</p>
                 <h2 class="text-white text-6xl font-extrabold leading-tight tracking-tight mb-6">
-                    Check out some of our examples
+                    See how others brought their stories to life.
                 </h2>
                 <p class="text-white text-lg leading-relaxed opacity-75 max-w-3xl">
-                    No AI shortcuts here. Just thousands of today's best artists, vetted and ready to work with you to bring your story to life.
+                    Each track is thoughtfully created to sound unique, personal, and ready to share.
                 </p>
-                <button class="bg-orange-500 text-white px-6 py-3 rounded-full font-medium hover:bg-orange-600 transition-colors mt-8">
-                    Browse artists
-                </button>
+                <a href="create-song.html" class="inline-block bg-orange-500 text-white px-6 py-3 rounded-full font-medium hover:bg-orange-600 transition-colors mt-8">
+                    Create song
+                </a>
             </div>
 
             <!-- Artist Cards -->
@@ -425,14 +419,14 @@
                     </div>
                 </div>
 
-                <!-- Artist 4 - Stillman -->
+                <!-- Artist 4 - Habibiti -->
                 <div class="bg-custom-dark rounded-2xl overflow-hidden relative group">
-                    <div class="h-80 bg-cover bg-center relative" style="background-image: url('http://localhost:3845/assets/b963600f32ac810d345b1222580f50ddf6a9c684.png')">
+                    <div class="h-80 bg-cover bg-center relative" style="background-image: url('media/habibiti.jpeg')">
                         <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/50"></div>
                         <div class="absolute top-4 left-4 bg-white/60 px-3 py-1 rounded text-xs font-bold text-custom-dark uppercase">
                             only on Muzimake
                         </div>
-                        <button class="play-button absolute bottom-4 left-4 bg-white rounded-full w-12 h-12 flex items-center justify-center hover:bg-gray-100 transition-colors" data-song="stillman">
+                        <button class="play-button absolute bottom-4 left-4 bg-white rounded-full w-12 h-12 flex items-center justify-center hover:bg-gray-100 transition-colors" data-song="habibiti">
                             <svg class="play-icon w-6 h-6 text-custom-dark" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M8 5v10l8-5-8-5z"/>
                             </svg>
@@ -446,9 +440,8 @@
                         </div>
                     </div>
                     <div class="p-4">
-                        <h3 class="text-white text-lg font-extrabold mb-1">Stillman</h3>
-                        <p class="text-white text-sm opacity-75 mb-2">Singer-Songwriter, Acoustic Pop</p>
-                        <p class="text-white text-sm italic opacity-75">(2202 songs)</p>
+                        <h3 class="text-white text-lg font-extrabold mb-1">Habibiti</h3>
+                        <p class="text-white text-sm opacity-75 mb-2">Acoustic, Girly</p>
                         <div class="flex items-center mt-2">
                             <div class="flex text-yellow-400">
                                 ★★★★★
@@ -793,7 +786,7 @@
             'karli': 60, // 60 seconds
             'taylor': 60, // 60 seconds
             'emily': 60, // 60 seconds
-            'stillman': 60, // 60 seconds
+            'habibiti': 60, // 60 seconds
             'adam-maya': 60, // 60 seconds
             'class-of-25': 60 // 60 seconds
         };
@@ -895,6 +888,16 @@
                     // Auto-stop after 60 seconds
                     setTimeout(() => {
                         if (currentAudio && currentSong === 'class-of-25') {
+                            pauseAllSongs();
+                        }
+                    }, 60000);
+                } else if (songId === 'habibiti') {
+                    currentAudio = new Audio('media/habibiti.mp3');
+                    currentAudio.play();
+                    
+                    // Auto-stop after 60 seconds
+                    setTimeout(() => {
+                        if (currentAudio && currentSong === 'habibiti') {
                             pauseAllSongs();
                         }
                     }, 60000);

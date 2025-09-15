@@ -1054,19 +1054,92 @@
             }
 
             try {
-                // Try to get country from IP geolocation
-                const response = await fetch('https://ipapi.co/json/');
-                const data = await response.json();
+                // Try multiple IP geolocation services for better reliability
+                let countryCode = null;
+                let countryName = null;
                 
-                if (data.country_code) {
-                    const countryCode = '+' + data.country_calling_code;
-                    const option = countryCodeSelect.querySelector(`option[value="${countryCode}"]`);
+                // First try ip-api.com (more reliable)
+                try {
+                    const response1 = await fetch('http://ip-api.com/json/?fields=status,country,countryCode,query');
+                    const data1 = await response1.json();
                     
-                    if (option) {
-                        countryCodeSelect.value = countryCode;
-                        console.log(`Auto-detected country: ${data.country_name} (${countryCode})`);
+                    if (data1.status === 'success' && data1.countryCode) {
+                        // Map country code to phone code
+                        const phoneCodeMap = {
+                            'AE': '+971', 'SA': '+966', 'KW': '+965', 'QA': '+974', 'BH': '+973', 'OM': '+968',
+                            'US': '+1', 'CA': '+1', 'GB': '+44', 'FR': '+33', 'DE': '+49', 'IT': '+39',
+                            'ES': '+34', 'NL': '+31', 'BE': '+32', 'CH': '+41', 'AT': '+43', 'SE': '+46',
+                            'NO': '+47', 'DK': '+45', 'FI': '+358', 'PL': '+48', 'CZ': '+420', 'HU': '+36',
+                            'RO': '+40', 'BG': '+359', 'HR': '+385', 'SI': '+386', 'SK': '+421', 'LT': '+370',
+                            'LV': '+371', 'EE': '+372', 'IE': '+353', 'PT': '+351', 'GR': '+30', 'CY': '+357',
+                            'MT': '+356', 'LU': '+352', 'IS': '+354', 'LI': '+423', 'MC': '+377', 'SM': '+378',
+                            'VA': '+39', 'AD': '+376', 'RU': '+7', 'UA': '+380', 'BY': '+375', 'MD': '+373',
+                            'GE': '+995', 'AM': '+374', 'AZ': '+994', 'KZ': '+7', 'UZ': '+998', 'KG': '+996',
+                            'TJ': '+992', 'TM': '+993', 'AF': '+93', 'PK': '+92', 'IN': '+91', 'BD': '+880',
+                            'LK': '+94', 'MV': '+960', 'BT': '+975', 'NP': '+977', 'CN': '+86', 'MN': '+976',
+                            'KP': '+850', 'KR': '+82', 'JP': '+81', 'TW': '+886', 'HK': '+852', 'MO': '+853',
+                            'TH': '+66', 'VN': '+84', 'LA': '+856', 'KH': '+855', 'MY': '+60', 'SG': '+65',
+                            'ID': '+62', 'PH': '+95', 'BN': '+673', 'TL': '+670', 'AU': '+61', 'NZ': '+64',
+                            'FJ': '+679', 'PG': '+675', 'SB': '+677', 'VU': '+678', 'NC': '+687', 'PF': '+689',
+                            'WS': '+685', 'TO': '+676', 'KI': '+686', 'TV': '+688', 'NR': '+674', 'FM': '+691',
+                            'MH': '+692', 'PW': '+680', 'CK': '+682', 'NU': '+683', 'TK': '+690', 'AS': '+1',
+                            'GU': '+1', 'MP': '+1', 'PR': '+1', 'VI': '+1', 'MX': '+52', 'GT': '+502',
+                            'BZ': '+501', 'SV': '+503', 'HN': '+504', 'NI': '+505', 'CR': '+506', 'PA': '+507',
+                            'CU': '+53', 'JM': '+1', 'HT': '+509', 'DO': '+1', 'TT': '+1', 'BB': '+1',
+                            'AG': '+1', 'DM': '+1', 'GD': '+1', 'KN': '+1', 'LC': '+1', 'VC': '+1',
+                            'AR': '+54', 'BO': '+591', 'BR': '+55', 'CL': '+56', 'CO': '+57', 'EC': '+593',
+                            'FK': '+500', 'GF': '+594', 'GY': '+592', 'PY': '+595', 'PE': '+51', 'SR': '+597',
+                            'UY': '+598', 'VE': '+58', 'ZA': '+27', 'EG': '+20', 'LY': '+218', 'TN': '+216',
+                            'DZ': '+213', 'MA': '+212', 'SD': '+249', 'SS': '+211', 'ET': '+251', 'ER': '+291',
+                            'DJ': '+253', 'SO': '+252', 'KE': '+254', 'UG': '+256', 'TZ': '+255', 'RW': '+250',
+                            'BI': '+257', 'MW': '+265', 'ZM': '+260', 'ZW': '+263', 'BW': '+267', 'NA': '+264',
+                            'SZ': '+268', 'LS': '+266', 'MG': '+261', 'MU': '+230', 'SC': '+248', 'KM': '+269',
+                            'YT': '+262', 'RE': '+262', 'MZ': '+258', 'AO': '+244', 'CD': '+243', 'CG': '+242',
+                            'CF': '+236', 'TD': '+235', 'CM': '+237', 'GQ': '+240', 'GA': '+241', 'ST': '+239',
+                            'GH': '+233', 'TG': '+228', 'BJ': '+229', 'NE': '+227', 'BF': '+226', 'ML': '+223',
+                            'SN': '+221', 'GM': '+220', 'GN': '+224', 'GW': '+245', 'LR': '+231', 'SL': '+232',
+                            'CI': '+225', 'NG': '+234'
+                        };
+                        
+                        countryCode = phoneCodeMap[data1.countryCode];
+                        countryName = data1.country;
+                        
+                        if (countryCode) {
+                            const option = countryCodeSelect.querySelector(`option[value="${countryCode}"]`);
+                            if (option) {
+                                countryCodeSelect.value = countryCode;
+                                console.log(`Auto-detected country: ${countryName} (${countryCode})`);
+                                return;
+                            }
+                        }
                     }
+                } catch (error) {
+                    console.log('ip-api.com failed, trying backup service...');
                 }
+                
+                // Fallback to ipapi.co
+                try {
+                    const response2 = await fetch('https://ipapi.co/json/');
+                    const data2 = await response2.json();
+                    
+                    if (data2.country_code) {
+                        const phoneCode = '+' + data2.country_calling_code;
+                        const option = countryCodeSelect.querySelector(`option[value="${phoneCode}"]`);
+                        
+                        if (option) {
+                            countryCodeSelect.value = phoneCode;
+                            console.log(`Auto-detected country: ${data2.country_name} (${phoneCode})`);
+                            return;
+                        }
+                    }
+                } catch (error) {
+                    console.log('ipapi.co also failed');
+                }
+                
+                // If both services fail, use UAE as default
+                console.log('All geolocation services failed, using UAE as default');
+                countryCodeSelect.value = '+971';
+                
             } catch (error) {
                 console.log('Could not auto-detect country, using default');
                 // Fallback: Set to UAE (most common for this service)
