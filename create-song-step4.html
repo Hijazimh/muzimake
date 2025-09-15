@@ -347,12 +347,14 @@
 
         // Ziina API configuration
         const ZIINA_API_KEY = 'ICBwiSb7cUWIBkczgyyGWMd4IqGN8kk0JdlLMylkwqA2M3BbRGhdRKbADGkHnen4';
-        const ZIINA_BASE_URL = 'https://api.ziina.com/api'; // Ziina API base URL
+        const ZIINA_BASE_URL = 'https://api.ziina.com/api';
         
-        console.log('Ziina API Configuration (v2.1):', {
+        // Ziina API configuration logging (secure)
+        console.log('Ziina API Configuration:', {
             baseUrl: ZIINA_BASE_URL,
-            apiKey: ZIINA_API_KEY.substring(0, 10) + '...', // Show only first 10 chars for security
-            timestamp: new Date().toISOString()
+            apiKey: ZIINA_API_KEY.substring(0, 10) + '...',
+            timestamp: new Date().toISOString(),
+            version: '2.2'
         });
 
         // DOM elements
@@ -585,12 +587,48 @@
             }
         }
 
-        // Process payment with Ziina
-        async function processPayment() {
+        // Validate payment data before sending to Ziina
+        function validatePaymentData(paymentData) {
+            const errors = [];
+            
+            if (!paymentData.amount || paymentData.amount <= 0) {
+                errors.push('Invalid payment amount');
+            }
+            
+            if (!paymentData.currency_code || paymentData.currency_code !== 'AED') {
+                errors.push('Invalid currency code');
+            }
+            
+            if (!paymentData.description || paymentData.description.trim().length === 0) {
+                errors.push('Payment description is required');
+            }
+            
+            if (!paymentData.success_url || !paymentData.success_url.includes('payment-success.html')) {
+                errors.push('Invalid success URL');
+            }
+            
+            if (!paymentData.cancel_url || !paymentData.cancel_url.includes('create-song-step4.html')) {
+                errors.push('Invalid cancel URL');
+            }
+            
+            if (!paymentData.metadata || !paymentData.metadata.order_id) {
+                errors.push('Order ID is required in metadata');
+            }
+            
+            return {
+                isValid: errors.length === 0,
+                errors: errors
+            };
+        }
+
+        // Process payment with Ziina (with retry mechanism)
+        async function processPayment(retryCount = 0) {
+            const maxRetries = 2;
+            
             try {
                 // Show loading state
                 payButton.disabled = true;
-                payButtonText.textContent = 'Processing...';
+                payButtonText.textContent = retryCount > 0 ? `Retrying... (${retryCount}/${maxRetries})` : 'Processing...';
                 loadingSpinner.classList.remove('hidden');
 
                 // Prepare payment data for Ziina (Payment Intent)
@@ -600,14 +638,31 @@
                 
                 const paymentData = {
                     amount: 3150, // AED 31.50 in fils (100 AED = 10000 fils) - 3150 fils = 31.50 AED
-                    currency: 'AED',
+                    currency_code: 'AED', // Use currency_code as per Ziina API specification
                     description: `Custom song for ${orderData.recipientName || 'Customer'} - ${orderData.moment || 'Special occasion'}`,
-                    success_url: `${window.location.origin}/payment-success.html?order_id=${orderData.orderId}`,
-                    cancel_url: `${window.location.origin}/create-song-step4.html`,
-                    test: isTestMode // Test mode for localhost and Vercel preview
+                    success_url: `${window.location.origin}/payment-success.html?payment_id={PAYMENT_ID}&order_id=${orderData.orderId}`,
+                    cancel_url: `${window.location.origin}/create-song-step4.html?order_id=${orderData.orderId}`,
+                    test: isTestMode, // Test mode for localhost and Vercel preview
+                    metadata: {
+                        order_id: orderData.orderId,
+                        customer_name: orderData.fullName,
+                        customer_email: orderData.email,
+                        customer_phone: orderData.phone,
+                        recipient_name: orderData.recipientName,
+                        song_style: orderData.songStyle,
+                        moment: orderData.moment,
+                        service_type: 'custom_song',
+                        amount_aed: '31.50'
+                    }
                 };
 
                 console.log('Payment data prepared:', paymentData);
+
+                // Validate payment data before proceeding
+                const validation = validatePaymentData(paymentData);
+                if (!validation.isValid) {
+                    throw new Error(`Payment validation failed: ${validation.errors.join(', ')}`);
+                }
 
                 // Save order to Supabase first (before payment)
                 console.log('Saving order to database...');
@@ -710,110 +765,173 @@
                 console.log('API URL:', `${ZIINA_BASE_URL}/payment_intent`);
                 console.log('Payment data:', paymentData);
 
-                // Use the correct Ziina API endpoint and structure
+                // Prepare Ziina API request with proper structure
                 const ziinaPaymentData = {
-                    amount: paymentData.amount, // Amount in fils
-                    currency_code: 'AED', // Explicitly set currency_code to AED (3 characters)
+                    amount: paymentData.amount, // Amount in fils (3150 fils = AED 31.50)
+                    currency_code: paymentData.currency_code, // 'AED' as per Ziina API
                     description: paymentData.description,
                     success_url: paymentData.success_url,
                     cancel_url: paymentData.cancel_url,
-                    test: paymentData.test, // Test mode
-                    metadata: {
-                        order_id: orderData.orderId,
-                        customer_name: orderData.fullName,
-                        customer_email: orderData.email
-                    }
+                    test: paymentData.test, // Test mode flag
+                    metadata: paymentData.metadata // Include all metadata
                 };
                 
-                console.log('Ziina Payment Data Structure:', ziinaPaymentData);
-                console.log('Currency Code Length:', ziinaPaymentData.currency_code.length);
-                console.log('Currency Code Value:', `"${ziinaPaymentData.currency_code}"`);
+                console.log('Ziina Payment Request:', {
+                    endpoint: `${ZIINA_BASE_URL}/payment_intent`,
+                    data: ziinaPaymentData,
+                    timestamp: new Date().toISOString()
+                });
 
-                console.log('Sending request to Ziina API with data:', ziinaPaymentData);
-
+                // Make API request to Ziina with proper headers and error handling
                 const response = await fetch(`${ZIINA_BASE_URL}/payment_intent`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${ZIINA_API_KEY}`,
                         'Accept': 'application/json',
-                        'User-Agent': 'Muzimake/1.0'
+                        'User-Agent': 'Muzimake/2.2',
+                        'X-Request-ID': `muzimake_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
                     },
-                    body: JSON.stringify(ziinaPaymentData)
+                    body: JSON.stringify(ziinaPaymentData),
+                    timeout: 30000 // 30 second timeout
                 });
 
-                console.log('Response status:', response.status);
-                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+                console.log('Ziina API Response:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: Object.fromEntries(response.headers.entries())
+                });
                 
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Ziina API error response:', errorText);
+                    let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                    let errorDetails = null;
                     
-                    // Try to parse error response as JSON
-                    let errorMessage = `HTTP ${response.status}: ${errorText}`;
                     try {
-                        const errorJson = JSON.parse(errorText);
-                        errorMessage = errorJson.message || errorJson.error || errorMessage;
+                        const errorText = await response.text();
+                        console.error('Ziina API error response:', errorText);
+                        
+                        // Try to parse error response as JSON
+                        try {
+                            const errorJson = JSON.parse(errorText);
+                            errorMessage = errorJson.message || errorJson.error || errorMessage;
+                            errorDetails = errorJson;
+                        } catch (e) {
+                            errorMessage = `HTTP ${response.status}: ${errorText}`;
+                        }
                     } catch (e) {
-                        // Keep the original error message if not JSON
+                        console.error('Failed to read error response:', e);
                     }
                     
                     throw new Error(`Ziina API error: ${errorMessage}`);
                 }
 
                 const result = await response.json();
-                console.log('Ziina API response:', result);
+                console.log('Ziina API Success Response:', result);
 
-                // Handle different response formats
+                // Handle Ziina API response format
                 const paymentUrl = result.payment_url || result.redirect_url || result.url || result.checkout_url;
                 const paymentId = result.id || result.payment_id || result.payment_intent_id;
 
                 if (!paymentUrl) {
+                    console.error('Missing payment URL in response:', result);
                     throw new Error('No payment URL received from Ziina API');
                 }
+
+                console.log('Payment created successfully:', {
+                    payment_id: paymentId,
+                    payment_url: paymentUrl,
+                    order_id: orderData.orderId
+                });
 
                 return {
                     success: true,
                     payment_url: paymentUrl,
-                    payment_id: paymentId
+                    payment_id: paymentId,
+                    order_id: orderData.orderId
                 };
 
             } catch (error) {
-                console.error('Ziina API error:', error);
+                console.error('Ziina Payment Error:', {
+                    message: error.message,
+                    stack: error.stack,
+                    timestamp: new Date().toISOString(),
+                    order_id: orderData.orderId
+                });
                 
-                // Provide more specific error messages
+                // Provide user-friendly error messages based on error type
+                let userMessage = 'Payment processing failed. Please try again.';
+                
                 if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-                    return {
-                        success: false,
-                        error: 'Unable to connect to payment service. Please check your internet connection and try again.'
-                    };
+                    userMessage = 'Unable to connect to payment service. Please check your internet connection and try again.';
                 } else if (error.message.includes('401') || error.message.includes('Unauthorized')) {
-                    return {
-                        success: false,
-                        error: 'Payment service authentication failed. Please contact support.'
-                    };
+                    userMessage = 'Payment service authentication failed. Please contact support.';
                 } else if (error.message.includes('403') || error.message.includes('Forbidden')) {
-                    return {
-                        success: false,
-                        error: 'Access denied by payment service. Please contact support.'
-                    };
+                    userMessage = 'Access denied by payment service. Please contact support.';
                 } else if (error.message.includes('400') || error.message.includes('Bad Request')) {
                     if (error.message.includes('currency_code')) {
-                        return {
-                            success: false,
-                            error: 'Payment configuration error. Please contact support.'
-                        };
+                        userMessage = 'Payment configuration error. Please contact support.';
+                    } else {
+                        userMessage = 'Invalid payment request. Please try again or contact support.';
                     }
-                    return {
-                        success: false,
-                        error: 'Invalid payment request. Please try again or contact support.'
-                    };
-                } else {
-                    return {
-                        success: false,
-                        error: `Payment service error: ${error.message}`
-                    };
+                } else if (error.message.includes('429') || error.message.includes('Too Many Requests')) {
+                    userMessage = 'Too many payment requests. Please wait a moment and try again.';
+                } else if (error.message.includes('500') || error.message.includes('Internal Server Error')) {
+                    userMessage = 'Payment service is temporarily unavailable. Please try again later.';
+                } else if (error.message.includes('timeout')) {
+                    userMessage = 'Payment request timed out. Please try again.';
+                } else if (error.message.includes('Ziina API error:')) {
+                    // Extract the actual error message from Ziina
+                    userMessage = error.message.replace('Ziina API error: ', '');
                 }
+                
+                // Retry logic for certain types of errors
+                if (retryCount < maxRetries && (
+                    error.message.includes('Failed to fetch') ||
+                    error.message.includes('NetworkError') ||
+                    error.message.includes('timeout') ||
+                    error.message.includes('500') ||
+                    error.message.includes('Internal Server Error')
+                )) {
+                    console.log(`Retrying payment (attempt ${retryCount + 1}/${maxRetries})...`);
+                    await new Promise(resolve => setTimeout(resolve, 2000 * (retryCount + 1))); // Exponential backoff
+                    return processPayment(retryCount + 1);
+                }
+                
+                return {
+                    success: false,
+                    error: userMessage,
+                    technical_error: error.message,
+                    order_id: orderData.orderId,
+                    retry_count: retryCount
+                };
+            }
+        }
+
+        // Update order status after successful payment
+        async function updateOrderStatus(paymentId, status = 'paid') {
+            try {
+                console.log('Updating order status:', { orderId: orderData.orderId, paymentId, status });
+                
+                const { data, error } = await supabase
+                    .from('song_requests')
+                    .update({ 
+                        payment_status: status,
+                        payment_id: paymentId,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', orderData.orderId);
+                
+                if (error) {
+                    console.error('Error updating order status:', error);
+                    throw error;
+                }
+                
+                console.log('Order status updated successfully:', data);
+                return data;
+                
+            } catch (error) {
+                console.error('Failed to update order status:', error);
+                throw error;
             }
         }
 
