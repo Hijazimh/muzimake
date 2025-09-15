@@ -34,25 +34,80 @@
         .font-medium { font-weight: 500; }
         .font-semibold { font-weight: 600; }
         
-        /* Navigation scroll effects */
-        #navbar.scrolled {
-            background-color: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-        }
-        
         /* Navigation link colors */
         .nav-link {
             transition: color 0.3s ease-in-out;
         }
         
-        /* When navbar is scrolled, change link colors to dark */
-        #navbar.scrolled .nav-link {
-            color: #232321 !important;
+        /* Mobile menu styles */
+        .mobile-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
         
-        /* Smooth transitions */
-        #top-banner, #navbar {
-            transition: all 0.3s ease-in-out;
+        .mobile-menu.open {
+            display: block;
+        }
+        
+        .mobile-menu a {
+            display: block;
+            padding: 0.75rem 0;
+            color: #232321;
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .mobile-menu a:last-child {
+            border-bottom: none;
+            margin-top: 0.5rem;
+        }
+        
+        /* Burger menu button */
+        .burger-menu {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+        
+        .burger-menu span {
+            width: 25px;
+            height: 3px;
+            background-color: #232321;
+            margin: 3px 0;
+            transition: 0.3s;
+            border-radius: 2px;
+        }
+        
+        .burger-menu.open span:nth-child(1) {
+            transform: rotate(-45deg) translate(-5px, 6px);
+        }
+        
+        .burger-menu.open span:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .burger-menu.open span:nth-child(3) {
+            transform: rotate(45deg) translate(-5px, -6px);
+        }
+        
+        @media (max-width: 768px) {
+            .burger-menu {
+                display: flex;
+            }
+            
+            .nav-links {
+                display: none;
+            }
         }
         
         /* Modal styles */
@@ -107,51 +162,54 @@
     </div>
 
     <!-- Navigation -->
-    <nav id="navbar" class="fixed top-0 left-0 right-0 bg-black/20 backdrop-blur-md z-50 h-20 transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-8 h-full flex items-center justify-between">
+    <nav id="navbar" class="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md z-50 h-20 shadow-sm">
+        <div class="max-w-7xl mx-auto px-8 h-full flex items-center justify-between relative">
             <!-- Logo -->
             <div class="h-12 w-40">
-                <img id="logo" src="media/logo-horiz-white.png" alt="Muzimake" class="h-full w-full object-contain">
+                <a href="index.html">
+                    <img id="logo" src="media/logo-horiz-black.png" alt="Muzimake" class="h-full w-full object-contain">
+                </a>
             </div>
             
-            <!-- Navigation Links -->
-            <div class="hidden md:flex items-center space-x-8">
-                <a href="how-it-works.html" class="nav-link text-white text-sm font-medium hover:text-custom-orange transition-colors">How it works</a>
-                <a href="create-song.html" class="bg-custom-orange text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-orange-600 transition-colors">Create your song</a>
+            <!-- Desktop Navigation Links -->
+            <div class="nav-links hidden md:flex items-center space-x-8">
+                <a href="how-it-works.html" class="text-custom-dark text-base font-medium hover:text-custom-orange transition-colors nav-link">How it works</a>
             </div>
             
-            <!-- Mobile Menu Button -->
-            <button id="mobileMenuBtn" class="md:hidden text-white">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                </svg>
-            </button>
-        </div>
-        
-        <!-- Mobile Menu -->
-        <div id="mobileMenu" class="md:hidden absolute top-full left-0 right-0 bg-white shadow-lg hidden">
-            <div class="px-8 py-4 space-y-4">
-                <a href="how-it-works.html" class="block text-custom-dark text-sm font-medium hover:text-custom-orange transition-colors">How it works</a>
-                <a href="create-song.html" class="block bg-custom-orange text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-orange-600 transition-colors text-center">Create your song</a>
+            <!-- Mobile Burger Menu -->
+            <div class="burger-menu md:hidden" id="burgerMenu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            
+            <!-- Mobile Menu -->
+            <div class="mobile-menu" id="mobileMenu">
+                <a href="how-it-works.html" class="nav-link">How it works</a>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <main class="pt-20 pb-16">
-        <div class="max-w-4xl mx-auto px-8">
-            <!-- Progress Indicator -->
-            <div class="text-center mb-8 relative">
+    <!-- Sticky Progress Indicator -->
+    <div class="fixed top-20 left-0 right-0 bg-custom-beige/60 backdrop-blur-sm z-40">
+        <div class="max-w-4xl mx-auto px-8 py-4">
+            <div class="text-center relative">
                 <div class="inline-flex items-center border border-gray-300 rounded-full px-4 py-2 bg-white">
                     <span class="text-custom-dark text-xs font-bold tracking-wider uppercase">Step 4 of 4</span>
                 </div>
-                <button id="backBtn" class="absolute left-8 top-0 w-6 h-6">
+                <button id="backBtn" class="absolute left-0 top-0 w-6 h-6">
                     <img src="media/back-button-small.svg" alt="Back" class="w-full h-full">
                 </button>
-                <button id="closeBtn" class="absolute right-8 top-0 w-6 h-6">
+                <button id="closeBtn" class="absolute right-0 top-0 w-6 h-6">
                     <img src="media/close-button-small.svg" alt="Close" class="w-full h-full">
                 </button>
             </div>
+        </div>
+    </div>
+
+    <main class="pt-40 pb-16">
+        <div class="max-w-4xl mx-auto px-8">
 
             <!-- Payment Container -->
             <div class="p-8">

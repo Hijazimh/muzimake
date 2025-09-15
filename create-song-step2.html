@@ -30,25 +30,80 @@
         .font-medium { font-weight: 500; }
         .font-semibold { font-weight: 600; }
         
-        /* Navigation scroll effects */
-        #navbar.scrolled {
-            background-color: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-        }
-        
         /* Navigation link colors */
         .nav-link {
             transition: color 0.3s ease-in-out;
         }
         
-        /* When navbar is scrolled, change link colors to dark */
-        #navbar.scrolled .nav-link {
-            color: #232321 !important;
+        /* Mobile menu styles */
+        .mobile-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
         
-        /* Smooth transitions */
-        #top-banner, #navbar {
-            transition: all 0.3s ease-in-out;
+        .mobile-menu.open {
+            display: block;
+        }
+        
+        .mobile-menu a {
+            display: block;
+            padding: 0.75rem 0;
+            color: #232321;
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        
+        .mobile-menu a:last-child {
+            border-bottom: none;
+            margin-top: 0.5rem;
+        }
+        
+        /* Burger menu button */
+        .burger-menu {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+        
+        .burger-menu span {
+            width: 25px;
+            height: 3px;
+            background-color: #232321;
+            margin: 3px 0;
+            transition: 0.3s;
+            border-radius: 2px;
+        }
+        
+        .burger-menu.open span:nth-child(1) {
+            transform: rotate(-45deg) translate(-5px, 6px);
+        }
+        
+        .burger-menu.open span:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .burger-menu.open span:nth-child(3) {
+            transform: rotate(45deg) translate(-5px, -6px);
+        }
+        
+        @media (max-width: 768px) {
+            .burger-menu {
+                display: flex;
+            }
+            
+            .nav-links {
+                display: none;
+            }
         }
         
         /* Form input styles */
@@ -115,56 +170,56 @@
     </style>
 </head>
 <body class="bg-custom-beige font-inter">
-    <!-- Top Banner -->
-    <div id="top-banner" class="bg-custom-gray h-12 flex items-center justify-center transition-transform duration-300">
-        <p class="text-white text-xs font-semibold tracking-wider uppercase opacity-80">
-            THE #1 CUSTOM SONG PLATFORM WITH MORE THAN 375,000 SONGS CREATED
-        </p>
-    </div>
 
     <!-- Navigation -->
-    <nav id="navbar" class="fixed top-0 left-0 right-0 bg-black/20 backdrop-blur-md z-50 h-20 transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-8 h-full flex items-center justify-between">
+    <nav id="navbar" class="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md z-50 h-20 shadow-sm">
+        <div class="max-w-7xl mx-auto px-8 h-full flex items-center justify-between relative">
             <!-- Logo -->
             <div class="h-12 w-40">
                 <a href="index.html">
-                    <img id="logo" src="media/logo-horiz-white.png" alt="Muzimake" class="h-full w-full object-contain transition-opacity duration-300">
+                    <img id="logo" src="media/logo-horiz-black.png" alt="Muzimake" class="h-full w-full object-contain">
                 </a>
             </div>
             
-            <!-- Navigation Links -->
-            <div class="hidden md:flex items-center space-x-8">
-                <a href="index.html" class="text-white text-base font-medium hover:text-custom-blue transition-colors nav-link">Products</a>
-                <a href="index.html" class="text-white text-base font-medium hover:text-custom-blue transition-colors nav-link">How it works</a>
-                <a href="index.html" class="text-white text-base font-medium hover:text-custom-blue transition-colors nav-link">Browse artists</a>
-                <a href="index.html" class="text-white text-base font-medium hover:text-custom-blue transition-colors nav-link">Song examples</a>
+            <!-- Desktop Navigation Links -->
+            <div class="nav-links hidden md:flex items-center space-x-8">
+                <a href="how-it-works.html" class="text-custom-dark text-base font-medium hover:text-custom-orange transition-colors nav-link">How it works</a>
             </div>
             
-            <!-- Right side -->
-            <div class="flex items-center space-x-6">
-                <a href="#" class="text-white text-base font-medium hover:text-custom-blue transition-colors nav-link">Login</a>
-                <div class="w-6 h-6">
-                    <img src="http://localhost:3845/assets/5c4ad8d8d2a1a0a193099e23542d2e3b5d289261.svg" alt="Cart" class="w-full h-full">
-                </div>
+            <!-- Mobile Burger Menu -->
+            <div class="burger-menu md:hidden" id="burgerMenu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            
+            <!-- Mobile Menu -->
+            <div class="mobile-menu" id="mobileMenu">
+                <a href="how-it-works.html" class="nav-link">How it works</a>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <div class="pt-32 pb-20">
-        <div class="max-w-2xl mx-auto px-8">
-            <!-- Progress Indicator -->
-            <div class="text-center mb-8 relative">
+    <!-- Sticky Progress Indicator -->
+    <div class="fixed top-20 left-0 right-0 bg-custom-beige/60 backdrop-blur-sm z-40">
+        <div class="max-w-2xl mx-auto px-8 py-4">
+            <div class="text-center relative">
                 <div class="inline-flex items-center border border-gray-300 rounded-full px-4 py-2 bg-white">
                     <span class="text-custom-dark text-xs font-bold tracking-wider uppercase">Step 2 of 4</span>
                 </div>
-                <button id="backBtn" class="absolute left-8 top-0 w-6 h-6">
+                <button id="backBtn" class="absolute left-0 top-0 w-6 h-6">
                     <img src="media/back-button-small.svg" alt="Back" class="w-full h-full">
                 </button>
-                <button id="closeBtn" class="absolute right-8 top-0 w-6 h-6">
+                <button id="closeBtn" class="absolute right-0 top-0 w-6 h-6">
                     <img src="media/close-button-small.svg" alt="Close" class="w-full h-full">
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="pt-40 pb-20">
+        <div class="max-w-2xl mx-auto px-8">
 
             <!-- Form Container -->
             <div class="p-8">
@@ -274,35 +329,32 @@
     </div>
 
     <script>
-        // Navigation scroll behavior
-        let lastScrollTop = 0;
-        const topBanner = document.getElementById('top-banner');
-        const navbar = document.getElementById('navbar');
-        const logo = document.getElementById('logo');
-
-        window.addEventListener('scroll', function() {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        // Mobile menu functionality
+        const burgerMenu = document.getElementById('burgerMenu');
+        const mobileMenu = document.getElementById('mobileMenu');
+        
+        if (burgerMenu && mobileMenu) {
+            burgerMenu.addEventListener('click', function() {
+                this.classList.toggle('open');
+                mobileMenu.classList.toggle('open');
+            });
             
-            // Hide top banner when scrolling down
-            if (scrollTop > 50) {
-                topBanner.style.transform = 'translateY(-100%)';
-            } else {
-                topBanner.style.transform = 'translateY(0)';
-            }
-
-            // Add/remove scrolled class for navbar styling and switch logo
-            if (scrollTop > 100) {
-                navbar.classList.add('scrolled');
-                // Switch to black logo when navbar is white
-                logo.src = 'media/logo-horiz-black.png';
-            } else {
-                navbar.classList.remove('scrolled');
-                // Switch to white logo when navbar is blurry
-                logo.src = 'media/logo-horiz-white.png';
-            }
-
-            lastScrollTop = scrollTop;
-        });
+            // Close mobile menu when clicking on a link
+            mobileMenu.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    this.classList.remove('open');
+                    burgerMenu.classList.remove('open');
+                }
+            });
+            
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!burgerMenu.contains(e.target) && !mobileMenu.contains(e.target)) {
+                    mobileMenu.classList.remove('open');
+                    burgerMenu.classList.remove('open');
+                }
+            });
+        }
 
         // Form validation
         const nextBtn = document.getElementById('nextBtn');

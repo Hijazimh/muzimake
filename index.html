@@ -79,7 +79,7 @@
         }
         
         /* Smooth transitions */
-        #top-banner, #navbar {
+        #navbar {
             transition: all 0.3s ease-in-out;
         }
         
@@ -173,12 +173,6 @@
     </style>
 </head>
 <body class="bg-custom-beige font-inter">
-    <!-- Top Banner -->
-    <div id="top-banner" class="bg-custom-gray h-12 flex items-center justify-center transition-transform duration-300">
-        <p class="text-white text-xs font-semibold tracking-wider uppercase opacity-80">
-            THE #1 CUSTOM SONG PLATFORM WITH MORE THAN 375,000 SONGS CREATED
-        </p>
-    </div>
 
     <!-- Navigation -->
     <nav id="navbar" class="fixed top-0 left-0 right-0 bg-black/20 backdrop-blur-md z-50 h-20 transition-all duration-300">
@@ -593,9 +587,9 @@
                 <div>
                     <h2 class="text-custom-dark text-3xl font-extrabold mb-6">FAQs</h2>
                     <p class="text-custom-dark text-lg leading-relaxed mb-8">
-                        Our Customer Support team, based in Chicago, is available seven days a week to guide you every step of the way and ensure you create the most meaningful gift you've ever given.
+                        Our Customer Support team, based in the UAE, is here seven days a week to help you at every step and make sure your custom song turns into the most meaningful gift you've ever shared.
                     </p>
-                    <button class="bg-orange-500 text-white px-6 py-3 rounded-full font-medium hover:bg-orange-600 transition-colors">
+                    <button class="bg-orange-500 text-white px-6 py-3 rounded-full font-medium hover:bg-orange-600 transition-colors" onclick="window.$crisp.push(['do', 'chat:open']); return false;">
                         Have a question?
                     </button>
                 </div>
@@ -693,21 +687,10 @@
     <!-- Footer -->
     <footer class="bg-custom-dark py-16">
         <div class="max-w-7xl mx-auto px-8">
-            <div class="grid lg:grid-cols-4 gap-8 mb-12">
-                <!-- Newsletter -->
-                <div class="lg:col-span-1">
-                    <h3 class="text-white text-3xl font-extrabold mb-4">Stay up to date</h3>
-                    <p class="text-white text-sm opacity-75 mb-6">
-                        Sign up to receive insider tips, new product and artist announcements, exclusive offers, and more.
-                    </p>
-                    <div class="relative">
-                        <input type="email" placeholder="Email Address" class="w-full bg-transparent border border-white rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-custom-blue">
-                        <button class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4">
-                            <svg class="w-full h-full text-white" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
-                            </svg>
-                        </button>
-                    </div>
+            <div class="grid lg:grid-cols-3 gap-8 mb-12">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <img src="media/logo-horiz-white-large.png" alt="Muzimake" class="h-10 w-auto">
                 </div>
 
                 <!-- Customer Links -->
@@ -715,19 +698,8 @@
                     <h4 class="text-white text-xs font-bold tracking-wider uppercase mb-4">Customer</h4>
                     <ul class="space-y-3">
                         <li><a href="#" onclick="window.$crisp.push(['do', 'chat:open']); return false;" class="text-white text-sm opacity-75 hover:opacity-100 transition-opacity cursor-pointer">Support</a></li>
-                        <li><a href="#" class="text-white text-sm opacity-75 hover:opacity-100 transition-opacity">Song Revision Policy</a></li>
-                        <li><a href="#" class="text-white text-sm opacity-75 hover:opacity-100 transition-opacity">Privacy Policy</a></li>
-                        <li><a href="#" class="text-white text-sm opacity-75 hover:opacity-100 transition-opacity">Terms of Use</a></li>
-                    </ul>
-                </div>
-
-                <!-- Artists Links -->
-                <div>
-                    <h4 class="text-white text-xs font-bold tracking-wider uppercase mb-4">Artists</h4>
-                    <ul class="space-y-3">
-                        <li><a href="#" class="text-white text-sm opacity-75 hover:opacity-100 transition-opacity">Artist Login</a></li>
-                        <li><a href="#" class="text-white text-sm opacity-75 hover:opacity-100 transition-opacity">Artist Application</a></li>
-                        <li><a href="#" class="text-white text-sm opacity-75 hover:opacity-100 transition-opacity">Community Benefits</a></li>
+                        <li><a href="privacy-policy.html" class="text-white text-sm opacity-75 hover:opacity-100 transition-opacity">Privacy Policy</a></li>
+                        <li><a href="terms-of-use.html" class="text-white text-sm opacity-75 hover:opacity-100 transition-opacity">Terms of Use</a></li>
                     </ul>
                 </div>
 
@@ -735,14 +707,7 @@
                 <div>
                     <h4 class="text-white text-xs font-bold tracking-wider uppercase mb-4">Other</h4>
                     <ul class="space-y-3">
-                        <li><a href="#" class="text-white text-sm opacity-75 hover:opacity-100 transition-opacity">Careers</a></li>
-                        <li><a href="#" class="text-white text-sm opacity-75 hover:opacity-100 transition-opacity">Press Inquiries</a></li>
-                        <li><a href="#" class="text-white text-sm opacity-75 hover:opacity-100 transition-opacity">Muzimake Sync</a></li>
-                        <li><a href="admin-login.html?v=2" class="text-white text-sm opacity-75 hover:opacity-100 transition-opacity">Admin Login</a></li>
-                        <li class="flex items-center gap-2">
-                            <div class="w-4 h-4 bg-gray-300 rounded"></div>
-                            <a href="#" class="text-white text-sm opacity-75 hover:opacity-100 transition-opacity">Accessibility</a>
-                        </li>
+                        <li><a href="admin-login.html" class="text-white text-sm opacity-75 hover:opacity-100 transition-opacity">Admin Login</a></li>
                     </ul>
                 </div>
             </div>
@@ -793,19 +758,11 @@
 
         // Navigation scroll behavior
         let lastScrollTop = 0;
-        const topBanner = document.getElementById('top-banner');
         const navbar = document.getElementById('navbar');
         const logo = document.getElementById('logo');
 
         window.addEventListener('scroll', function() {
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            
-            // Hide top banner when scrolling down
-            if (scrollTop > 50) {
-                topBanner.style.transform = 'translateY(-100%)';
-            } else {
-                topBanner.style.transform = 'translateY(0)';
-            }
 
             // Add/remove scrolled class for navbar styling and switch logo
             if (scrollTop > 100) {

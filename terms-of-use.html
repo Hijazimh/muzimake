@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Use - Muzimake</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'custom-beige': '#f3f1eb',
+                        'custom-dark': '#080808',
+                        'custom-gray': '#232321',
+                        'custom-blue': '#0056fc',
+                        'custom-orange': '#fc6900',
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        .font-inter { font-family: 'Inter', sans-serif; }
+        .font-extrabold { font-weight: 800; }
+        .font-bold { font-weight: 700; }
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        
+        /* Navigation scroll effects */
+        #navbar.scrolled {
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Navigation link colors */
+        .nav-link {
+            transition: color 0.3s ease-in-out;
+        }
+        
+        /* Hover effect for navigation links */
+        .nav-link:hover {
+            color: #fc6900 !important;
+        }
+        
+        /* When navbar is scrolled, change link colors to dark */
+        #navbar.scrolled .nav-link {
+            color: #232321 !important;
+        }
+        
+        /* When navbar is scrolled, hover should still be orange */
+        #navbar.scrolled .nav-link:hover {
+            color: #fc6900 !important;
+        }
+        
+        /* Smooth transitions */
+        #navbar {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        /* Content styling */
+        .content-text {
+            color: #54524c;
+            line-height: 28px;
+        }
+        
+        .content-text ul {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+        
+        .content-text li {
+            margin-bottom: 8px;
+        }
+        
+        .content-text strong {
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="bg-custom-beige font-inter">
+
+    <!-- Navigation -->
+    <nav id="navbar" class="fixed top-0 left-0 right-0 bg-black/20 backdrop-blur-md z-50 h-20 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-8 h-full flex items-center justify-between">
+            <!-- Logo -->
+            <div class="h-12 w-40">
+                <a href="index.html">
+                    <img id="logo" src="media/logo-horiz-white.png" alt="Muzimake" class="h-full w-full object-contain transition-opacity duration-300">
+                </a>
+            </div>
+            
+            <!-- Navigation Links -->
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="index.html" class="text-white text-base font-medium hover:text-custom-orange transition-colors nav-link">Products</a>
+                <a href="how-it-works.html" class="text-white text-base font-medium hover:text-custom-orange transition-colors nav-link">How it works</a>
+                <a href="index.html" class="text-white text-base font-medium hover:text-custom-orange transition-colors nav-link">Browse artists</a>
+                <a href="index.html" class="text-white text-base font-medium hover:text-custom-orange transition-colors nav-link">Song examples</a>
+            </div>
+            
+            <!-- Right side -->
+            <div class="flex items-center space-x-6">
+                <a href="#" class="text-white text-base font-medium hover:text-custom-orange transition-colors nav-link">Login</a>
+                <div class="w-6 h-6">
+                    <img src="http://localhost:3845/assets/5c4ad8d8d2a1a0a193099e23542d2e3b5d289261.svg" alt="Cart" class="w-full h-full">
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="pt-32 pb-20">
+        <div class="max-w-4xl mx-auto px-8">
+            <!-- Header -->
+            <div class="text-center mb-16">
+                <h1 class="text-custom-dark text-4xl font-bold leading-tight mb-4">
+                    Terms of Use
+                </h1>
+                <p class="text-custom-gray text-lg">
+                    Muzimake 2025
+                </p>
+            </div>
+
+            <!-- Content -->
+            <div class="content-text text-sm leading-relaxed space-y-6">
+                <div>
+                    <h2 class="font-bold text-lg mb-4">1) Your Acceptance</h2>
+                    <p class="mb-4">Whiteloop FZE ("Whiteloop," "Muzimake," "we," "us," or "our") provides services to you subject to these Terms of Use ("Terms"). These Terms are a binding agreement between you and Whiteloop governing your use of our website (e.g., www.muzimake.com) and any profiles, pages, or apps we control (collectively, the "Website") and our related products and services (the "Services").</p>
+                    <p class="mb-4">By accessing or using the Website or Services, you agree to these Terms and to our Privacy Policy (incorporated by reference). If you do not agree, do not use the Website or Services.</p>
+                    <p class="mb-4">We may update these Terms from time to time. Changes are effective upon posting. Your continued use after changes means you accept the updated Terms.</p>
+                </div>
+
+                <div>
+                    <h2 class="font-bold text-lg mb-4">2) Website Access & Eligibility</h2>
+                    <p class="mb-4">We grant you a limited, revocable, non-transferable permission to use the Website for personal, non-commercial use, provided that you (i) do not copy, distribute, or modify any part of the Website without our prior written consent; (ii) use the Website only for its intended purpose; and (iii) comply with these Terms and all applicable laws.</p>
+                    <p class="mb-4">You represent that you are of legal age to form a binding contract in your jurisdiction and are not barred from using the Services. You agree to provide accurate, current, and complete information and to keep it updated. We may suspend or terminate access if we suspect inaccurate information or a violation of these Terms.</p>
+                    <p class="mb-4">No automated access: you may not use robots, spiders, scrapers, or similar tools to send more requests than a human reasonably could using a standard browser. Public search engines may index for public search only (no caches/archives); we can revoke this at any time.</p>
+                    <p class="mb-4">No harvesting of personal data or use of our communication tools for commercial solicitation.</p>
+                </div>
+
+                <div>
+                    <h2 class="font-bold text-lg mb-4">3) Third-Party Links</h2>
+                    <p class="mb-4">The Website may contain links to third-party sites and services. We are not responsible for their content, policies, or practices. Your use of third-party resources is at your own risk.</p>
+                </div>
+
+                <div>
+                    <h2 class="font-bold text-lg mb-4">4) Payments, Pricing, Refunds, Revisions, Gift Cards & Referrals</h2>
+                    <p class="mb-4"><strong>Fees & Currency.</strong> Prices for Muzimake products (e.g., custom songs) are shown at checkout and are generally settled in AED (or as displayed). Typical base price: AED 35 per custom song. Your bank/payment provider may charge currency conversion or other fees.</p>
+                    <p class="mb-4"><strong>Payment Methods.</strong> You authorize us and our payment processors to charge your selected method (e.g., card, Apple Pay, Google Pay) for purchases, including taxes/fees as applicable. Your use of a payment method is governed by your agreement with that provider.</p>
+                    <p class="mb-4"><strong>Order Flow & Delivery.</strong> After you submit your brief/story and complete payment, production begins. Delivery is typically via download link and/or Email/WhatsApp (as shown at checkout). Any stated delivery estimates (often under 6 hours, workload permitting) are targets, not guarantees.</p>
+                    <p class="mb-4"><strong>Inclusions.</strong> Unless otherwise stated at purchase, each order includes two (2) song variations (e.g., alternate take/arrangement) and up to two (2) reasonable revision rounds focused on lyrics, vibe, or mix tweaks aligned with your original brief. Substantially new directions may require an additional fee.</p>
+                    
+                    <p class="mb-4"><strong>Cancellations & Refunds.</strong></p>
+                    <ul class="mb-4">
+                        <li>Once production has started, orders are generally non-cancelable and non-refundable.</li>
+                        <li>If we cannot fulfill your order (e.g., unexpected technical failure), we will issue either a full refund or account credit (your choice).</li>
+                        <li>If we request required information and you do not provide it within a reasonable time, we may cancel and refund minus applicable service/processing fees or issue account credit.</li>
+                        <li>Certain instant/express products may be non-refundable as noted at purchase.</li>
+                    </ul>
+                    
+                    <p class="mb-4"><strong>Gift Cards / Credits.</strong> If offered, Muzimake gift cards/credits may be used only on the Website, are not redeemable for cash, are non-transferable, and may be subject to additional terms shown at purchase. We are not responsible for lost/undeliverable digital gift cards due to inaccurate recipient details.</p>
+                    <p class="mb-4"><strong>Referral Program.</strong> If offered, referral credits are for personal sharing with your own contacts. Credits may be issued to you and referred first-time customers when they purchase, per the then-current program terms. We may withhold/revoke/cancel credits for suspected abuse, fraud, or violations.</p>
+                </div>
+
+                <div>
+                    <h2 class="font-bold text-lg mb-4">5) Intellectual Property & Your License</h2>
+                    <p class="mb-4">All content on the Website and in the Services—including text, artwork, graphics, UI, recordings, arrangements, compositions, and logos (collectively, "Content")—is owned by or licensed to Whiteloop and protected by applicable IP laws. Except as expressly permitted, you may not copy, reproduce, distribute, publicly perform, display, or create derivative works from the Content without our prior written permission.</p>
+                    
+                    <p class="mb-4"><strong>Your Custom Song (Master & Composition).</strong><br>
+                    When you purchase a custom song from Muzimake, you receive a personal, non-exclusive, non-transferable, non-sublicensable license to download, store, and privately use the delivered master audio recording and embedded musical composition (together, the "Song") for personal purposes (e.g., sharing with friends/family, posting to your personal social profiles). Unless we grant you additional written rights, you may not:</p>
+                    <ul class="mb-4">
+                        <li>commercially exploit, sell, license, distribute, monetize, or collect royalties on the Song;</li>
+                        <li>register the Song or composition with any rights organization/platform as your own;</li>
+                        <li>use the Song in paid advertising, brand campaigns, or broadcast without a separate written license.</li>
+                    </ul>
+                    
+                    <p class="mb-4">We may provide simple sharing mechanisms (e.g., a link or embed). Those do not transfer any ownership and may be revoked.</p>
+                    <p class="mb-4"><strong>Muzimake's Use of Snippets.</strong><br>
+                    We may (at reasonable discretion) use short excerpts ("snippets") of Songs for portfolio/product demos/marketing without disclosing private or sensitive details. You may request removal by contacting us.</p>
+                </div>
+
+                <div>
+                    <h2 class="font-bold text-lg mb-4">6) User Submissions (Stories, Details, Media)</h2>
+                    <p class="mb-4">You are responsible for the content you submit ("User Submissions") and you represent/warrant you have all rights needed and that your submissions do not infringe or violate any law or third-party rights. You retain ownership of your User Submissions. You grant Whiteloop a worldwide, royalty-free, non-exclusive license to use, reproduce, adapt, perform, and create derivative works from your User Submissions solely to create, deliver, revise, support, and operate the Services (including quality assurance, moderation, and troubleshooting).</p>
+                    <p class="mb-4">If you provide testimonials or public reviews, you grant us permission to display and publish those (including your first name and city, if provided) for marketing/product purposes.</p>
+                </div>
+
+                <div>
+                    <h2 class="font-bold text-lg mb-4">7) Rules of Conduct</h2>
+                    <p class="mb-4">Do not upload, post, email, transmit, or otherwise make available any content that is defamatory, unlawful, infringing, invasive of privacy, hateful, obscene, harassing, harmful (including malware/viruses), impersonates others, solicits minors, or violates any law/rights. We may remove content and/or suspend accounts at our discretion.</p>
+                </div>
+
+                <div>
+                    <h2 class="font-bold text-lg mb-4">8) Copyright Policy</h2>
+                    <p class="mb-4">We respect intellectual property rights and respond to clear notices of alleged infringement. Notices must include:</p>
+                    <ul class="mb-4">
+                        <li>your physical/electronic signature;</li>
+                        <li>identification of the copyrighted work;</li>
+                        <li>identification of the allegedly infringing material (URL where possible);</li>
+                        <li>your contact details;</li>
+                        <li>a good-faith statement that the use is not authorized; and</li>
+                        <li>a statement that the information is accurate and, under penalty of perjury, you are authorized to act.</li>
+                    </ul>
+                    <p class="mb-4">
+                        <strong>Copyright Notices:</strong><br>
+                        Email: legal@muzimake.com<br>
+                        Subject: Copyright Notice – Muzimake
+                    </p>
+                    <p class="mb-4">Knowingly misrepresenting infringement may carry legal consequences.</p>
+                </div>
+
+                <div>
+                    <h2 class="font-bold text-lg mb-4">9) Modifications to the Website/Services</h2>
+                    <p class="mb-4">We may modify, suspend, or discontinue any part of the Website or Services at any time without liability.</p>
+                </div>
+
+                <div>
+                    <h2 class="font-bold text-lg mb-4">10) Termination</h2>
+                    <p class="mb-4">We may suspend or terminate your access for any breach of these Terms, unlawful activity, nonpayment, extended inactivity, or technical/security issues. Upon termination, your right to access the Services ceases, and we may delete your account and data subject to our Privacy Policy and applicable law.</p>
+                </div>
+
+                <div>
+                    <h2 class="font-bold text-lg mb-4">11) Warranty Disclaimer</h2>
+                    <p class="mb-4">YOUR USE OF THE WEBSITE AND SERVICES IS AT YOUR OWN RISK. THE WEBSITE, SERVICES, AND ALL CONTENT AND SONGS ARE PROVIDED "AS IS" AND "AS AVAILABLE." WE DISCLAIM ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. WE DO NOT GUARANTEE UNINTERRUPTED OR ERROR-FREE OPERATION OR THAT DEFECTS WILL BE CORRECTED.</p>
+                </div>
+
+                <div>
+                    <h2 class="font-bold text-lg mb-4">12) Limitation of Liability</h2>
+                    <p class="mb-4">TO THE MAXIMUM EXTENT PERMITTED BY LAW, WHITELOOP FZE (INCLUDING ITS OWNERS, DIRECTORS, EMPLOYEES, CONTRACTORS, LICENSORS, AND AGENTS) SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS, REVENUE, DATA, OR GOODWILL, ARISING FROM OR RELATED TO YOUR USE OF (OR INABILITY TO USE) THE WEBSITE, SERVICES, OR SONGS—EVEN IF ADVISED OF THE POSSIBILITY. OUR TOTAL LIABILITY FOR ANY CLAIMS SHALL NOT EXCEED THE AMOUNT YOU PAID FOR THE APPLICABLE PRODUCT OR SERVICE IN THE THREE (3) MONTHS PRECEDING THE CLAIM.</p>
+                </div>
+
+                <div>
+                    <h2 class="font-bold text-lg mb-4">13) Indemnity</h2>
+                    <p class="mb-4">You agree to indemnify, defend, and hold harmless Whiteloop from any claims, losses, liabilities, damages, costs, and expenses (including reasonable attorneys' fees) arising out of or related to: (i) your use of the Website/Services; (ii) your User Submissions; (iii) your breach of these Terms; or (iv) your violation of any law or third-party rights.</p>
+                </div>
+
+                <div>
+                    <h2 class="font-bold text-lg mb-4">14) Age Requirements</h2>
+                    <p class="mb-4">The Services are not intended for children under 13. If you are under 13, do not use the Services. If you are 13–17, you may use the Services only with parent/guardian consent and supervision.</p>
+                </div>
+
+                <div>
+                    <h2 class="font-bold text-lg mb-4">15) Assignment</h2>
+                    <p class="mb-4">You may not assign or transfer these Terms without our prior written consent. We may assign these Terms (in whole or part) in connection with a merger, sale, reorganization, financing, or by operation of law.</p>
+                </div>
+
+                <div>
+                    <h2 class="font-bold text-lg mb-4">16) Copyright Notice</h2>
+                    <p class="mb-4">The Website and Services, including all Content, are © Whiteloop FZE (trading as Muzimake). All rights reserved. No portion may be used without our prior written permission, except as expressly allowed in these Terms.</p>
+                </div>
+
+                <div>
+                    <h2 class="font-bold text-lg mb-4">17) Trademarks</h2>
+                    <p class="mb-4">"Muzimake," "Whiteloop," and related marks/logos are trademarks/service marks of Whiteloop FZE. You may not use them without our prior written permission.</p>
+                </div>
+
+                <div>
+                    <h2 class="font-bold text-lg mb-4">18) Communications; SMS/WhatsApp Terms</h2>
+                    <p class="mb-4">By providing your email or phone number (including WhatsApp), you consent to receive transactional and promotional communications (including automated messages). Message/data rates may apply.</p>
+                    <p class="mb-4"><strong>Opt-out:</strong></p>
+                    <ul class="mb-4">
+                        <li>Email: click "unsubscribe" in any email.</li>
+                        <li>SMS/WhatsApp: reply STOP to stop; HELP for help. Opting out of marketing messages does not affect transactional/service communications (e.g., order updates, delivery links).</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h2 class="font-bold text-lg mb-4">19) Business Transfers</h2>
+                    <p class="mb-4">If we are involved in a merger, acquisition, financing, reorganization, bankruptcy, or sale of assets, your information and these Terms may be transferred as part of that transaction.</p>
+                </div>
+
+                <div>
+                    <h2 class="font-bold text-lg mb-4">20) Governing Law & Venue</h2>
+                    <p class="mb-4">These Terms are governed by the laws of the United Arab Emirates. You consent to the exclusive jurisdiction and venue of the courts of the Emirate of Sharjah, UAE for any dispute arising out of or relating to these Terms or the Services.</p>
+                </div>
+
+                <div>
+                    <h2 class="font-bold text-lg mb-4">21) General</h2>
+                    <p class="mb-4">If any provision is found unenforceable, the remaining provisions remain in full force. No waiver is a continuing waiver. You must bring any claim related to the Services within one (1) year after it arises. Headings are for convenience only.</p>
+                </div>
+
+                <div>
+                    <h2 class="font-bold text-lg mb-4">22) Contact & Company Information</h2>
+                    <p class="mb-4">
+                        <strong>Whiteloop FZE (trading as Muzimake)</strong><br>
+                        Company Address: Business Centre, Sharjah Publishing City Free Zone,<br>
+                        Sharjah, United Arab Emirates<br>
+                        Support: support@muzimake.com<br>
+                        Legal/DMCA: legal@muzimake.com<br>
+                        Privacy: privacy@muzimake.com
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-custom-dark py-16">
+        <div class="max-w-7xl mx-auto px-8">
+            <div class="grid lg:grid-cols-3 gap-8 mb-12">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <img src="media/logo-horiz-white-large.png" alt="Muzimake" class="h-10 w-auto">
+                </div>
+
+                <!-- Customer -->
+                <div>
+                    <h4 class="text-white text-xs font-bold tracking-wider uppercase mb-4">Customer</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" onclick="window.$crisp.push(['do', 'chat:open']); return false;" class="text-white text-sm opacity-50 hover:opacity-100 transition-opacity cursor-pointer">Support</a></li>
+                        <li><a href="privacy-policy.html" class="text-white text-sm opacity-50 hover:opacity-100 transition-opacity">Privacy Policy</a></li>
+                        <li><a href="terms-of-use.html" class="text-white text-sm opacity-50 hover:opacity-100 transition-opacity">Terms of Use</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Other -->
+                <div>
+                    <h4 class="text-white text-xs font-bold tracking-wider uppercase mb-4">Other</h4>
+                    <ul class="space-y-3">
+                        <li><a href="admin-login.html" class="text-white text-sm opacity-50 hover:opacity-100 transition-opacity">Admin Login</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Bottom section -->
+            <div class="border-t border-white/20 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-white text-sm opacity-50 mb-4 md:mb-0">© 2025 Muzimake</p>
+                <div class="flex space-x-4">
+                    <a href="#" class="w-6 h-6">
+                        <img src="http://localhost:3845/assets/7d351db358893c3ef60420b77cd15f671c4638a2.svg" alt="Facebook" class="w-full h-full">
+                    </a>
+                    <a href="#" class="w-6 h-6">
+                        <img src="http://localhost:3845/assets/750bfc10ee64c98f645210c761286b2b6b83907c.svg" alt="Instagram" class="w-full h-full">
+                    </a>
+                    <a href="#" class="w-6 h-6">
+                        <img src="http://localhost:3845/assets/ede97ce8fc0e5ca3013468402586323291797abe.svg" alt="Twitter" class="w-full h-full">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Navigation scroll behavior
+        let lastScrollTop = 0;
+        const navbar = document.getElementById('navbar');
+        const logo = document.getElementById('logo');
+
+        window.addEventListener('scroll', function() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+            // Add/remove scrolled class for navbar styling and switch logo
+            if (scrollTop > 100) {
+                navbar.classList.add('scrolled');
+                // Switch to black logo when navbar is white
+                logo.src = 'media/logo-horiz-black.png';
+            } else {
+                navbar.classList.remove('scrolled');
+                // Switch to white logo when navbar is blurry
+                logo.src = 'media/logo-horiz-white.png';
+            }
+
+            lastScrollTop = scrollTop;
+        });
+    </script>
+</body>
+</html>
