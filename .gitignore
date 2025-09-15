@@ -62,3 +62,7 @@ node_modules/
 *.bak
 *.backup
 .vercel
+
+# Security: Configuration files with sensitive data
+config.js
+config.production.js
