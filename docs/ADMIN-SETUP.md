@@ -5,7 +5,7 @@
 ### 1. Database Setup
 1. Go to your Supabase project dashboard
 2. Navigate to the SQL Editor
-3. Run the SQL script from `database-setup.sql`
+3. Run the SQL script from `database/database-setup.sql`
 4. This will create the `song_requests` table with sample data
 
 ### 2. Access the Admin Dashboard

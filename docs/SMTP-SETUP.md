@@ -23,7 +23,7 @@ This guide explains how to set up SMTP email sending for Muzimake using Maileroo
    - `SMTP_PASS` = `[your_actual_smtp_password]`
 
 ### **For Local Development:**
-1. Copy `env.example` to `.env.local`
+1. Copy `config/env.example` to `.env.local`
 2. Fill in your actual SMTP credentials
 3. The application will automatically use these environment variables
 

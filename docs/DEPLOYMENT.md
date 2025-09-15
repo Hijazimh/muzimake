@@ -5,7 +5,7 @@
 ### ✅ Files Ready for Deployment:
 - [x] All HTML pages (index.html, create-song.html, etc.)
 - [x] All media files (videos, images, audio)
-- [x] Database setup script (database-setup.sql)
+- [x] Database setup script (database/database-setup.sql)
 - [x] Vercel configuration (vercel.json)
 - [x] README.md and documentation
 
@@ -91,7 +91,7 @@ git push -u origin main
 1. Go to your Supabase dashboard
 2. Create a new project for production (or use existing)
 3. Go to SQL Editor
-4. Run the `database-setup.sql` script
+4. Run the `database/database-setup.sql` script
 
 ### 2. Update API Keys
 1. Get your production Supabase URL and API key

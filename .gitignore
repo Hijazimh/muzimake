@@ -64,5 +64,7 @@ node_modules/
 .vercel
 
 # Security: Configuration files with sensitive data
-config.js
-config.production.js
+config/config.js
+config/config.production.js
+.env.local
+.env.production

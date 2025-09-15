@@ -25,7 +25,7 @@ COMMENT ON COLUMN song_requests.audio_file_url IS 'URL to the uploaded audio fil
 CREATE INDEX IF NOT EXISTS idx_song_requests_audio_file_url ON song_requests(audio_file_url);
 ```
 
-Or use the provided file: `add-audio-file-url.sql`
+Or use the provided file: `database/add-audio-file-url.sql`
 
 ## Step 2: Supabase Storage Setup
 
@@ -67,7 +67,7 @@ FOR DELETE USING (
 );
 ```
 
-Or use the provided file: `supabase-storage-setup.sql`
+Or use the provided file: `database/supabase-storage-setup.sql`
 
 ### 2.2 Verify Storage Bucket
 
@@ -184,6 +184,6 @@ If you encounter any issues:
 ## Files Modified
 
 - `admin-dashboard-new.html` - Main admin dashboard with upload and email functionality
-- `database-setup.sql` - Updated with audio_file_url column
-- `add-audio-file-url.sql` - Migration script for existing databases
-- `supabase-storage-setup.sql` - Storage bucket and policies setup
+- `database/database-setup.sql` - Updated with audio_file_url column
+- `database/add-audio-file-url.sql` - Migration script for existing databases
+- `database/supabase-storage-setup.sql` - Storage bucket and policies setup

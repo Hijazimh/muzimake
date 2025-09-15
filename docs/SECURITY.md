@@ -12,7 +12,7 @@ The application implements comprehensive security headers via `vercel.json`:
 - **Content-Security-Policy**: Comprehensive CSP to prevent XSS and data injection
 
 ### 2. API Key Management
-- **Development**: API keys stored in `config.js` (excluded from git)
+- **Development**: API keys stored in `config/config.js` (excluded from git)
 - **Production**: API keys should be loaded from environment variables
 - **Masking**: API keys are masked in UI displays for security
 
