@@ -67,23 +67,16 @@ serve(async (req) => {
     // Idempotency: record event id
     try { await markEventProcessed(event.id); } catch (_) {}
 
-    // Handle payment_intent.created - Initial payment intent creation
+    // Handle payment_intent.created - Just log, don't create records yet
     if (event.type === 'payment_intent.created') {
       const pi: any = event.data.object;
       const orderId = pi.metadata?.order_id;
       if (orderId) {
-        await ensureOrder(orderId, {
-          status: 'pending_payment',
-          payment_status: 'pending',
-          payment_id: pi.id,
-          price: pi.amount ? pi.amount / 100 : 35,
-          updated_at: new Date().toISOString()
-        });
-        console.log(`Payment intent created for order ${orderId}. Payment Intent ID: ${pi.id}`);
+        console.log(`Payment intent created for order ${orderId}. Payment Intent ID: ${pi.id} - Waiting for payment success`);
       }
     }
 
-    // Handle charge.succeeded - Charge was successful
+    // Handle charge.succeeded - Charge was successful, but wait for payment_intent.succeeded
     if (event.type === 'charge.succeeded') {
       const charge: any = event.data.object;
       const paymentIntentId = charge.payment_intent;
@@ -93,126 +86,83 @@ serve(async (req) => {
       const orderId = paymentIntent.metadata?.order_id;
       
       if (orderId) {
-        await updateOrder(orderId, {
-          payment_status: 'processing',
-          status: 'processing',
-          payment_id: paymentIntentId,
-          updated_at: new Date().toISOString()
-        });
-        console.log(`Charge succeeded for order ${orderId}. Charge ID: ${charge.id}`);
+        console.log(`Charge succeeded for order ${orderId}. Charge ID: ${charge.id} - Waiting for payment intent success`);
       }
     }
 
-    // Handle payment_intent.succeeded - Payment intent completed successfully
+    // Handle payment_intent.succeeded - Payment intent completed successfully - CREATE THE RECORD
     if (event.type === 'payment_intent.succeeded') {
       const pi: any = event.data.object;
       const orderId = pi.metadata?.order_id;
       if (orderId) {
-        await updateOrder(orderId, { 
-          payment_status: 'paid', 
-          status: 'paid', 
-          payment_id: pi.id, 
-          updated_at: new Date().toISOString() 
-        });
-        console.log(`Payment intent succeeded for order ${orderId}. Payment Intent ID: ${pi.id}`);
+        // Create complete order record with all metadata from payment intent
+        const orderRecord = {
+          order_id: orderId,
+          status: 'paid',
+          payment_status: 'paid',
+          payment_id: pi.id,
+          price: pi.amount ? pi.amount / 100 : 35.0,
+          customer_name: pi.metadata?.customer_name || null,
+          customer_email: pi.metadata?.customer_email || null,
+          customer_phone: pi.metadata?.customer_phone || null,
+          celebration: pi.metadata?.moment || null,
+          genre: pi.metadata?.song_style || null,
+          recipient_name: pi.metadata?.recipient_name || null,
+          recipient_gender: pi.metadata?.recipient_gender || null,
+          story: pi.metadata?.story || null,
+          vibe: pi.metadata?.vibe || null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        // Insert the complete order record
+        const { data, error } = await supabase
+          .from('song_requests')
+          .insert([orderRecord])
+          .select();
+
+        if (error) {
+          console.error('Error creating order record:', error);
+        } else {
+          console.log(`Order record created successfully for ${orderId}. Payment Intent ID: ${pi.id}`);
+        }
       }
     }
 
-    // Handle checkout.session.completed - Final confirmation
+    // Handle checkout.session.completed - Final confirmation (record should already exist from payment_intent.succeeded)
     if (event.type === 'checkout.session.completed') {
       const session: any = event.data.object;
       const orderId = session.metadata?.order_id;
       if (orderId) {
-        // Retrieve full session with payment intent details
-        const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
-          expand: ['payment_intent']
-        });
-        
-        const paymentIntent = fullSession.payment_intent as any;
-        const stripePaymentStatus = paymentIntent?.status || 'unknown';
-        
-        // Map Stripe payment status to our status
-        let paymentStatus = 'pending';
-        let orderStatus = 'pending_payment';
-        
-        switch (stripePaymentStatus) {
-          case 'succeeded':
-            paymentStatus = 'paid';
-            orderStatus = 'paid';
-            break;
-          case 'requires_payment_method':
-          case 'requires_confirmation':
-          case 'requires_action':
-            paymentStatus = 'pending';
-            orderStatus = 'pending_payment';
-            break;
-          case 'canceled':
-            paymentStatus = 'canceled';
-            orderStatus = 'canceled';
-            break;
-          case 'processing':
-            paymentStatus = 'processing';
-            orderStatus = 'processing';
-            break;
-          default:
-            paymentStatus = 'unknown';
-            orderStatus = 'pending_payment';
-        }
-        
-        const amount = typeof fullSession.amount_total === 'number' ? fullSession.amount_total / 100 : null;
-        await ensureOrder(orderId, {
-          status: orderStatus,
-          payment_status: paymentStatus,
-          payment_id: paymentIntent?.id || fullSession.id,
-          price: amount ?? 35,
-          customer_email: fullSession.customer_details?.email ?? fullSession.customer_email ?? null,
-          customer_name: fullSession.customer_details?.name ?? null,
-          customer_phone: fullSession.customer_details?.phone ?? null,
-          updated_at: new Date().toISOString()
-        });
-        console.log(`Checkout session completed for order ${orderId}. Session ID: ${session.id}`);
+        // Just log - the record should already be created by payment_intent.succeeded
+        console.log(`Checkout session completed for order ${orderId}. Session ID: ${session.id} - Record should already exist`);
       }
     }
 
-    // Handle payment_intent.payment_failed
+    // Handle payment_intent.payment_failed - Don't create records for failed payments
     if (event.type === 'payment_intent.payment_failed') {
       const pi: any = event.data.object;
       const orderId = pi.metadata?.order_id;
       if (orderId) {
-        await ensureOrder(orderId, { 
-          payment_status: 'failed', 
-          status: 'failed', 
-          updated_at: new Date().toISOString() 
-        });
-        console.log(`Payment intent failed for order ${orderId}. Payment Intent ID: ${pi.id}`);
+        console.log(`Payment intent failed for order ${orderId}. Payment Intent ID: ${pi.id} - No record created for failed payment`);
       }
     }
 
-    // Handle payment_intent.canceled
+    // Handle payment_intent.canceled - Don't create records for canceled payments
     if (event.type === 'payment_intent.canceled') {
       const pi: any = event.data.object;
       const orderId = pi.metadata?.order_id;
       if (orderId) {
-        await updateOrder(orderId, { 
-          payment_status: 'canceled', 
-          status: 'canceled', 
-          updated_at: new Date().toISOString() 
-        });
-        console.log(`Payment intent canceled for order ${orderId}. Payment Intent ID: ${pi.id}`);
+        console.log(`Payment intent canceled for order ${orderId}. Payment Intent ID: ${pi.id} - No record created for canceled payment`);
       }
     }
 
-    // Handle payment_intent.requires_action
+    // Handle payment_intent.requires_action - Don't create records, just log
     if (event.type === 'payment_intent.requires_action') {
       const pi: any = event.data.object;
       const orderId = pi.metadata?.order_id;
       if (orderId) {
-        await updateOrder(orderId, { 
-          payment_status: 'requires_action', 
-          status: 'pending_payment', 
-          updated_at: new Date().toISOString() 
-        });
-        console.log(`Payment intent requires action for order ${orderId}. Payment Intent ID: ${pi.id}`);
+        console.log(`Payment intent requires action for order ${orderId}. Payment Intent ID: ${pi.id} - No record created, waiting for completion`);
       }
     }
 

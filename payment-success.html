@@ -142,35 +142,11 @@
                 };
 
                 try {
-                    // Server-side confirmation: create/update order from Stripe session
-                    const sessionId = urlParams.get('session_id');
-                    if (sessionId) {
-                        const confirmResp = await fetch('/api/confirm-session', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ session_id: sessionId })
-                        });
-                        const confirmData = await confirmResp.json();
-                        if (!confirmResp.ok) {
-                            console.error('Confirm session failed:', confirmData);
-                        } else {
-                            console.log('Confirm session success:', confirmData);
-                        }
-                    }
-
-                    const resp = await fetch('/api/create-order', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ order })
-                    });
-                    const data = await resp.json();
-                    if (!resp.ok) {
-                        console.error('Create order failed:', data);
-                    } else {
-                        console.log('Order upserted via success page:', data);
-                    }
+                    // Order should already be created by Stripe webhook on payment_intent.succeeded
+                    // Just log that we reached the success page
+                    console.log('Payment success page reached - order should already exist in database via webhook');
                 } catch (e) {
-                    console.error('Create order exception:', e);
+                    console.error('Error on success page:', e);
                 }
             }
             // Update order status (redundant safety)

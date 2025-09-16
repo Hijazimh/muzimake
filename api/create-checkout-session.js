@@ -20,7 +20,14 @@ module.exports = async function handler(req, res) {
       customerEmail,
       customerPhone,
       successUrl,
-      cancelUrl
+      cancelUrl,
+      // Song details for complete record creation
+      recipientName,
+      songStyle,
+      moment,
+      story,
+      vibe,
+      gender
     } = req.body || {};
 
     // Basic validation
@@ -51,7 +58,14 @@ module.exports = async function handler(req, res) {
       metadata: {
         order_id: orderId,
         customer_name: customerName || '',
-        customer_phone: customerPhone || ''
+        customer_phone: customerPhone || '',
+        customer_email: customerEmail || '',
+        recipient_name: recipientName || '',
+        song_style: songStyle || '',
+        moment: moment || '',
+        story: story || '',
+        vibe: vibe || '',
+        recipient_gender: gender || ''
       },
       success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}&order_id=${orderId}`,
       cancel_url: cancelUrl,

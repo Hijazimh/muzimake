@@ -50,37 +50,16 @@ module.exports = async function handler(req, res) {
       process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY
     );
 
-    // Handle payment_intent.created - Initial payment intent creation
+    // Handle payment_intent.created - Just log, don't create records yet
     if (event.type === 'payment_intent.created') {
       const pi = event.data.object;
       const orderId = pi.metadata?.order_id;
       if (orderId) {
-        const orderRecord = {
-          order_id: orderId,
-          status: 'pending_payment',
-          payment_status: 'pending',
-          payment_id: pi.id,
-          price: pi.amount ? pi.amount / 100 : 35.0,
-          updated_at: new Date().toISOString()
-        };
-
-        const { data: updData, error: updError } = await supabase
-          .from('song_requests')
-          .update(orderRecord)
-          .eq('order_id', orderId)
-          .select('order_id');
-        
-        if (updError) {
-          console.error('Supabase update error:', updError);
-        } else if (!updData || updData.length === 0) {
-          // Insert if no existing record
-          await supabase.from('song_requests').insert([orderRecord]);
-        }
-        console.log(`Payment intent created for order ${orderId}. Payment Intent ID: ${pi.id}`);
+        console.log(`Payment intent created for order ${orderId}. Payment Intent ID: ${pi.id} - Waiting for payment success`);
       }
     }
 
-    // Handle charge.succeeded - Charge was successful
+    // Handle charge.succeeded - Charge was successful, but wait for payment_intent.succeeded
     if (event.type === 'charge.succeeded') {
       const charge = event.data.object;
       const paymentIntentId = charge.payment_intent;
@@ -90,157 +69,74 @@ module.exports = async function handler(req, res) {
       const orderId = paymentIntent.metadata?.order_id;
       
       if (orderId) {
-        const orderRecord = {
-          payment_status: 'processing',
-          status: 'processing',
-          payment_id: paymentIntentId,
-          updated_at: new Date().toISOString()
-        };
-
-        await supabase
-          .from('song_requests')
-          .update(orderRecord)
-          .eq('order_id', orderId);
-        
-        console.log(`Charge succeeded for order ${orderId}. Charge ID: ${charge.id}`);
+        console.log(`Charge succeeded for order ${orderId}. Charge ID: ${charge.id} - Waiting for payment intent success`);
       }
     }
 
-    // Handle payment_intent.succeeded - Payment intent completed successfully
+    // Handle payment_intent.succeeded - Payment intent completed successfully - CREATE THE RECORD
     if (event.type === 'payment_intent.succeeded') {
       const pi = event.data.object;
       const orderId = pi.metadata?.order_id;
       if (orderId) {
-        const orderRecord = {
-          payment_status: 'paid',
-          status: 'paid',
-          payment_id: pi.id,
-          updated_at: new Date().toISOString()
-        };
-
-        await supabase
-          .from('song_requests')
-          .update(orderRecord)
-          .eq('order_id', orderId);
-        
-        console.log(`Payment intent succeeded for order ${orderId}. Payment Intent ID: ${pi.id}`);
-      }
-    }
-
-    // Handle checkout.session.completed - Final confirmation
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object;
-      const sessionId = session.id;
-      // Retrieve full session to get customer details (robustness)
-      const fullSession = await stripe.checkout.sessions.retrieve(sessionId, {
-        expand: ['payment_intent', 'customer']
-      });
-
-      const orderId = fullSession.metadata?.order_id || session.metadata?.order_id;
-      const paymentId = fullSession.payment_intent?.id || fullSession.payment_intent || session.payment_intent || session.id;
-      const currency = fullSession.currency || 'aed';
-      const amountTotal = typeof fullSession.amount_total === 'number' ? fullSession.amount_total : null;
-      const customerEmail = fullSession.customer_details?.email || fullSession.customer_email || null;
-      const customerName = fullSession.customer_details?.name || null;
-      const customerPhone = fullSession.customer_details?.phone || null;
-
-      if (orderId) {
-        // Get the actual payment intent status from Stripe
-        const paymentIntent = fullSession.payment_intent;
-        const stripePaymentStatus = paymentIntent?.status || 'unknown';
-        
-        // Map Stripe payment status to our status
-        let paymentStatus = 'pending';
-        let orderStatus = 'pending_payment';
-        
-        switch (stripePaymentStatus) {
-          case 'succeeded':
-            paymentStatus = 'paid';
-            orderStatus = 'paid';
-            break;
-          case 'requires_payment_method':
-          case 'requires_confirmation':
-          case 'requires_action':
-            paymentStatus = 'pending';
-            orderStatus = 'pending_payment';
-            break;
-          case 'canceled':
-            paymentStatus = 'canceled';
-            orderStatus = 'canceled';
-            break;
-          case 'processing':
-            paymentStatus = 'processing';
-            orderStatus = 'processing';
-            break;
-          default:
-            paymentStatus = 'unknown';
-            orderStatus = 'pending_payment';
-        }
-        
+        // Create complete order record with all metadata from payment intent
         const orderRecord = {
           order_id: orderId,
-          status: orderStatus,
-          payment_status: paymentStatus,
-          payment_id: paymentId,
-          price: amountTotal ? amountTotal / 100 : 35.0,
-          customer_email: customerEmail,
-          customer_name: customerName,
-          customer_phone: customerPhone,
+          status: 'paid',
+          payment_status: 'paid',
+          payment_id: pi.id,
+          price: pi.amount ? pi.amount / 100 : 35.0,
+          customer_name: pi.metadata?.customer_name || null,
+          customer_email: pi.metadata?.customer_email || null,
+          customer_phone: pi.metadata?.customer_phone || null,
+          celebration: pi.metadata?.moment || null,
+          genre: pi.metadata?.song_style || null,
+          recipient_name: pi.metadata?.recipient_name || null,
+          recipient_gender: pi.metadata?.recipient_gender || null,
+          story: pi.metadata?.story || null,
+          vibe: pi.metadata?.vibe || null,
+          created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
 
-        // Update existing draft (preferred). If no row, log; we can decide to insert minimal later.
-        const { data: updData, error: updError } = await supabase
+        // Insert the complete order record
+        const { data, error } = await supabase
           .from('song_requests')
-          .update(orderRecord)
-          .eq('order_id', orderId)
-          .select('order_id');
-        if (updError) {
-          console.error('Supabase update error:', updError);
-        } else if (!updData || updData.length === 0) {
-          console.warn('No draft row found to update for order_id:', orderId);
+          .insert([orderRecord])
+          .select();
+
+        if (error) {
+          console.error('Error creating order record:', error);
+        } else {
+          console.log(`Order record created successfully for ${orderId}. Payment Intent ID: ${pi.id}`);
         }
-        console.log(`Checkout session completed for order ${orderId}. Session ID: ${session.id}`);
       }
     }
 
-    // Handle payment_intent.payment_failed
+    // Handle checkout.session.completed - Final confirmation (record should already exist from payment_intent.succeeded)
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object;
+      const orderId = session.metadata?.order_id;
+      if (orderId) {
+        // Just log - the record should already be created by payment_intent.succeeded
+        console.log(`Checkout session completed for order ${orderId}. Session ID: ${session.id} - Record should already exist`);
+      }
+    }
+
+    // Handle payment_intent.payment_failed - Don't create records for failed payments
     if (event.type === 'payment_intent.payment_failed') {
       const pi = event.data.object;
       const orderId = pi.metadata?.order_id;
       if (orderId) {
-        const orderRecord = {
-          payment_status: 'failed',
-          status: 'failed',
-          updated_at: new Date().toISOString()
-        };
-
-        await supabase
-          .from('song_requests')
-          .update(orderRecord)
-          .eq('order_id', orderId);
-        
-        console.log(`Payment intent failed for order ${orderId}. Payment Intent ID: ${pi.id}`);
+        console.log(`Payment intent failed for order ${orderId}. Payment Intent ID: ${pi.id} - No record created for failed payment`);
       }
     }
 
-    // Handle payment_intent.canceled
+    // Handle payment_intent.canceled - Don't create records for canceled payments
     if (event.type === 'payment_intent.canceled') {
       const pi = event.data.object;
       const orderId = pi.metadata?.order_id;
       if (orderId) {
-        const orderRecord = {
-          payment_status: 'canceled',
-          status: 'canceled',
-          updated_at: new Date().toISOString()
-        };
-
-        await supabase
-          .from('song_requests')
-          .update(orderRecord)
-          .eq('order_id', orderId);
-        
-        console.log(`Payment intent canceled for order ${orderId}. Payment Intent ID: ${pi.id}`);
+        console.log(`Payment intent canceled for order ${orderId}. Payment Intent ID: ${pi.id} - No record created for canceled payment`);
       }
     }
 

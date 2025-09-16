@@ -611,23 +611,19 @@
                                  window.location.hostname.includes('vercel.app');
                 
                 const paymentData = {
-                    amount: 3500, // AED 35.00 in fils
-                    currency_code: 'AED', // Use currency_code as per Ziina API specification
-                    description: `Custom song for ${orderData.recipientName || 'Customer'} - ${orderData.moment || 'Special occasion'}`,
-                    success_url: `${window.location.origin}/payment-success.html?payment_id={PAYMENT_ID}&order_id=${orderData.orderId}`,
-                    cancel_url: `${window.location.origin}/create-song-step4.html?order_id=${orderData.orderId}`,
-                    test: isTestMode, // Test mode for localhost and Vercel preview
-                    metadata: {
-                        order_id: orderData.orderId,
-                        customer_name: orderData.fullName,
-                        customer_email: orderData.email,
-                        customer_phone: orderData.phone,
-                        recipient_name: orderData.recipientName,
-                        song_style: orderData.songStyle,
-                        moment: orderData.moment,
-                        service_type: 'custom_song',
-                        amount_aed: '35.00'
-                    }
+                    orderId: orderData.orderId,
+                    customerName: orderData.fullName,
+                    customerEmail: orderData.email,
+                    customerPhone: orderData.phone,
+                    successUrl: `${window.location.origin}/payment-success.html?payment_id={PAYMENT_ID}&order_id=${orderData.orderId}`,
+                    cancelUrl: `${window.location.origin}/create-song-step4.html?order_id=${orderData.orderId}`,
+                    // Song details for complete record creation
+                    recipientName: orderData.recipientName,
+                    songStyle: orderData.songStyle,
+                    moment: orderData.moment,
+                    story: orderData.story,
+                    vibe: orderData.vibe,
+                    gender: orderData.gender
                 };
 
                 console.log('Payment data prepared:', paymentData);
@@ -638,10 +634,9 @@
                     throw new Error(`Payment validation failed: ${validation.errors.join(', ')}`);
                 }
 
-                // Save order to Supabase first (before payment)
-                console.log('Saving order to database...');
-                const savedOrder = await saveOrderToSupabase();
-                console.log('Order saved successfully:', savedOrder);
+                // Don't save order to database yet - wait for successful payment
+                // Order will be created by Stripe webhook on successful payment
+                console.log('Preparing payment data - order will be created on successful payment');
 
                 // For testing purposes, always create the order in production
                 // Even if payment gateway isn't fully set up yet
