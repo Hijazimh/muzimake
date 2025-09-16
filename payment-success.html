@@ -123,7 +123,7 @@
                 const contactData = JSON.parse(localStorage.getItem('contactData') || '{}');
 
                 const order = {
-                    order_id: orderId,
+                    order_id: `${orderId}-${Date.now()}`,
                     status: 'paid',
                     payment_status: 'paid',
                     payment_id: paymentId,

@@ -412,19 +412,9 @@
             console.log('Contact data:', contactData);
         }
 
-        // Get existing order ID or generate a new one
+        // Always generate a fresh order ID per submission
         function getOrGenerateOrderId() {
-            // Check if we already have an order ID in localStorage
-            let existingOrderId = localStorage.getItem('currentOrderId');
-            
-            if (existingOrderId) {
-                console.log('Reusing existing order ID:', existingOrderId);
-                return existingOrderId;
-            }
-            
-            // Generate new order ID
             const newOrderId = generateOrderId();
-            localStorage.setItem('currentOrderId', newOrderId);
             console.log('Generated new order ID:', newOrderId);
             return newOrderId;
         }
@@ -907,7 +897,7 @@
             localStorage.removeItem('songPreferences');
             localStorage.removeItem('songFormData');
             localStorage.removeItem('contactData');
-            localStorage.removeItem('currentOrderId'); // Clear the order ID too
+            // Do not persist order IDs between submissions
         }
 
         // Handle payment success (called from payment-success.html)
