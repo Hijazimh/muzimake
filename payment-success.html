@@ -107,7 +107,7 @@
 
     <script>
         // Handle payment success
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             // Get payment ID and order ID from URL parameters
             const urlParams = new URLSearchParams(window.location.search);
             const paymentId = urlParams.get('payment_id') || urlParams.get('id');
@@ -115,8 +115,48 @@
             
         if (paymentId) {
             console.log('Payment successful with ID:', paymentId);
-            
-            // Update order status in Supabase
+            if (orderId) {
+                // Build minimal order payload to ensure it exists in DB
+                const songPreferences = JSON.parse(localStorage.getItem('songPreferences') || '{}');
+                const songFormData = JSON.parse(localStorage.getItem('songFormData') || '{}');
+                const contactData = JSON.parse(localStorage.getItem('contactData') || '{}');
+
+                const order = {
+                    order_id: orderId,
+                    status: 'paid',
+                    payment_status: 'paid',
+                    payment_id: paymentId,
+                    price: 35.00,
+                    customer_name: contactData.fullName || null,
+                    customer_email: contactData.email || null,
+                    customer_phone: contactData.countryCode && contactData.phoneNumber ? `${contactData.countryCode}${contactData.phoneNumber}` : null,
+                    celebration: songPreferences.moment || null,
+                    genre: songPreferences.genre || null,
+                    recipient_name: songFormData.name || null,
+                    recipient_gender: songPreferences.gender || null,
+                    story: songFormData.story || null,
+                    vibe: Array.isArray(songPreferences.vibe) ? songPreferences.vibe.join(', ') : (songPreferences.vibe || null),
+                    updated_at: new Date().toISOString(),
+                    created_at: new Date().toISOString()
+                };
+
+                try {
+                    const resp = await fetch('/api/create-order', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ order })
+                    });
+                    const data = await resp.json();
+                    if (!resp.ok) {
+                        console.error('Create order failed:', data);
+                    } else {
+                        console.log('Order upserted via success page:', data);
+                    }
+                } catch (e) {
+                    console.error('Create order exception:', e);
+                }
+            }
+            // Update order status (redundant safety)
             updateOrderStatus(paymentId, orderId);
         }
             
