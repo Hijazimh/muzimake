@@ -87,6 +87,14 @@
             background-color: #d1fae5;
             color: #065f46;
         }
+        .status-failed {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .status-warning {
+            background-color: #fed7aa;
+            color: #9a3412;
+        }
         
         /* Modal animations */
         .modal-enter {
@@ -721,7 +729,7 @@
                 row.className = 'table-row border-b border-gray-100';
                 
                 const statusClass = getStatusClass(request.status, request.payment_status);
-                const label = (request.payment_status === 'paid' || request.status === 'paid') ? 'Paid' : (request.status || 'pending');
+                const label = getPaymentStatusText(request.status, request.payment_status);
                 const formattedDate = new Date(request.created_at).toLocaleDateString();
                 
                 // Add audio indicator
@@ -843,9 +851,29 @@
             return `${Math.floor(diffInSeconds / 86400)}d ago`;
         }
 
-        // Get status class for styling
+        // Get status class for styling - reflects exact Stripe payment status
         function getStatusClass(status, paymentStatus) {
-            if (paymentStatus === 'paid' || status === 'paid') return 'status-complete';
+            // Prioritize payment_status from Stripe webhooks for styling
+            if (paymentStatus) {
+                switch (paymentStatus) {
+                    case 'paid':
+                        return 'status-complete'; // Green
+                    case 'unpaid':
+                    case 'pending_payment':
+                        return 'status-pending'; // Yellow
+                    case 'failed':
+                    case 'canceled':
+                        return 'status-failed'; // Red
+                    case 'requires_action':
+                    case 'requires_payment_method':
+                        return 'status-warning'; // Orange
+                    default:
+                        return 'status-pending';
+                }
+            }
+            
+            // Fallback to status field
+            if (status === 'paid') return 'status-complete';
             switch (status) {
                 case 'pending':
                 case 'pending_payment':
@@ -1265,9 +1293,32 @@
             modal.classList.remove('hidden');
         }
         
-        // Get payment status text
+        // Get payment status text - reflects exact Stripe payment status
         function getPaymentStatusText(status, paymentStatus) {
-            if (paymentStatus === 'paid' || status === 'paid') return 'Paid';
+            // Prioritize payment_status from Stripe webhooks
+            if (paymentStatus) {
+                switch (paymentStatus) {
+                    case 'paid':
+                        return 'Paid';
+                    case 'unpaid':
+                        return 'Unpaid';
+                    case 'failed':
+                        return 'Payment Failed';
+                    case 'canceled':
+                        return 'Payment Canceled';
+                    case 'requires_action':
+                        return 'Requires Action';
+                    case 'requires_payment_method':
+                        return 'Requires Payment Method';
+                    case 'pending_payment':
+                        return 'Payment Pending';
+                    default:
+                        return paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1).replace(/_/g, ' ');
+                }
+            }
+            
+            // Fallback to status field
+            if (status === 'paid') return 'Paid';
             switch (status) {
                 case 'in_progress':
                     return 'In Progress';
