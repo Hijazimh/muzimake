@@ -61,7 +61,10 @@ module.exports = async function handler(req, res) {
       const customerName = fullSession.customer_details?.name || null;
       const customerPhone = fullSession.customer_details?.phone || null;
 
-      const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
+      const supabase = createClient(
+        process.env.SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY
+      );
 
       if (orderId) {
         // Upsert the order in case it wasn't saved pre-checkout
