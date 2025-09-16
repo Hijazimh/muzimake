@@ -247,12 +247,11 @@
                     
                     <div class="text-center">
                         <div class="mb-6">
-                            <img src="https://ziina.com/assets/logo.svg" alt="Ziina" class="h-12 mx-auto mb-4">
-                            <p class="text-custom-gray">Secure payment powered by Ziina</p>
+                            <p class="text-custom-gray">Secure payment powered by Stripe</p>
                         </div>
                         
                         <button id="payButton" class="payment-button text-white px-12 py-4 rounded-full text-lg font-semibold w-full max-w-md mx-auto flex items-center justify-center gap-3">
-                            <span id="payButtonText">Pay with Ziina</span>
+                            <span id="payButtonText">Pay securely</span>
                             <div id="loadingSpinner" class="spinner hidden"></div>
                         </button>
                         
@@ -572,7 +571,7 @@
             }
         }
 
-        // Validate payment data before sending to Ziina
+        // Validate payment data before sending to Stripe
         function validatePaymentData(paymentData) {
             const errors = [];
             
@@ -606,7 +605,7 @@
             };
         }
 
-        // Process payment with Ziina (with retry mechanism)
+        // Process payment with Stripe (with retry mechanism)
         async function processPayment(retryCount = 0) {
             const maxRetries = 2;
             
@@ -616,7 +615,7 @@
                 payButtonText.textContent = retryCount > 0 ? `Retrying... (${retryCount}/${maxRetries})` : 'Processing...';
                 loadingSpinner.classList.remove('hidden');
 
-                // Prepare payment data for Ziina (Payment Intent)
+                // Prepare payment data for Stripe Checkout
                 const isTestMode = window.location.hostname === 'localhost' || 
                                  window.location.hostname === '127.0.0.1' || 
                                  window.location.hostname.includes('vercel.app');
@@ -676,13 +675,12 @@
                 }
 
                 // For localhost/Vercel preview, proceed with payment flow
-                // Create payment with Ziina
-                console.log('Creating payment with Ziina...');
+                console.log('Creating Stripe Checkout session...');
                 const paymentResponse = await createStripeCheckout(paymentData);
                 
                 if (paymentResponse.success) {
                     console.log('Payment created successfully, redirecting...');
-                    // Redirect to Ziina payment page
+                    // Redirect to Stripe Checkout
                     window.location.href = paymentResponse.payment_url;
                 } else {
                     throw new Error(paymentResponse.error || 'Payment creation failed');
@@ -724,7 +722,7 @@
                 
                 // Reset button state
                 payButton.disabled = false;
-                payButtonText.textContent = 'Pay with Ziina';
+                payButtonText.textContent = 'Pay securely';
                 loadingSpinner.classList.add('hidden');
             }
         }
@@ -757,7 +755,7 @@
                 throw new Error('No checkout URL returned');
 
             } catch (error) {
-                console.error('Ziina Payment Error:', {
+                console.error('Stripe Payment Error:', {
                     message: error.message,
                     stack: error.stack,
                     timestamp: new Date().toISOString(),
@@ -785,9 +783,8 @@
                     userMessage = 'Payment service is temporarily unavailable. Please try again later.';
                 } else if (error.message.includes('timeout')) {
                     userMessage = 'Payment request timed out. Please try again.';
-                } else if (error.message.includes('Ziina API error:')) {
-                    // Extract the actual error message from Ziina
-                    userMessage = error.message.replace('Ziina API error: ', '');
+                } else if (error.message.includes('Stripe')) {
+                    userMessage = 'Stripe error. Please try again or contact support.';
                 }
                 
                 // Retry logic for certain types of errors
