@@ -1,6 +1,6 @@
 // Supabase Edge Function: stripe-webhook
 // - Verifies Stripe signatures
-// - Handles all Stripe payment events to reflect exact payment status
+// - Handles checkout.session.completed, payment_intent.succeeded, payment_intent.payment_failed
 // - Updates song_requests by metadata.order_id
 // - Records processed event IDs (idempotency)
 
@@ -64,124 +64,114 @@ serve(async (req) => {
     const rawBody = await req.text();
     const event = stripe.webhooks.constructEvent(rawBody, signature, STRIPE_WEBHOOK_SECRET);
 
-    console.log(`Processing Stripe event: ${event.type} (${event.id})`);
-
     // Idempotency: record event id
     try { await markEventProcessed(event.id); } catch (_) {}
 
-    let orderId: string | null = null;
-    let paymentStatus: string = 'pending_payment';
-    let orderStatus: string = 'pending_payment';
-    let paymentId: string | null = null;
-    let amount: number | null = null;
-    let customerEmail: string | null = null;
-    let customerName: string | null = null;
-    let customerPhone: string | null = null;
-
-    // Handle different Stripe events to get exact payment status
-    switch (event.type) {
-      case 'checkout.session.completed': {
-        const session: any = event.data.object;
-        orderId = session.metadata?.order_id;
-        paymentId = session.payment_intent || session.id;
-        amount = typeof session.amount_total === 'number' ? session.amount_total / 100 : null;
-        customerEmail = session.customer_details?.email ?? session.customer_email ?? null;
-        customerName = session.customer_details?.name ?? null;
-        customerPhone = session.customer_details?.phone ?? null;
+    if (event.type === 'checkout.session.completed') {
+      const session: any = event.data.object;
+      const orderId = session.metadata?.order_id;
+      if (orderId) {
+        // Retrieve full session with payment intent details
+        const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
+          expand: ['payment_intent']
+        });
         
-        // Check the actual payment status from the session
-        if (session.payment_status === 'paid') {
-          paymentStatus = 'paid';
-          orderStatus = 'paid';
-        } else if (session.payment_status === 'unpaid') {
-          paymentStatus = 'unpaid';
-          orderStatus = 'pending_payment';
-        } else {
-          paymentStatus = session.payment_status || 'pending_payment';
-          orderStatus = 'pending_payment';
+        const paymentIntent = fullSession.payment_intent as any;
+        const stripePaymentStatus = paymentIntent?.status || 'unknown';
+        
+        // Map Stripe payment status to our status
+        let paymentStatus = 'pending';
+        let orderStatus = 'pending_payment';
+        
+        switch (stripePaymentStatus) {
+          case 'succeeded':
+            paymentStatus = 'paid';
+            orderStatus = 'paid';
+            break;
+          case 'requires_payment_method':
+          case 'requires_confirmation':
+          case 'requires_action':
+            paymentStatus = 'pending';
+            orderStatus = 'pending_payment';
+            break;
+          case 'canceled':
+            paymentStatus = 'canceled';
+            orderStatus = 'canceled';
+            break;
+          case 'processing':
+            paymentStatus = 'processing';
+            orderStatus = 'processing';
+            break;
+          default:
+            paymentStatus = 'unknown';
+            orderStatus = 'pending_payment';
         }
-        console.log(`Checkout session completed - Payment status: ${paymentStatus}, Order: ${orderId}`);
-        break;
+        
+        const amount = typeof fullSession.amount_total === 'number' ? fullSession.amount_total / 100 : null;
+        await ensureOrder(orderId, {
+          status: orderStatus,
+          payment_status: paymentStatus,
+          payment_id: paymentIntent?.id || fullSession.id,
+          price: amount ?? 35,
+          customer_email: fullSession.customer_details?.email ?? fullSession.customer_email ?? null,
+          customer_name: fullSession.customer_details?.name ?? null,
+          customer_phone: fullSession.customer_details?.phone ?? null,
+          updated_at: new Date().toISOString()
+        });
       }
-
-      case 'payment_intent.succeeded': {
-        const pi: any = event.data.object;
-        orderId = pi.metadata?.order_id;
-        paymentId = pi.id;
-        amount = typeof pi.amount === 'number' ? pi.amount / 100 : null;
-        paymentStatus = 'paid';
-        orderStatus = 'paid';
-        console.log(`Payment intent succeeded - Order: ${orderId}`);
-        break;
-      }
-
-      case 'payment_intent.payment_failed': {
-        const pi: any = event.data.object;
-        orderId = pi.metadata?.order_id;
-        paymentId = pi.id;
-        paymentStatus = 'failed';
-        orderStatus = 'pending_payment';
-        console.log(`Payment intent failed - Order: ${orderId}`);
-        break;
-      }
-
-      case 'payment_intent.canceled': {
-        const pi: any = event.data.object;
-        orderId = pi.metadata?.order_id;
-        paymentId = pi.id;
-        paymentStatus = 'canceled';
-        orderStatus = 'pending_payment';
-        console.log(`Payment intent canceled - Order: ${orderId}`);
-        break;
-      }
-
-      case 'payment_intent.requires_action': {
-        const pi: any = event.data.object;
-        orderId = pi.metadata?.order_id;
-        paymentId = pi.id;
-        paymentStatus = 'requires_action';
-        orderStatus = 'pending_payment';
-        console.log(`Payment intent requires action - Order: ${orderId}`);
-        break;
-      }
-
-      case 'payment_intent.requires_payment_method': {
-        const pi: any = event.data.object;
-        orderId = pi.metadata?.order_id;
-        paymentId = pi.id;
-        paymentStatus = 'requires_payment_method';
-        orderStatus = 'pending_payment';
-        console.log(`Payment intent requires payment method - Order: ${orderId}`);
-        break;
-      }
-
-      default:
-        console.log(`Unhandled event type: ${event.type}`);
-        return jsonResponse(200, { received: true, message: `Unhandled event type: ${event.type}` });
     }
 
-    // Update the order with exact Stripe payment status
-    if (orderId) {
-      const updateData = {
-        payment_status: paymentStatus,
-        status: orderStatus,
-        payment_id: paymentId,
-        updated_at: new Date().toISOString()
-      };
-
-      // Add amount and customer details if available
-      if (amount !== null) updateData.price = amount;
-      if (customerEmail) updateData.customer_email = customerEmail;
-      if (customerName) updateData.customer_name = customerName;
-      if (customerPhone) updateData.customer_phone = customerPhone;
-
-      await ensureOrder(orderId, updateData);
-      console.log(`Updated order ${orderId} with payment_status: ${paymentStatus}, status: ${orderStatus}`);
+    if (event.type === 'payment_intent.succeeded') {
+      const pi: any = event.data.object;
+      const orderId = pi.metadata?.order_id;
+      if (orderId) {
+        await updateOrder(orderId, { 
+          payment_status: 'paid', 
+          status: 'paid', 
+          payment_id: pi.id, 
+          updated_at: new Date().toISOString() 
+        });
+      }
     }
 
-    return jsonResponse(200, { received: true, order_id: orderId, payment_status: paymentStatus });
+    if (event.type === 'payment_intent.payment_failed') {
+      const pi: any = event.data.object;
+      const orderId = pi.metadata?.order_id;
+      if (orderId) {
+        await ensureOrder(orderId, { 
+          payment_status: 'failed', 
+          status: 'failed', 
+          updated_at: new Date().toISOString() 
+        });
+      }
+    }
+
+    if (event.type === 'payment_intent.canceled') {
+      const pi: any = event.data.object;
+      const orderId = pi.metadata?.order_id;
+      if (orderId) {
+        await updateOrder(orderId, { 
+          payment_status: 'canceled', 
+          status: 'canceled', 
+          updated_at: new Date().toISOString() 
+        });
+      }
+    }
+
+    if (event.type === 'payment_intent.requires_action') {
+      const pi: any = event.data.object;
+      const orderId = pi.metadata?.order_id;
+      if (orderId) {
+        await updateOrder(orderId, { 
+          payment_status: 'requires_action', 
+          status: 'pending_payment', 
+          updated_at: new Date().toISOString() 
+        });
+      }
+    }
+
+    return jsonResponse(200, { received: true });
   } catch (e) {
-    console.error('Webhook error:', e);
     return jsonResponse(400, { error: String(e?.message || e) });
   }
 });

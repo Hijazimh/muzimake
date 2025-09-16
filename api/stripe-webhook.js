@@ -67,11 +67,42 @@ module.exports = async function handler(req, res) {
       );
 
       if (orderId) {
-        // Upsert the order in case it wasn't saved pre-checkout
+        // Get the actual payment intent status from Stripe
+        const paymentIntent = fullSession.payment_intent;
+        const stripePaymentStatus = paymentIntent?.status || 'unknown';
+        
+        // Map Stripe payment status to our status
+        let paymentStatus = 'pending';
+        let orderStatus = 'pending_payment';
+        
+        switch (stripePaymentStatus) {
+          case 'succeeded':
+            paymentStatus = 'paid';
+            orderStatus = 'paid';
+            break;
+          case 'requires_payment_method':
+          case 'requires_confirmation':
+          case 'requires_action':
+            paymentStatus = 'pending';
+            orderStatus = 'pending_payment';
+            break;
+          case 'canceled':
+            paymentStatus = 'canceled';
+            orderStatus = 'canceled';
+            break;
+          case 'processing':
+            paymentStatus = 'processing';
+            orderStatus = 'processing';
+            break;
+          default:
+            paymentStatus = 'unknown';
+            orderStatus = 'pending_payment';
+        }
+        
         const orderRecord = {
           order_id: orderId,
-          status: 'paid',
-          payment_status: 'paid',
+          status: orderStatus,
+          payment_status: paymentStatus,
           payment_id: paymentId,
           price: amountTotal ? amountTotal / 100 : 35.0,
           customer_email: customerEmail,

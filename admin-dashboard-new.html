@@ -87,14 +87,6 @@
             background-color: #d1fae5;
             color: #065f46;
         }
-        .status-failed {
-            background-color: #fee2e2;
-            color: #991b1b;
-        }
-        .status-warning {
-            background-color: #fed7aa;
-            color: #9a3412;
-        }
         
         /* Modal animations */
         .modal-enter {
@@ -851,30 +843,32 @@
             return `${Math.floor(diffInSeconds / 86400)}d ago`;
         }
 
-        // Get status class for styling - reflects exact Stripe payment status
+        // Get status class for styling - reflects Stripe payment status colors
         function getStatusClass(status, paymentStatus) {
             // Prioritize payment_status from Stripe webhooks for styling
             if (paymentStatus) {
                 switch (paymentStatus) {
                     case 'paid':
-                        return 'status-complete'; // Green
-                    case 'unpaid':
-                    case 'pending_payment':
-                        return 'status-pending'; // Yellow
+                        return 'status-complete';
+                    case 'processing':
+                        return 'status-in_progress';
                     case 'failed':
                     case 'canceled':
-                        return 'status-failed'; // Red
+                    case 'cancelled':
+                        return 'status-cancelled';
                     case 'requires_action':
-                    case 'requires_payment_method':
-                        return 'status-warning'; // Orange
+                        return 'status-pending';
+                    case 'pending':
+                    case 'unknown':
                     default:
                         return 'status-pending';
                 }
             }
             
-            // Fallback to status field
-            if (status === 'paid') return 'status-complete';
+            // Fallback to order status
             switch (status) {
+                case 'paid':
+                    return 'status-complete';
                 case 'pending':
                 case 'pending_payment':
                     return 'status-pending';
@@ -886,6 +880,10 @@
                     return 'status-complete';
                 case 'sent':
                     return 'status-sent';
+                case 'cancelled':
+                case 'canceled':
+                case 'failed':
+                    return 'status-cancelled';
                 default:
                     return 'status-pending';
             }
@@ -1300,32 +1298,41 @@
                 switch (paymentStatus) {
                     case 'paid':
                         return 'Paid';
-                    case 'unpaid':
-                        return 'Unpaid';
+                    case 'pending':
+                        return 'Payment Pending';
+                    case 'processing':
+                        return 'Processing';
                     case 'failed':
                         return 'Payment Failed';
                     case 'canceled':
-                        return 'Payment Canceled';
+                    case 'cancelled':
+                        return 'Payment Cancelled';
                     case 'requires_action':
-                        return 'Requires Action';
-                    case 'requires_payment_method':
-                        return 'Requires Payment Method';
-                    case 'pending_payment':
-                        return 'Payment Pending';
+                        return 'Action Required';
+                    case 'unknown':
+                        return 'Unknown Status';
                     default:
-                        return paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1).replace(/_/g, ' ');
+                        return paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1);
                 }
             }
             
-            // Fallback to status field
-            if (status === 'paid') return 'Paid';
+            // Fallback to order status
             switch (status) {
+                case 'paid':
+                    return 'Paid';
                 case 'in_progress':
                     return 'In Progress';
                 case 'complete':
                     return 'Complete';
                 case 'sent':
                     return 'Sent';
+                case 'cancelled':
+                case 'canceled':
+                    return 'Cancelled';
+                case 'failed':
+                    return 'Failed';
+                case 'processing':
+                    return 'Processing';
                 default:
                     return 'Payment Pending';
             }
