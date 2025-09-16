@@ -565,26 +565,29 @@
         function validatePaymentData(paymentData) {
             const errors = [];
             
-            if (!paymentData.orderId || paymentData.orderId.trim().length === 0) {
-                errors.push('Order ID is required');
+            if (!paymentData.amount || paymentData.amount <= 0) {
+                errors.push('Invalid payment amount');
             }
             
-            if (!paymentData.customerName || paymentData.customerName.trim().length === 0) {
-                errors.push('Customer name is required');
+            if (!paymentData.currency_code || paymentData.currency_code !== 'AED') {
+                errors.push('Invalid currency code');
             }
             
-            if (!paymentData.customerEmail || paymentData.customerEmail.trim().length === 0) {
-                errors.push('Customer email is required');
+            if (!paymentData.description || paymentData.description.trim().length === 0) {
+                errors.push('Payment description is required');
             }
             
-            if (!paymentData.successUrl || !paymentData.successUrl.includes('payment-success.html')) {
+            if (!paymentData.success_url || !paymentData.success_url.includes('payment-success.html')) {
                 errors.push('Invalid success URL');
             }
             
-            if (!paymentData.cancelUrl || !paymentData.cancelUrl.includes('create-song-step4.html')) {
+            if (!paymentData.cancel_url || !paymentData.cancel_url.includes('create-song-step4.html')) {
                 errors.push('Invalid cancel URL');
             }
             
+            if (!paymentData.metadata || !paymentData.metadata.order_id) {
+                errors.push('Order ID is required in metadata');
+            }
             
             return {
                 isValid: errors.length === 0,
@@ -608,19 +611,23 @@
                                  window.location.hostname.includes('vercel.app');
                 
                 const paymentData = {
-                    orderId: orderData.orderId,
-                    customerName: orderData.fullName,
-                    customerEmail: orderData.email,
-                    customerPhone: orderData.phone,
-                    successUrl: `${window.location.origin}/payment-success.html?payment_id={PAYMENT_ID}&order_id=${orderData.orderId}`,
-                    cancelUrl: `${window.location.origin}/create-song-step4.html?order_id=${orderData.orderId}`,
-                    // Song details for complete record creation
-                    recipientName: orderData.recipientName,
-                    songStyle: orderData.songStyle,
-                    moment: orderData.moment,
-                    story: orderData.story,
-                    vibe: orderData.vibe,
-                    gender: orderData.gender
+                    amount: 3500, // AED 35.00 in fils
+                    currency_code: 'AED', // Use currency_code as per Ziina API specification
+                    description: `Custom song for ${orderData.recipientName || 'Customer'} - ${orderData.moment || 'Special occasion'}`,
+                    success_url: `${window.location.origin}/payment-success.html?payment_id={PAYMENT_ID}&order_id=${orderData.orderId}`,
+                    cancel_url: `${window.location.origin}/create-song-step4.html?order_id=${orderData.orderId}`,
+                    test: isTestMode, // Test mode for localhost and Vercel preview
+                    metadata: {
+                        order_id: orderData.orderId,
+                        customer_name: orderData.fullName,
+                        customer_email: orderData.email,
+                        customer_phone: orderData.phone,
+                        recipient_name: orderData.recipientName,
+                        song_style: orderData.songStyle,
+                        moment: orderData.moment,
+                        service_type: 'custom_song',
+                        amount_aed: '35.00'
+                    }
                 };
 
                 console.log('Payment data prepared:', paymentData);
@@ -631,9 +638,10 @@
                     throw new Error(`Payment validation failed: ${validation.errors.join(', ')}`);
                 }
 
-                // Don't save order to database yet - wait for successful payment
-                // Order will be created by Stripe webhook on successful payment
-                console.log('Preparing payment data - order will be created on successful payment');
+                // Save order to Supabase first (before payment)
+                console.log('Saving order to database...');
+                const savedOrder = await saveOrderToSupabase();
+                console.log('Order saved successfully:', savedOrder);
 
                 // For testing purposes, always create the order in production
                 // Even if payment gateway isn't fully set up yet
@@ -702,7 +710,14 @@
                 const response = await fetch('/api/create-checkout-session', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(paymentData)
+                    body: JSON.stringify({
+                        orderId: orderData.orderId,
+                        customerName: orderData.fullName,
+                        customerEmail: orderData.email,
+                        customerPhone: `${orderData.countryCode}${orderData.phoneNumber}`,
+                        successUrl: `${window.location.origin}/payment-success.html`,
+                        cancelUrl: `${window.location.origin}/create-song-step4.html`
+                    })
                 });
 
                 if (!response.ok) {
