@@ -1,0 +1,110 @@
+// Supabase Edge Function: stripe-webhook
+// - Verifies Stripe signatures
+// - Handles checkout.session.completed, payment_intent.succeeded, payment_intent.payment_failed
+// - Updates song_requests by metadata.order_id
+// - Records processed event IDs (idempotency)
+
+// deno-lint-ignore-file no-explicit-any
+import Stripe from "https://esm.sh/stripe@12.17.0?target=deno";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const isTest = (Deno.env.get('STRIPE_MODE') || '').toLowerCase() === 'test';
+const STRIPE_SECRET_KEY = isTest && Deno.env.get('STRIPE_SECRET_KEY_TEST')
+  ? Deno.env.get('STRIPE_SECRET_KEY_TEST')!
+  : Deno.env.get('STRIPE_SECRET_KEY')!;
+const STRIPE_WEBHOOK_SECRET = isTest && Deno.env.get('STRIPE_WEBHOOK_SECRET_TEST')
+  ? Deno.env.get('STRIPE_WEBHOOK_SECRET_TEST')!
+  : Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
+
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' });
+const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+
+async function markEventProcessed(eventId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from('processed_events')
+    .insert({ id: eventId })
+    .select('id');
+  if (error) {
+    // If duplicate, it's already processed
+    if (String(error.message).toLowerCase().includes('duplicate')) return false;
+    throw error;
+  }
+  return !!(data && data.length);
+}
+
+async function updateOrder(orderId: string, patch: Record<string, any>) {
+  await supabase.from('song_requests').update(patch).eq('order_id', orderId);
+}
+
+async function ensureOrder(orderId: string, insertPatch: Record<string, any>) {
+  const { data, error } = await supabase
+    .from('song_requests')
+    .select('order_id')
+    .eq('order_id', orderId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) {
+    await supabase.from('song_requests').insert([{ order_id: orderId, ...insertPatch }]);
+  } else {
+    await updateOrder(orderId, insertPatch);
+  }
+}
+
+function jsonResponse(status: number, body: unknown) {
+  return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+}
+
+serve(async (req) => {
+  try {
+    const signature = req.headers.get('stripe-signature');
+    if (!signature) return jsonResponse(400, { error: 'Missing Stripe signature' });
+    const rawBody = await req.text();
+    const event = stripe.webhooks.constructEvent(rawBody, signature, STRIPE_WEBHOOK_SECRET);
+
+    // Idempotency: record event id
+    try { await markEventProcessed(event.id); } catch (_) {}
+
+    if (event.type === 'checkout.session.completed') {
+      const session: any = event.data.object;
+      const orderId = session.metadata?.order_id;
+      if (orderId) {
+        const amount = typeof session.amount_total === 'number' ? session.amount_total / 100 : null;
+        await ensureOrder(orderId, {
+          status: 'paid',
+          payment_status: 'paid',
+          payment_id: session.payment_intent || session.id,
+          price: amount ?? 35,
+          customer_email: session.customer_details?.email ?? session.customer_email ?? null,
+          customer_name: session.customer_details?.name ?? null,
+          customer_phone: session.customer_details?.phone ?? null,
+          updated_at: new Date().toISOString()
+        });
+      }
+    }
+
+    if (event.type === 'payment_intent.succeeded') {
+      const pi: any = event.data.object;
+      const orderId = pi.metadata?.order_id;
+      if (orderId) {
+        await updateOrder(orderId, { payment_status: 'paid', status: 'paid', payment_id: pi.id, updated_at: new Date().toISOString() });
+      }
+    }
+
+    if (event.type === 'payment_intent.payment_failed') {
+      const pi: any = event.data.object;
+      const orderId = pi.metadata?.order_id;
+      if (orderId) {
+        await ensureOrder(orderId, { payment_status: 'failed', status: 'pending_payment', updated_at: new Date().toISOString() });
+      }
+    }
+
+    return jsonResponse(200, { received: true });
+  } catch (e) {
+    return jsonResponse(400, { error: String(e?.message || e) });
+  }
+});
+
+

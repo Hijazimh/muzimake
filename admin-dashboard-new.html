@@ -721,6 +721,7 @@
                 row.className = 'table-row border-b border-gray-100';
                 
                 const statusClass = getStatusClass(request.status, request.payment_status);
+                const label = (request.payment_status === 'paid' || request.status === 'paid') ? 'Paid' : (request.status || 'pending');
                 const formattedDate = new Date(request.created_at).toLocaleDateString();
                 
                 // Add audio indicator
@@ -736,7 +737,7 @@
                     <td class="py-3 px-4 text-sm text-gray-600">${request.genre || 'N/A'}</td>
                     <td class="py-3 px-4">
                         <span class="px-2 py-1 text-xs font-medium rounded-full ${statusClass}">
-                            ${(request.payment_status === 'paid' || request.status === 'paid') ? 'paid' : (request.status || 'pending')}
+                            ${label}
                         </span>
                         ${audioIndicator}
                     </td>
