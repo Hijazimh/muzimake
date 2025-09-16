@@ -87,6 +87,22 @@ SMTP_USER=hello@muzimake.com
 SMTP_PASS=your_smtp_password_here
 ```
 
+### Stripe (Test vs Live)
+
+Set these in Vercel → Environment Variables:
+
+Required (live):
+- STRIPE_SECRET_KEY
+- STRIPE_PUBLISHABLE_KEY
+- STRIPE_WEBHOOK_SECRET
+
+Optional (test mode switch):
+- STRIPE_MODE = test
+- STRIPE_SECRET_KEY_TEST
+- STRIPE_WEBHOOK_SECRET_TEST
+
+When STRIPE_MODE=test and the test keys/secrets are present, all API calls use test mode.
+
 ## 🚀 Deployment
 
 ### Vercel (Recommended)

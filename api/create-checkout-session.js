@@ -2,7 +2,11 @@
 // POST /api/create-checkout-session
 
 const Stripe = require('stripe');
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' });
+const isTest = process.env.STRIPE_MODE === 'test';
+const stripeSecret = isTest && process.env.STRIPE_SECRET_KEY_TEST
+  ? process.env.STRIPE_SECRET_KEY_TEST
+  : process.env.STRIPE_SECRET_KEY;
+const stripe = new Stripe(stripeSecret, { apiVersion: '2023-10-16' });
 
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {

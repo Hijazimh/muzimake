@@ -4,7 +4,11 @@
 const Stripe = require('stripe');
 const { createClient } = require('@supabase/supabase-js');
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' });
+const isTest = process.env.STRIPE_MODE === 'test';
+const stripeSecret = isTest && process.env.STRIPE_SECRET_KEY_TEST
+  ? process.env.STRIPE_SECRET_KEY_TEST
+  : process.env.STRIPE_SECRET_KEY;
+const stripe = new Stripe(stripeSecret, { apiVersion: '2023-10-16' });
 
 export const config = {
   api: {
@@ -28,7 +32,9 @@ module.exports = async function handler(req, res) {
 
   const buf = await buffer(req);
   const sig = req.headers['stripe-signature'];
-  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const endpointSecret = isTest && process.env.STRIPE_WEBHOOK_SECRET_TEST
+    ? process.env.STRIPE_WEBHOOK_SECRET_TEST
+    : process.env.STRIPE_WEBHOOK_SECRET;
 
   let event;
   try {
