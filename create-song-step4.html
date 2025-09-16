@@ -565,29 +565,26 @@
         function validatePaymentData(paymentData) {
             const errors = [];
             
-            if (!paymentData.amount || paymentData.amount <= 0) {
-                errors.push('Invalid payment amount');
+            if (!paymentData.orderId || paymentData.orderId.trim().length === 0) {
+                errors.push('Order ID is required');
             }
             
-            if (!paymentData.currency_code || paymentData.currency_code !== 'AED') {
-                errors.push('Invalid currency code');
+            if (!paymentData.customerName || paymentData.customerName.trim().length === 0) {
+                errors.push('Customer name is required');
             }
             
-            if (!paymentData.description || paymentData.description.trim().length === 0) {
-                errors.push('Payment description is required');
+            if (!paymentData.customerEmail || paymentData.customerEmail.trim().length === 0) {
+                errors.push('Customer email is required');
             }
             
-            if (!paymentData.success_url || !paymentData.success_url.includes('payment-success.html')) {
+            if (!paymentData.successUrl || !paymentData.successUrl.includes('payment-success.html')) {
                 errors.push('Invalid success URL');
             }
             
-            if (!paymentData.cancel_url || !paymentData.cancel_url.includes('create-song-step4.html')) {
+            if (!paymentData.cancelUrl || !paymentData.cancelUrl.includes('create-song-step4.html')) {
                 errors.push('Invalid cancel URL');
             }
             
-            if (!paymentData.metadata || !paymentData.metadata.order_id) {
-                errors.push('Order ID is required in metadata');
-            }
             
             return {
                 isValid: errors.length === 0,
@@ -705,14 +702,7 @@
                 const response = await fetch('/api/create-checkout-session', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        orderId: orderData.orderId,
-                        customerName: orderData.fullName,
-                        customerEmail: orderData.email,
-                        customerPhone: `${orderData.countryCode}${orderData.phoneNumber}`,
-                        successUrl: `${window.location.origin}/payment-success.html`,
-                        cancelUrl: `${window.location.origin}/create-song-step4.html`
-                    })
+                    body: JSON.stringify(paymentData)
                 });
 
                 if (!response.ok) {
