@@ -80,10 +80,17 @@ module.exports = async function handler(req, res) {
           updated_at: new Date().toISOString()
         };
 
-        const { error: upsertError } = await supabase
+        // Update existing draft (preferred). If no row, log; we can decide to insert minimal later.
+        const { data: updData, error: updError } = await supabase
           .from('song_requests')
-          .upsert(orderRecord, { onConflict: 'order_id' });
-        if (upsertError) console.error('Supabase upsert error:', upsertError);
+          .update(orderRecord)
+          .eq('order_id', orderId)
+          .select('order_id');
+        if (updError) {
+          console.error('Supabase update error:', updError);
+        } else if (!updData || updData.length === 0) {
+          console.warn('No draft row found to update for order_id:', orderId);
+        }
       }
     }
 
