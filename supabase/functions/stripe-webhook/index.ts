@@ -36,7 +36,24 @@ async function markEventProcessed(eventId: string): Promise<boolean> {
 }
 
 async function updateOrder(orderId: string, patch: Record<string, any>) {
-  await supabase.from('song_requests').update(patch).eq('order_id', orderId);
+  const { data, error } = await supabase
+    .from('song_requests')
+    .update(patch)
+    .eq('order_id', orderId)
+    .select('order_id');
+  
+  if (error) {
+    console.error('Error updating order:', error);
+    throw error;
+  }
+  
+  if (!data || data.length === 0) {
+    console.warn(`No order found to update for order_id: ${orderId}`);
+  } else {
+    console.log(`Successfully updated order ${orderId}`);
+  }
+  
+  return data;
 }
 
 async function ensureOrder(orderId: string, insertPatch: Record<string, any>) {
@@ -45,11 +62,29 @@ async function ensureOrder(orderId: string, insertPatch: Record<string, any>) {
     .select('order_id')
     .eq('order_id', orderId)
     .maybeSingle();
-  if (error) throw error;
+  
+  if (error) {
+    console.error('Error checking order existence:', error);
+    throw error;
+  }
+  
   if (!data) {
-    await supabase.from('song_requests').insert([{ order_id: orderId, ...insertPatch }]);
+    console.log(`Creating new order for order_id: ${orderId}`);
+    const { data: insertData, error: insertError } = await supabase
+      .from('song_requests')
+      .insert([{ order_id: orderId, ...insertPatch }])
+      .select('order_id');
+    
+    if (insertError) {
+      console.error('Error creating order:', insertError);
+      throw insertError;
+    }
+    
+    console.log(`Successfully created order ${orderId}`);
+    return insertData;
   } else {
-    await updateOrder(orderId, insertPatch);
+    console.log(`Updating existing order for order_id: ${orderId}`);
+    return await updateOrder(orderId, insertPatch);
   }
 }
 
@@ -59,13 +94,30 @@ function jsonResponse(status: number, body: unknown) {
 
 serve(async (req) => {
   try {
+    console.log('Webhook received:', req.method, req.url);
+    
     const signature = req.headers.get('stripe-signature');
-    if (!signature) return jsonResponse(400, { error: 'Missing Stripe signature' });
+    if (!signature) {
+      console.error('Missing Stripe signature');
+      return jsonResponse(400, { error: 'Missing Stripe signature' });
+    }
+    
     const rawBody = await req.text();
+    console.log('Raw body length:', rawBody.length);
+    
     const event = stripe.webhooks.constructEvent(rawBody, signature, STRIPE_WEBHOOK_SECRET);
+    console.log('Event type:', event.type, 'Event ID:', event.id);
 
     // Idempotency: record event id
-    try { await markEventProcessed(event.id); } catch (_) {}
+    try { 
+      const processed = await markEventProcessed(event.id);
+      if (!processed) {
+        console.log(`Event ${event.id} already processed, skipping`);
+        return jsonResponse(200, { received: true, message: 'Event already processed' });
+      }
+    } catch (error) {
+      console.error('Error marking event as processed:', error);
+    }
 
     // Handle payment_intent.created - Initial payment intent creation
     if (event.type === 'payment_intent.created') {
@@ -218,7 +270,8 @@ serve(async (req) => {
 
     return jsonResponse(200, { received: true });
   } catch (e) {
-    return jsonResponse(400, { error: String(e?.message || e) });
+    console.error('Webhook error:', e);
+    return jsonResponse(500, { error: String(e?.message || e) });
   }
 });
 

@@ -26,6 +26,8 @@ function buffer(req) {
 }
 
 module.exports = async function handler(req, res) {
+  console.log('Vercel webhook received:', req.method, req.url);
+  
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -36,9 +38,13 @@ module.exports = async function handler(req, res) {
     ? process.env.STRIPE_WEBHOOK_SECRET_TEST
     : process.env.STRIPE_WEBHOOK_SECRET;
 
+  console.log('Webhook secret configured:', !!endpointSecret);
+  console.log('Test mode:', isTest);
+
   let event;
   try {
     event = stripe.webhooks.constructEvent(buf, sig, endpointSecret);
+    console.log('Event type:', event.type, 'Event ID:', event.id);
   } catch (err) {
     console.error('Webhook signature verification failed.', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
@@ -74,6 +80,8 @@ module.exports = async function handler(req, res) {
           console.error('Supabase update error:', updError);
         } else if (!updData || updData.length === 0) {
           console.warn('No draft row found to update for order_id:', orderId);
+        } else {
+          console.log(`Successfully updated order ${orderId} with payment status: ${orderRecord.payment_status}`);
         }
       }
     }
@@ -204,6 +212,8 @@ module.exports = async function handler(req, res) {
           console.error('Supabase update error:', updError);
         } else if (!updData || updData.length === 0) {
           console.warn('No draft row found to update for order_id:', orderId);
+        } else {
+          console.log(`Successfully updated order ${orderId} with payment status: ${orderRecord.payment_status}`);
         }
       }
     }
