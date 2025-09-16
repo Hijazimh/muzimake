@@ -141,6 +141,22 @@
                 };
 
                 try {
+                    // Server-side confirmation: create/update order from Stripe session
+                    const sessionId = urlParams.get('session_id');
+                    if (sessionId) {
+                        const confirmResp = await fetch('/api/confirm-session', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ session_id: sessionId })
+                        });
+                        const confirmData = await confirmResp.json();
+                        if (!confirmResp.ok) {
+                            console.error('Confirm session failed:', confirmData);
+                        } else {
+                            console.log('Confirm session success:', confirmData);
+                        }
+                    }
+
                     const resp = await fetch('/api/create-order', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
