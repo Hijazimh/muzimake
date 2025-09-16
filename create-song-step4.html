@@ -342,17 +342,8 @@
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxjaGxlb3BmZHZyZ3VuYnJsbmdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3NTYwNjgsImV4cCI6MjA3MzMzMjA2OH0.U4NkKdXFgK3Im78oz_SaEHkWQqGzhlaeA83Rom4oD7A';
         const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Ziina API configuration
-        const ZIINA_API_KEY = 'ICBwiSb7cUWIBkczgyyGWMd4IqGN8kk0JdlLMylkwqA2M3BbRGhdRKbADGkHnen4';
-        const ZIINA_BASE_URL = 'https://api.ziina.com/api';
-        
-        // Ziina API configuration logging (secure)
-        console.log('Ziina API Configuration:', {
-            baseUrl: ZIINA_BASE_URL,
-            apiKey: ZIINA_API_KEY.substring(0, 10) + '...',
-            timestamp: new Date().toISOString(),
-            version: '2.2'
-        });
+        // Stripe configuration
+        const STRIPE_PUBLISHABLE_KEY = (window.STRIPE_PUBLISHABLE_KEY) || '';
 
         // DOM elements
         const navbar = document.getElementById('navbar');
@@ -687,7 +678,7 @@
                 // For localhost/Vercel preview, proceed with payment flow
                 // Create payment with Ziina
                 console.log('Creating payment with Ziina...');
-                const paymentResponse = await createZiinaPayment(paymentData);
+                const paymentResponse = await createStripeCheckout(paymentData);
                 
                 if (paymentResponse.success) {
                     console.log('Payment created successfully, redirecting...');
@@ -738,111 +729,32 @@
             }
         }
 
-        // Create payment with Ziina API
-        async function createZiinaPayment(paymentData) {
+        // Create Stripe Checkout session
+        async function createStripeCheckout(paymentData) {
             try {
-                const isTestMode = window.location.hostname === 'localhost' || 
-                                 window.location.hostname === '127.0.0.1' || 
-                                 window.location.hostname.includes('vercel.app');
-
-                // For testing purposes, simulate successful payment on localhost and Vercel preview
-                if (isTestMode) {
-                    console.log('Testing mode: Simulating successful payment');
-                    return {
-                        success: true,
-                        payment_url: 'payment-success.html?payment_id=test_' + Date.now() + '&order_id=' + orderData.orderId,
-                        payment_id: 'test_' + Date.now()
-                    };
-                }
-
-                console.log('Creating payment intent with Ziina API...');
-                console.log('API URL:', `${ZIINA_BASE_URL}/payment_intent`);
-                console.log('Payment data:', paymentData);
-
-                // Prepare Ziina API request with proper structure
-                const ziinaPaymentData = {
-                    amount: paymentData.amount, // Amount in fils (3500 fils = AED 35.00)
-                    currency_code: paymentData.currency_code, // 'AED' as per Ziina API
-                    description: paymentData.description,
-                    success_url: paymentData.success_url,
-                    cancel_url: paymentData.cancel_url,
-                    test: paymentData.test, // Test mode flag
-                    metadata: paymentData.metadata // Include all metadata
-                };
-                
-                console.log('Ziina Payment Request:', {
-                    endpoint: `${ZIINA_BASE_URL}/payment_intent`,
-                    data: ziinaPaymentData,
-                    timestamp: new Date().toISOString()
-                });
-
-                // Make API request to Ziina with proper headers and error handling
-                const response = await fetch(`${ZIINA_BASE_URL}/payment_intent`, {
+                const response = await fetch('/api/create-checkout-session', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${ZIINA_API_KEY}`,
-                        'Accept': 'application/json',
-                        'User-Agent': 'Muzimake/2.2',
-                        'X-Request-ID': `muzimake_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-                    },
-                    body: JSON.stringify(ziinaPaymentData),
-                    timeout: 30000 // 30 second timeout
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderId: orderData.orderId,
+                        customerName: orderData.fullName,
+                        customerEmail: orderData.email,
+                        customerPhone: `${orderData.countryCode}${orderData.phoneNumber}`,
+                        successUrl: `${window.location.origin}/payment-success.html`,
+                        cancelUrl: `${window.location.origin}/create-song-step4.html`
+                    })
                 });
 
-                console.log('Ziina API Response:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    headers: Object.fromEntries(response.headers.entries())
-                });
-                
                 if (!response.ok) {
-                    let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-                    let errorDetails = null;
-                    
-                    try {
-                        const errorText = await response.text();
-                        console.error('Ziina API error response:', errorText);
-                        
-                        // Try to parse error response as JSON
-                        try {
-                            const errorJson = JSON.parse(errorText);
-                            errorMessage = errorJson.message || errorJson.error || errorMessage;
-                            errorDetails = errorJson;
-                        } catch (e) {
-                            errorMessage = `HTTP ${response.status}: ${errorText}`;
-                        }
-                    } catch (e) {
-                        console.error('Failed to read error response:', e);
-                    }
-                    
-                    throw new Error(`Ziina API error: ${errorMessage}`);
+                    const err = await response.json();
+                    throw new Error(err.error || 'Failed to create checkout session');
                 }
 
-                const result = await response.json();
-                console.log('Ziina API Success Response:', result);
-
-                // Handle Ziina API response format
-                const paymentUrl = result.payment_url || result.redirect_url || result.url || result.checkout_url;
-                const paymentId = result.id || result.payment_id || result.payment_intent_id;
-
-                if (!paymentUrl) {
-                    console.error('Missing payment URL in response:', result);
-                    throw new Error('No payment URL received from Ziina API');
+                const data = await response.json();
+                if (data.url) {
+                    return { success: true, payment_url: data.url, payment_id: data.id, order_id: orderData.orderId };
                 }
-
-                console.log('Payment created successfully:', {
-                    payment_id: paymentId,
-                    payment_url: paymentUrl,
-                    order_id: orderData.orderId
-                });
-
-                return {
-                    success: true,
-                    payment_url: paymentUrl,
-                    payment_id: paymentId,
-                    order_id: orderData.orderId
-                };
+                throw new Error('No checkout URL returned');
 
             } catch (error) {
                 console.error('Ziina Payment Error:', {

@@ -7,6 +7,8 @@
     "start": "node api/send-email.js"
   },
   "dependencies": {
-    "nodemailer": "^6.9.14"
+    "nodemailer": "^6.9.14",
+    "stripe": "^16.5.0",
+    "@supabase/supabase-js": "^2.45.4"
   }
 }
