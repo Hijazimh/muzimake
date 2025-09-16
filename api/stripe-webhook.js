@@ -45,6 +45,89 @@ module.exports = async function handler(req, res) {
   }
 
   try {
+    const supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY
+    );
+
+    // Handle payment_intent.created - Initial payment intent creation
+    if (event.type === 'payment_intent.created') {
+      const pi = event.data.object;
+      const orderId = pi.metadata?.order_id;
+      if (orderId) {
+        const orderRecord = {
+          order_id: orderId,
+          status: 'pending_payment',
+          payment_status: 'pending',
+          payment_id: pi.id,
+          price: pi.amount ? pi.amount / 100 : 35.0,
+          updated_at: new Date().toISOString()
+        };
+
+        const { data: updData, error: updError } = await supabase
+          .from('song_requests')
+          .update(orderRecord)
+          .eq('order_id', orderId)
+          .select('order_id');
+        
+        if (updError) {
+          console.error('Supabase update error:', updError);
+        } else if (!updData || updData.length === 0) {
+          // Insert if no existing record
+          await supabase.from('song_requests').insert([orderRecord]);
+        }
+        console.log(`Payment intent created for order ${orderId}. Payment Intent ID: ${pi.id}`);
+      }
+    }
+
+    // Handle charge.succeeded - Charge was successful
+    if (event.type === 'charge.succeeded') {
+      const charge = event.data.object;
+      const paymentIntentId = charge.payment_intent;
+      
+      // Get the payment intent to find the order_id
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      const orderId = paymentIntent.metadata?.order_id;
+      
+      if (orderId) {
+        const orderRecord = {
+          payment_status: 'processing',
+          status: 'processing',
+          payment_id: paymentIntentId,
+          updated_at: new Date().toISOString()
+        };
+
+        await supabase
+          .from('song_requests')
+          .update(orderRecord)
+          .eq('order_id', orderId);
+        
+        console.log(`Charge succeeded for order ${orderId}. Charge ID: ${charge.id}`);
+      }
+    }
+
+    // Handle payment_intent.succeeded - Payment intent completed successfully
+    if (event.type === 'payment_intent.succeeded') {
+      const pi = event.data.object;
+      const orderId = pi.metadata?.order_id;
+      if (orderId) {
+        const orderRecord = {
+          payment_status: 'paid',
+          status: 'paid',
+          payment_id: pi.id,
+          updated_at: new Date().toISOString()
+        };
+
+        await supabase
+          .from('song_requests')
+          .update(orderRecord)
+          .eq('order_id', orderId);
+        
+        console.log(`Payment intent succeeded for order ${orderId}. Payment Intent ID: ${pi.id}`);
+      }
+    }
+
+    // Handle checkout.session.completed - Final confirmation
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
       const sessionId = session.id;
@@ -60,11 +143,6 @@ module.exports = async function handler(req, res) {
       const customerEmail = fullSession.customer_details?.email || fullSession.customer_email || null;
       const customerName = fullSession.customer_details?.name || null;
       const customerPhone = fullSession.customer_details?.phone || null;
-
-      const supabase = createClient(
-        process.env.SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY
-      );
 
       if (orderId) {
         // Get the actual payment intent status from Stripe
@@ -122,6 +200,47 @@ module.exports = async function handler(req, res) {
         } else if (!updData || updData.length === 0) {
           console.warn('No draft row found to update for order_id:', orderId);
         }
+        console.log(`Checkout session completed for order ${orderId}. Session ID: ${session.id}`);
+      }
+    }
+
+    // Handle payment_intent.payment_failed
+    if (event.type === 'payment_intent.payment_failed') {
+      const pi = event.data.object;
+      const orderId = pi.metadata?.order_id;
+      if (orderId) {
+        const orderRecord = {
+          payment_status: 'failed',
+          status: 'failed',
+          updated_at: new Date().toISOString()
+        };
+
+        await supabase
+          .from('song_requests')
+          .update(orderRecord)
+          .eq('order_id', orderId);
+        
+        console.log(`Payment intent failed for order ${orderId}. Payment Intent ID: ${pi.id}`);
+      }
+    }
+
+    // Handle payment_intent.canceled
+    if (event.type === 'payment_intent.canceled') {
+      const pi = event.data.object;
+      const orderId = pi.metadata?.order_id;
+      if (orderId) {
+        const orderRecord = {
+          payment_status: 'canceled',
+          status: 'canceled',
+          updated_at: new Date().toISOString()
+        };
+
+        await supabase
+          .from('song_requests')
+          .update(orderRecord)
+          .eq('order_id', orderId);
+        
+        console.log(`Payment intent canceled for order ${orderId}. Payment Intent ID: ${pi.id}`);
       }
     }
 

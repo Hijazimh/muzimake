@@ -67,6 +67,58 @@ serve(async (req) => {
     // Idempotency: record event id
     try { await markEventProcessed(event.id); } catch (_) {}
 
+    // Handle payment_intent.created - Initial payment intent creation
+    if (event.type === 'payment_intent.created') {
+      const pi: any = event.data.object;
+      const orderId = pi.metadata?.order_id;
+      if (orderId) {
+        await ensureOrder(orderId, {
+          status: 'pending_payment',
+          payment_status: 'pending',
+          payment_id: pi.id,
+          price: pi.amount ? pi.amount / 100 : 35,
+          updated_at: new Date().toISOString()
+        });
+        console.log(`Payment intent created for order ${orderId}. Payment Intent ID: ${pi.id}`);
+      }
+    }
+
+    // Handle charge.succeeded - Charge was successful
+    if (event.type === 'charge.succeeded') {
+      const charge: any = event.data.object;
+      const paymentIntentId = charge.payment_intent;
+      
+      // Get the payment intent to find the order_id
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      const orderId = paymentIntent.metadata?.order_id;
+      
+      if (orderId) {
+        await updateOrder(orderId, {
+          payment_status: 'processing',
+          status: 'processing',
+          payment_id: paymentIntentId,
+          updated_at: new Date().toISOString()
+        });
+        console.log(`Charge succeeded for order ${orderId}. Charge ID: ${charge.id}`);
+      }
+    }
+
+    // Handle payment_intent.succeeded - Payment intent completed successfully
+    if (event.type === 'payment_intent.succeeded') {
+      const pi: any = event.data.object;
+      const orderId = pi.metadata?.order_id;
+      if (orderId) {
+        await updateOrder(orderId, { 
+          payment_status: 'paid', 
+          status: 'paid', 
+          payment_id: pi.id, 
+          updated_at: new Date().toISOString() 
+        });
+        console.log(`Payment intent succeeded for order ${orderId}. Payment Intent ID: ${pi.id}`);
+      }
+    }
+
+    // Handle checkout.session.completed - Final confirmation
     if (event.type === 'checkout.session.completed') {
       const session: any = event.data.object;
       const orderId = session.metadata?.order_id;
@@ -118,22 +170,11 @@ serve(async (req) => {
           customer_phone: fullSession.customer_details?.phone ?? null,
           updated_at: new Date().toISOString()
         });
+        console.log(`Checkout session completed for order ${orderId}. Session ID: ${session.id}`);
       }
     }
 
-    if (event.type === 'payment_intent.succeeded') {
-      const pi: any = event.data.object;
-      const orderId = pi.metadata?.order_id;
-      if (orderId) {
-        await updateOrder(orderId, { 
-          payment_status: 'paid', 
-          status: 'paid', 
-          payment_id: pi.id, 
-          updated_at: new Date().toISOString() 
-        });
-      }
-    }
-
+    // Handle payment_intent.payment_failed
     if (event.type === 'payment_intent.payment_failed') {
       const pi: any = event.data.object;
       const orderId = pi.metadata?.order_id;
@@ -143,9 +184,11 @@ serve(async (req) => {
           status: 'failed', 
           updated_at: new Date().toISOString() 
         });
+        console.log(`Payment intent failed for order ${orderId}. Payment Intent ID: ${pi.id}`);
       }
     }
 
+    // Handle payment_intent.canceled
     if (event.type === 'payment_intent.canceled') {
       const pi: any = event.data.object;
       const orderId = pi.metadata?.order_id;
@@ -155,9 +198,11 @@ serve(async (req) => {
           status: 'canceled', 
           updated_at: new Date().toISOString() 
         });
+        console.log(`Payment intent canceled for order ${orderId}. Payment Intent ID: ${pi.id}`);
       }
     }
 
+    // Handle payment_intent.requires_action
     if (event.type === 'payment_intent.requires_action') {
       const pi: any = event.data.object;
       const orderId = pi.metadata?.order_id;
@@ -167,6 +212,7 @@ serve(async (req) => {
           status: 'pending_payment', 
           updated_at: new Date().toISOString() 
         });
+        console.log(`Payment intent requires action for order ${orderId}. Payment Intent ID: ${pi.id}`);
       }
     }
 
