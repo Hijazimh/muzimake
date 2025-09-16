@@ -235,9 +235,9 @@
                     <div class="border-t border-gray-200 pt-6 mt-6">
                         <div class="flex justify-between items-center text-lg font-semibold">
                             <span class="text-custom-dark">Total</span>
-                            <span class="text-custom-orange" id="totalAmount">AED 31.50</span>
+                            <span class="text-custom-orange" id="totalAmount">AED 35.00</span>
                         </div>
-                        <p class="text-sm text-custom-gray mt-2">Including 5% VAT</p>
+                        
                     </div>
                 </div>
 
@@ -475,12 +475,9 @@
                 <div class="mt-4 pt-4 border-t border-gray-200">
                     <div class="flex justify-between text-sm">
                         <span class="text-custom-gray">Song Creation</span>
-                        <span class="text-custom-dark">AED 30.00</span>
+                        <span class="text-custom-dark">AED 35.00</span>
                     </div>
-                    <div class="flex justify-between text-sm">
-                        <span class="text-custom-gray">VAT (5%)</span>
-                        <span class="text-custom-dark">AED 1.50</span>
-                    </div>
+                    
                 </div>
             `;
             
@@ -634,7 +631,7 @@
                                  window.location.hostname.includes('vercel.app');
                 
                 const paymentData = {
-                    amount: 3150, // AED 31.50 in fils (100 AED = 10000 fils) - 3150 fils = 31.50 AED
+                    amount: 3500, // AED 35.00 in fils
                     currency_code: 'AED', // Use currency_code as per Ziina API specification
                     description: `Custom song for ${orderData.recipientName || 'Customer'} - ${orderData.moment || 'Special occasion'}`,
                     success_url: `${window.location.origin}/payment-success.html?payment_id={PAYMENT_ID}&order_id=${orderData.orderId}`,
@@ -649,7 +646,7 @@
                         song_style: orderData.songStyle,
                         moment: orderData.moment,
                         service_type: 'custom_song',
-                        amount_aed: '31.50'
+                        amount_aed: '35.00'
                     }
                 };
 
@@ -764,7 +761,7 @@
 
                 // Prepare Ziina API request with proper structure
                 const ziinaPaymentData = {
-                    amount: paymentData.amount, // Amount in fils (3150 fils = AED 31.50)
+                    amount: paymentData.amount, // Amount in fils (3500 fils = AED 35.00)
                     currency_code: paymentData.currency_code, // 'AED' as per Ziina API
                     description: paymentData.description,
                     success_url: paymentData.success_url,
@@ -976,7 +973,7 @@
                     story: orderData.story,
                     vibe: Array.isArray(orderData.vibe) ? orderData.vibe.join(', ') : orderData.vibe,
                     status: 'pending_payment',
-                    price: 31.50,
+                    price: 35.00,
                     order_id: orderData.orderId,
                     created_at: new Date().toISOString()
                 };

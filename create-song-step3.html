@@ -520,24 +520,12 @@
                     <!-- Pricing Section -->
                     <div>
                         <label class="block text-custom-gray text-xs font-bold tracking-wider uppercase mb-2">
-                            Subtotal
+                            Total
                         </label>
                         <div class="space-y-2">
                             <div class="flex justify-between items-center">
                                 <span class="text-custom-gray text-xs font-bold tracking-wider uppercase">1x Song Fee</span>
-                                <span class="text-custom-gray text-lg font-bold" id="songFee">AED 30.00</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-custom-gray text-xs font-bold tracking-wider uppercase">Subtotal (Excl. VAT)</span>
-                                <span class="text-custom-gray text-lg font-bold" id="subtotal">AED 30.00</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-custom-gray text-xs font-bold tracking-wider uppercase">VAT (5%)</span>
-                                <span class="text-custom-gray text-lg font-bold" id="vat">AED 1.50</span>
-                            </div>
-                            <div class="flex justify-between items-center border-t border-gray-200 pt-2">
-                                <span class="text-custom-gray text-xs font-bold tracking-wider uppercase">TOTAL (Incl. VAT):</span>
-                                <span class="text-custom-gray text-lg font-bold" id="total">AED 31.50</span>
+                                <span class="text-custom-gray text-lg font-bold" id="total">AED 35.00</span>
                             </div>
                         </div>
                     </div>
@@ -626,18 +614,12 @@
         }
 
         // Price calculation
-        const SONG_PRICE = 30.00; // AED
-        const VAT_RATE = 0.05; // 5%
+        const SONG_PRICE = 35.00; // AED
 
         function calculatePrices() {
-            const subtotal = SONG_PRICE;
-            const vat = subtotal * VAT_RATE;
-            const total = subtotal + vat;
-
-            document.getElementById('songFee').textContent = `AED ${subtotal.toFixed(2)}`;
-            document.getElementById('subtotal').textContent = `AED ${subtotal.toFixed(2)}`;
-            document.getElementById('vat').textContent = `AED ${vat.toFixed(2)}`;
-            document.getElementById('total').textContent = `AED ${total.toFixed(2)}`;
+            const total = SONG_PRICE;
+            const totalEl = document.getElementById('total');
+            if (totalEl) totalEl.textContent = `AED ${total.toFixed(2)}`;
         }
 
         // Form validation
@@ -816,9 +798,7 @@
                         phoneNumber: phoneInput.value,
                         pricing: {
                             songFee: SONG_PRICE,
-                            subtotal: SONG_PRICE,
-                            vat: SONG_PRICE * VAT_RATE,
-                            total: SONG_PRICE + (SONG_PRICE * VAT_RATE)
+                            total: SONG_PRICE
                         }
                     };
                     localStorage.setItem('contactData', JSON.stringify(contactData));

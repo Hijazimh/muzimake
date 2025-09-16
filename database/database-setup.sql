@@ -77,7 +77,7 @@ INSERT INTO song_requests (
     '3-4 minutes',
     'Please include our wedding song melody in the beginning',
     'pending',
-    31.50,
+    35.00,
     'ORD-001'
 ),
 (
@@ -93,7 +93,7 @@ INSERT INTO song_requests (
     '2-3 minutes',
     'He loves classic rock, please make it upbeat',
     'in_progress',
-    31.50,
+    35.00,
     'ORD-002'
 ),
 (
@@ -109,7 +109,7 @@ INSERT INTO song_requests (
     '3-4 minutes',
     'Include some Arabic lyrics if possible',
     'complete',
-    31.50,
+    35.00,
     'ORD-003'
 ),
 (
@@ -125,7 +125,7 @@ INSERT INTO song_requests (
     '4-5 minutes',
     'Make it very emotional and touching',
     'sent',
-    31.50,
+    35.00,
     'ORD-004'
 );
 
