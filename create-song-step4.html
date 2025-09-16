@@ -774,17 +774,16 @@
                     userMessage = 'Stripe error. Please try again or contact support.';
                 }
                 
-                // Retry logic for certain types of errors
-                if (retryCount < maxRetries && (
+                // Retry logic for certain types of errors (use outer handler)
+                if (typeof processPayment === 'function' && (
                     error.message.includes('Failed to fetch') ||
                     error.message.includes('NetworkError') ||
                     error.message.includes('timeout') ||
                     error.message.includes('500') ||
                     error.message.includes('Internal Server Error')
                 )) {
-                    console.log(`Retrying payment (attempt ${retryCount + 1}/${maxRetries})...`);
-                    await new Promise(resolve => setTimeout(resolve, 2000 * (retryCount + 1))); // Exponential backoff
-                    return processPayment(retryCount + 1);
+                    console.log('Retrying payment via outer handler...');
+                    return processPayment(1);
                 }
                 
                 return {
@@ -792,7 +791,7 @@
                     error: userMessage,
                     technical_error: error.message,
                     order_id: orderData.orderId,
-                    retry_count: retryCount
+                    retry_count: 0
                 };
             }
         }
