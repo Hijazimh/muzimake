@@ -47,16 +47,40 @@ module.exports = async function handler(req, res) {
   try {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
-      const orderId = session.metadata?.order_id;
-      const paymentId = session.payment_intent || session.id;
+      const sessionId = session.id;
+      // Retrieve full session to get customer details (robustness)
+      const fullSession = await stripe.checkout.sessions.retrieve(sessionId, {
+        expand: ['payment_intent', 'customer']
+      });
+
+      const orderId = fullSession.metadata?.order_id || session.metadata?.order_id;
+      const paymentId = fullSession.payment_intent?.id || fullSession.payment_intent || session.payment_intent || session.id;
+      const currency = fullSession.currency || 'aed';
+      const amountTotal = typeof fullSession.amount_total === 'number' ? fullSession.amount_total : null;
+      const customerEmail = fullSession.customer_details?.email || fullSession.customer_email || null;
+      const customerName = fullSession.customer_details?.name || null;
+      const customerPhone = fullSession.customer_details?.phone || null;
+
+      const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
       if (orderId) {
-        const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
-        const { error } = await supabase
+        // Upsert the order in case it wasn't saved pre-checkout
+        const orderRecord = {
+          order_id: orderId,
+          status: 'paid',
+          payment_status: 'paid',
+          payment_id: paymentId,
+          price: amountTotal ? amountTotal / 100 : 35.0,
+          customer_email: customerEmail,
+          customer_name: customerName,
+          customer_phone: customerPhone,
+          updated_at: new Date().toISOString()
+        };
+
+        const { error: upsertError } = await supabase
           .from('song_requests')
-          .update({ status: 'paid', payment_status: 'paid', payment_id: paymentId })
-          .eq('order_id', orderId);
-        if (error) console.error('Supabase update error:', error);
+          .upsert(orderRecord, { onConflict: 'order_id' });
+        if (upsertError) console.error('Supabase upsert error:', upsertError);
       }
     }
 
