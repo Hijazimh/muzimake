@@ -1253,8 +1253,8 @@
             document.getElementById('modalInstructions').value = request.story || request.special_instructions || '';
             
             // Populate order status
-            document.getElementById('modalOrderId').textContent = request.order_id || '12345678';
-            document.getElementById('modalPaymentStatus').textContent = getPaymentStatusText(request.status);
+            document.getElementById('modalOrderId').textContent = request.order_id || 'N/A';
+            document.getElementById('modalPaymentStatus').textContent = getPaymentStatusText(request.status, request.payment_status);
             
             // Update status buttons
             updateStatusButtons(request.status);
@@ -1265,11 +1265,9 @@
         }
         
         // Get payment status text
-        function getPaymentStatusText(status) {
+        function getPaymentStatusText(status, paymentStatus) {
+            if (paymentStatus === 'paid' || status === 'paid') return 'Paid';
             switch (status) {
-                case 'pending':
-                case 'pending_payment':
-                    return 'Payment Pending';
                 case 'in_progress':
                     return 'In Progress';
                 case 'complete':
@@ -1748,7 +1746,7 @@
                 }
                 
                 // Update payment status display
-                document.getElementById('modalPaymentStatus').textContent = getPaymentStatusText(newStatus);
+                document.getElementById('modalPaymentStatus').textContent = getPaymentStatusText(newStatus, request.payment_status);
                 
                 // Refresh table
                 populateTable(allRequests);
