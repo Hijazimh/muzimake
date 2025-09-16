@@ -720,7 +720,7 @@
                 const row = document.createElement('tr');
                 row.className = 'table-row border-b border-gray-100';
                 
-                const statusClass = getStatusClass(request.status);
+                const statusClass = getStatusClass(request.status, request.payment_status);
                 const formattedDate = new Date(request.created_at).toLocaleDateString();
                 
                 // Add audio indicator
@@ -736,7 +736,7 @@
                     <td class="py-3 px-4 text-sm text-gray-600">${request.genre || 'N/A'}</td>
                     <td class="py-3 px-4">
                         <span class="px-2 py-1 text-xs font-medium rounded-full ${statusClass}">
-                            ${request.status || 'pending'}
+                            ${(request.payment_status === 'paid' || request.status === 'paid') ? 'paid' : (request.status || 'pending')}
                         </span>
                         ${audioIndicator}
                     </td>
@@ -843,7 +843,8 @@
         }
 
         // Get status class for styling
-        function getStatusClass(status) {
+        function getStatusClass(status, paymentStatus) {
+            if (paymentStatus === 'paid' || status === 'paid') return 'status-complete';
             switch (status) {
                 case 'pending':
                 case 'pending_payment':
@@ -853,7 +854,6 @@
                     return 'status-in_progress';
                 case 'complete':
                 case 'completed':
-                case 'paid':
                     return 'status-complete';
                 case 'sent':
                     return 'status-sent';
