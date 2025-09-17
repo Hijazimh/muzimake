@@ -125,13 +125,16 @@ module.exports = async (req, res) => {
                 user: process.env.SMTP_USER ? '***@muzimake.com' : 'hello@muzimake.com'
             });
             
-            await transporter.sendMail(mailOptions);
-            console.log('Email sent successfully via SMTP');
+            const info = await transporter.sendMail(mailOptions);
+            console.log('Email sent successfully via SMTP', { messageId: info.messageId, accepted: info.accepted, rejected: info.rejected });
             
             res.status(200).json({ 
                 message: 'Email sent successfully',
                 method: 'SMTP',
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                accepted: info.accepted || [],
+                rejected: info.rejected || [],
+                success: Array.isArray(info.accepted) && info.accepted.length > 0
             });
         } catch (smtpError) {
             console.error('SMTP Error details:', smtpError);

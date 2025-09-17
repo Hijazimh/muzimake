@@ -1167,6 +1167,16 @@
                 document.getElementById('uploadedFileInfo').classList.add('hidden');
                 document.getElementById('uploadProgress').classList.add('hidden');
             }
+
+            // Enable/disable Send button based on presence of a valid public URL
+            const sendBtn = document.getElementById('markSent');
+            const isValidUrl = typeof uploadedAudioUrl === 'string' && uploadedAudioUrl.startsWith('http');
+            if (sendBtn) {
+                sendBtn.disabled = !isValidUrl;
+                sendBtn.classList.toggle('opacity-50', !isValidUrl);
+                sendBtn.classList.toggle('cursor-not-allowed', !isValidUrl);
+                sendBtn.title = isValidUrl ? '' : 'Attach a public audio link to enable sending';
+            }
             
             // Populate customer details
             document.getElementById('modalCustomerName').textContent = request.customer_name || 'Full name';
@@ -1531,8 +1541,12 @@
                 return;
             }
             
+            // Ensure we have a public audio URL: prefer the freshly selected/uploaded one, fallback to saved DB value
+            if (!uploadedAudioUrl && currentRequest && currentRequest.audio_file_url) {
+                uploadedAudioUrl = currentRequest.audio_file_url;
+            }
             if (!uploadedAudioUrl) {
-                alert('Please upload an audio file first');
+                alert('Please upload or select an audio file first');
                 return;
             }
             
@@ -1656,15 +1670,20 @@
                 }
                 console.log('=== EMAIL DEBUG END ===');
                 
-                if (!response.ok) {
+                if (!response.ok || !responseData.success) {
                     console.error('Send email failed payload:', responseData);
-                    throw new Error(`Failed to send email: ${responseData.error || response.statusText}`);
+                    await updateDeliveryStatus('failed');
+                    alert(`Failed to send email. ${responseData.error || ''}`.trim());
+                    return;
                 }
                 
-                // Update status to sent
-                await updateOrderStatus('sent');
+                // Update statuses on success
+                await updateProductionStatus('complete');
+                await updateDeliveryStatus('sent');
                 
                 alert('Email sent successfully!');
+                // Close dialog
+                document.getElementById('orderModal').classList.add('hidden');
                 
             } catch (error) {
                 console.error('Error sending email:', error);
@@ -1733,6 +1752,26 @@
                 console.error('Error updating status:', error);
                 alert('Failed to update status. Please try again.');
             }
+        }
+
+        // Update production_status column
+        async function updateProductionStatus(newStatus) {
+            if (!currentRequest) return;
+            const { error } = await supabase
+                .from('song_requests')
+                .update({ production_status: newStatus })
+                .eq('id', currentRequest.id);
+            if (error) console.error('Failed to update production_status:', error);
+        }
+
+        // Update delivery_status column
+        async function updateDeliveryStatus(newStatus) {
+            if (!currentRequest) return;
+            const { error } = await supabase
+                .from('song_requests')
+                .update({ delivery_status: newStatus })
+                .eq('id', currentRequest.id);
+            if (error) console.error('Failed to update delivery_status:', error);
         }
 
         // Filter and search functionality
@@ -2205,6 +2244,14 @@
                     
                     // Setup delete functionality
                     setupAudioPlayer();
+                }
+
+                // Enable Send button now that we have a valid public URL
+                const sendBtn = document.getElementById('markSent');
+                if (sendBtn) {
+                    sendBtn.disabled = false;
+                    sendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    sendBtn.title = '';
                 }
                 
                 // Refresh the main table to show the audio indicator

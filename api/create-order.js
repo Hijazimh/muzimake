@@ -19,6 +19,10 @@ module.exports = async function handler(req, res) {
       process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY
     );
 
+    // Ensure defaults when client does not provide them
+    if (!order.status) order.status = 'pending';
+    if (!order.payment_status) order.payment_status = 'pending';
+
     const { data, error } = await supabase
       .from('song_requests')
       .upsert(order, { onConflict: 'order_id' })
