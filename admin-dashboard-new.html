@@ -118,15 +118,6 @@
                 <div class="p-3">
                     <!-- Navigation List -->
                     <div class="space-y-1">
-                        <!-- Home -->
-                        <div class="rounded-lg hover:bg-white/50 transition-colors">
-                            <a href="#home" class="flex items-center px-3 py-2 text-sm font-semibold text-gray-800 hover:text-gray-900">
-                                <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                                </svg>
-                                Home
-                            </a>
-                        </div>
                         
                         <!-- Song Requests (Active) -->
                         <div class="bg-white/50 rounded-lg">
@@ -307,7 +298,7 @@
                 </div>
                 
                 <!-- Song Requests Section -->
-                <div id="songRequestsSection" class="p-6 hidden">
+                <div id="songRequestsSection" class="p-6">
                     <!-- Page Header -->
                     <div class="flex items-center justify-between mb-6">
                         <div class="flex items-center">
@@ -697,7 +688,6 @@
                     console.log('Status values loaded:', data.map(r => ({ id: r.id, status: r.status, audio_file_url: r.audio_file_url })));
                     populateTable(data);
                     updateMetrics(data);
-                    updateHomeMetrics();
                 } else {
                     allRequests = [];
                     showEmptyState();
@@ -766,82 +756,7 @@
             document.getElementById('ordersDelivered').textContent = ordersDelivered;
         }
         
-        // Update home metrics
-        function updateHomeMetrics() {
-            if (!allRequests) return;
-            
-            const totalOrders = allRequests.length;
-            const pendingOrders = allRequests.filter(r => r.status === 'pending').length;
-            const inProgressOrders = allRequests.filter(r => r.status === 'in_progress').length;
-            const completedOrders = allRequests.filter(r => r.status === 'complete' || r.status === 'sent').length;
-            
-            document.getElementById('homeTotalOrders').textContent = totalOrders;
-            document.getElementById('homePendingOrders').textContent = pendingOrders;
-            document.getElementById('homeInProgressOrders').textContent = inProgressOrders;
-            document.getElementById('homeCompletedOrders').textContent = completedOrders;
-            
-            // Update recent activity
-            updateRecentActivity();
-        }
-        
-        // Update recent activity
-        function updateRecentActivity() {
-            const recentActivityContainer = document.getElementById('recentActivity');
-            if (!allRequests || allRequests.length === 0) {
-                recentActivityContainer.innerHTML = '<p class="text-gray-500 text-center py-4">No recent activity</p>';
-                return;
-            }
-            
-            // Get the 5 most recent requests
-            const recentRequests = allRequests
-                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-                .slice(0, 5);
-            
-            recentActivityContainer.innerHTML = recentRequests.map(request => {
-                const statusColor = {
-                    'pending': 'text-yellow-600 bg-yellow-100',
-                    'in_progress': 'text-blue-600 bg-blue-100',
-                    'complete': 'text-green-600 bg-green-100',
-                    'sent': 'text-purple-600 bg-purple-100'
-                }[request.status] || 'text-gray-600 bg-gray-100';
-                
-                const timeAgo = getTimeAgo(new Date(request.created_at));
-                
-                return `
-                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div class="flex items-center">
-                            <div class="w-10 h-10 bg-custom-orange rounded-lg flex items-center justify-center mr-3">
-                                <span class="text-white font-semibold text-sm">${request.customer_name ? request.customer_name.charAt(0).toUpperCase() : 'U'}</span>
-                            </div>
-                            <div>
-                                <p class="font-medium text-gray-800">${request.customer_name || 'Unknown Customer'}</p>
-                                <p class="text-sm text-gray-600">
-                                    New song request
-                                    ${request.audio_file_url ? '<span class="text-green-600 ml-1">🎵</span>' : ''}
-                                </p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <span class="inline-block px-2 py-1 text-xs font-medium rounded-full ${statusColor}">
-                                ${request.status.replace('_', ' ')}
-                            </span>
-                            <p class="text-xs text-gray-500 mt-1">${timeAgo}</p>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-        
-        // Get time ago string
-        function getTimeAgo(date) {
-            const now = new Date();
-            const diffInSeconds = Math.floor((now - date) / 1000);
-            
-            if (diffInSeconds < 60) return 'Just now';
-            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-            return `${Math.floor(diffInSeconds / 86400)}d ago`;
-        }
+        // (Removed: home metrics and recent activity helpers)
 
         // Get status class for styling - reflects Stripe payment status colors
         function getStatusClass(status, paymentStatus) {
@@ -1683,8 +1598,8 @@
                 console.log('Current request object:', currentRequest);
                 console.log('Available fields in currentRequest:', Object.keys(currentRequest));
                 console.log('Email data being sent:', JSON.stringify({
-                    to: emailData.to,
-                    subject: emailData.subject,
+                    to: currentRequest.customer_email,
+                    subject: `Your Custom Song is Ready - ${currentRequest.recipient_name}`,
                     audioUrl: uploadedAudioUrl,
                     customerName: currentRequest.customer_name,
                     recipientName: currentRequest.recipient_name,
@@ -1715,8 +1630,8 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        to: emailData.to,
-                        subject: emailData.subject,
+                        to: currentRequest.customer_email,
+                        subject: `Your Custom Song is Ready - ${currentRequest.recipient_name}`,
                         audioUrl: uploadedAudioUrl,
                         customerName: currentRequest.customer_name,
                         recipientName: currentRequest.recipient_name,
@@ -1742,6 +1657,7 @@
                 console.log('=== EMAIL DEBUG END ===');
                 
                 if (!response.ok) {
+                    console.error('Send email failed payload:', responseData);
                     throw new Error(`Failed to send email: ${responseData.error || response.statusText}`);
                 }
                 
@@ -1913,47 +1829,16 @@
             });
             
             // Navigation functionality
-            const homeLink = document.querySelector('a[href="#home"]');
             const songRequestsLink = document.querySelector('a[href="#song-requests"]');
-            const homeSection = document.getElementById('homeSection');
             const songRequestsSection = document.getElementById('songRequestsSection');
-            
-            // Show home section by default
-            showHomeSection();
-            
-            homeLink.addEventListener('click', function(e) {
-                e.preventDefault();
-                showHomeSection();
-            });
             
             songRequestsLink.addEventListener('click', function(e) {
                 e.preventDefault();
                 showSongRequestsSection();
             });
             
-            function showHomeSection() {
-                homeSection.classList.remove('hidden');
-                songRequestsSection.classList.add('hidden');
-                
-                // Update active navigation
-                homeLink.parentElement.classList.add('bg-white/50');
-                homeLink.parentElement.classList.remove('hover:bg-white/50');
-                songRequestsLink.parentElement.classList.remove('bg-white/50');
-                songRequestsLink.parentElement.classList.add('hover:bg-white/50');
-                
-                // Update home metrics
-                updateHomeMetrics();
-            }
-            
             function showSongRequestsSection() {
-                homeSection.classList.add('hidden');
                 songRequestsSection.classList.remove('hidden');
-                
-                // Update active navigation
-                songRequestsLink.parentElement.classList.add('bg-white/50');
-                songRequestsLink.parentElement.classList.remove('hover:bg-white/50');
-                homeLink.parentElement.classList.remove('bg-white/50');
-                homeLink.parentElement.classList.add('hover:bg-white/50');
             }
             
             // Modal event listeners

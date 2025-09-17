@@ -48,19 +48,11 @@ module.exports = async function handler(req, res) {
       updated_at: new Date().toISOString()
     };
 
-    // Insert new row; if order_id already exists unexpectedly, append a suffix
-    let { data, error } = await supabase
+    // Upsert by order_id to avoid duplicates
+    const { data, error } = await supabase
       .from('song_requests')
-      .insert([orderRecord])
+      .upsert(orderRecord, { onConflict: 'order_id' })
       .select('order_id');
-    if (error && error.message && error.message.includes('duplicate key')) {
-      const uniqueId = `${orderId}-${Date.now()}`;
-      orderRecord.order_id = uniqueId;
-      ({ data, error } = await supabase
-        .from('song_requests')
-        .insert([orderRecord])
-        .select('order_id'));
-    }
 
     if (error) {
       console.error('Confirm-session upsert error:', error);

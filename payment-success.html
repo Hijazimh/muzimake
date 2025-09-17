@@ -66,13 +66,16 @@
             </svg>
         </div>
         
-        <!-- Success Message -->
-        <h1 class="text-custom-dark text-3xl font-bold mb-4">Payment Successful!</h1>
-        <p class="text-custom-gray text-lg mb-8">Your order has been confirmed and payment processed successfully.</p>
+        <!-- Dynamic Message -->
+        <h1 id="status-title" class="text-custom-dark text-3xl font-bold mb-4">Finalizing your payment…</h1>
+        <p id="status-subtitle" class="text-custom-gray text-lg mb-8">Please wait while we confirm your payment and update your order.</p>
         
         <!-- Order Details -->
         <div class="bg-white rounded-2xl p-6 mb-8 shadow-sm border border-gray-100">
-            <h2 class="text-custom-dark text-xl font-bold mb-4">What's Next?</h2>
+            <div class="flex items-center justify-between mb-2">
+                <h2 class="text-custom-dark text-xl font-bold">What's Next?</h2>
+                <span id="db-status-pill" class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200">status: checking…</span>
+            </div>
             <div class="space-y-3 text-sm text-custom-gray text-left">
                 <div class="flex items-start gap-3">
                     <div class="w-6 h-6 bg-custom-orange text-white rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</div>
@@ -91,10 +94,10 @@
         
         <!-- Action Buttons -->
         <div class="space-y-4">
-            <button onclick="goToHome()" class="w-full bg-custom-orange text-white px-8 py-4 rounded-full font-semibold hover:bg-orange-600 transition-colors">
+            <button id="home-btn" onclick="goToHome()" class="w-full bg-custom-orange text-white px-8 py-4 rounded-full font-semibold hover:bg-orange-600 transition-colors" disabled>
                 Go to Homepage
             </button>
-            <button onclick="goToHowItWorks()" class="w-full bg-white text-custom-dark px-8 py-4 rounded-full font-semibold border border-gray-300 hover:bg-gray-50 transition-colors">
+            <button id="how-btn" onclick="goToHowItWorks()" class="w-full bg-white text-custom-dark px-8 py-4 rounded-full font-semibold border border-gray-300 hover:bg-gray-50 transition-colors" disabled>
                 Learn More About Our Process
             </button>
         </div>
@@ -109,74 +112,39 @@
     <script>
         // Handle payment success
         document.addEventListener('DOMContentLoaded', async function() {
-            // Get payment ID and order ID from URL parameters
+            const titleEl = document.getElementById('status-title');
+            const subEl = document.getElementById('status-subtitle');
+            const pillEl = document.getElementById('db-status-pill');
+            const homeBtn = document.getElementById('home-btn');
+            const howBtn = document.getElementById('how-btn');
+
             const urlParams = new URLSearchParams(window.location.search);
-            const paymentId = urlParams.get('payment_id') || urlParams.get('id');
-            const orderId = urlParams.get('order_id');
-            
-        if (paymentId) {
-            console.log('Payment successful with ID:', paymentId);
-            if (orderId) {
-                // Build minimal order payload to ensure it exists in DB
-                const songPreferences = JSON.parse(localStorage.getItem('songPreferences') || '{}');
-                const songFormData = JSON.parse(localStorage.getItem('songFormData') || '{}');
-                const contactData = JSON.parse(localStorage.getItem('contactData') || '{}');
+            const paymentId = urlParams.get('payment_id') || urlParams.get('id') || null;
+            const orderId = urlParams.get('order_id') || null;
+            const sessionId = urlParams.get('session_id') || null;
 
-                const order = {
-                    order_id: `${orderId}-${Date.now()}`,
-                    status: 'paid',
-                    payment_status: 'paid',
-                    payment_id: paymentId,
-                    price: 35.00,
-                    customer_name: contactData.fullName || null,
-                    customer_email: contactData.email || null,
-                    customer_phone: contactData.countryCode && contactData.phoneNumber ? `${contactData.countryCode}${contactData.phoneNumber}` : null,
-                    celebration: songPreferences.moment || null,
-                    genre: songPreferences.genre || null,
-                    recipient_name: songFormData.name || null,
-                    recipient_gender: songPreferences.gender || null,
-                    story: songFormData.story || null,
-                    vibe: Array.isArray(songPreferences.vibe) ? songPreferences.vibe.join(', ') : (songPreferences.vibe || null),
-                    updated_at: new Date().toISOString(),
-                    created_at: new Date().toISOString()
-                };
-
-                try {
-                    // Server-side confirmation: create/update order from Stripe session
-                    const sessionId = urlParams.get('session_id');
-                    if (sessionId) {
-                        const confirmResp = await fetch('/api/confirm-session', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ session_id: sessionId })
-                        });
-                        const confirmData = await confirmResp.json();
-                        if (!confirmResp.ok) {
-                            console.error('Confirm session failed:', confirmData);
-                        } else {
-                            console.log('Confirm session success:', confirmData);
-                        }
-                    }
-
-                    const resp = await fetch('/api/create-order', {
+            // Confirm session on server (idempotent)
+            try {
+                if (sessionId) {
+                    const confirmResp = await fetch('/api/confirm-session', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ order })
+                        body: JSON.stringify({ session_id: sessionId })
                     });
-                    const data = await resp.json();
-                    if (!resp.ok) {
-                        console.error('Create order failed:', data);
+                    const confirmData = await confirmResp.json();
+                    if (!confirmResp.ok) {
+                        console.warn('Confirm session failed:', confirmData);
                     } else {
-                        console.log('Order upserted via success page:', data);
+                        console.log('Confirm session success:', confirmData);
                     }
-                } catch (e) {
-                    console.error('Create order exception:', e);
                 }
+            } catch (e) {
+                console.warn('Confirm session exception:', e);
             }
-            // Update order status (redundant safety)
-            updateOrderStatus(paymentId, orderId);
-        }
-            
+
+            // Start polling DB for live status
+            await pollAndRenderStatus({ orderId, paymentId, titleEl, subEl, pillEl, homeBtn, howBtn });
+
             // Clear form data
             clearFormData();
         });
@@ -189,36 +157,88 @@
             localStorage.removeItem('contactData');
         }
 
-        // Update order status
-        async function updateOrderStatus(paymentId, orderId) {
-            try {
-                console.log('Updating order status for payment:', paymentId, 'order:', orderId);
-                
-                // Supabase configuration
-                const supabaseUrl = 'https://lchleopfdvrgunbrlngh.supabase.co';
-                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxjaGxlb3BmZHZyZ3VuYnJsbmdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3NTYwNjgsImV4cCI6MjA3MzMzMjA2OH0.U4NkKdXFgK3Im78oz_SaEHkWQqGzhlaeA83Rom4oD7A';
-                const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-                
-                if (orderId) {
-                    const { error } = await supabase
-                        .from('song_requests')
-                        .update({ 
-                            status: 'paid', 
-                            payment_id: paymentId,
-                            updated_at: new Date().toISOString()
-                        })
-                        .eq('order_id', orderId);
+        // Poll and render order/payment status from DB
+        async function pollAndRenderStatus({ orderId, paymentId, titleEl, subEl, pillEl, homeBtn, howBtn }) {
+            const supabaseUrl = 'https://lchleopfdvrgunbrlngh.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxjaGxlb3BmZHZyZ3VuYnJsbmdoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc3NTYwNjgsImV4cCI6MjA3MzMzMjA2OH0.U4NkKdXFgK3Im78oz_SaEHkWQqGzhlaeA83Rom4oD7A';
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-                    if (error) {
-                        console.error('Error updating order status:', error);
-                    } else {
-                        console.log('Order status updated successfully to paid');
+            const maxAttempts = 12; // ~60s
+            let attempt = 0;
+
+            while (attempt < maxAttempts) {
+                attempt++;
+                try {
+                    if (!orderId) break;
+                    const { data, error } = await supabase
+                        .from('song_requests')
+                        .select('order_id,status,payment_status,payment_id,updated_at')
+                        .eq('order_id', orderId)
+                        .maybeSingle();
+                    if (error) throw error;
+
+                    if (data) {
+                        renderByStatus({
+                            status: data.status,
+                            paymentStatus: data.payment_status,
+                            titleEl,
+                            subEl,
+                            pillEl,
+                            homeBtn,
+                            howBtn
+                        });
+                        // Stop polling once we reach a terminal state
+                        if ([ 'paid', 'failed', 'canceled' ].includes(String(data.status))) {
+                            return;
+                        }
                     }
-                } else {
-                    console.log('No order ID provided, skipping status update');
+                } catch (e) {
+                    console.warn('Status poll error:', e);
                 }
-            } catch (error) {
-                console.error('Error updating order status:', error);
+                await new Promise(r => setTimeout(r, 5000));
+            }
+
+            // Timeout fallback
+            renderByStatus({ status: 'processing', paymentStatus: 'processing', titleEl, subEl, pillEl, homeBtn, howBtn });
+        }
+
+        function renderByStatus({ status, paymentStatus, titleEl, subEl, pillEl, homeBtn, howBtn }) {
+            const normalized = String(status || paymentStatus || '').toLowerCase();
+            let pillText = `status: ${normalized || 'unknown'}`;
+            pillEl.textContent = pillText;
+
+            // Enable buttons for user navigation
+            homeBtn.disabled = false;
+            howBtn.disabled = false;
+
+            switch (normalized) {
+                case 'paid':
+                    titleEl.textContent = 'Payment Successful!';
+                    subEl.textContent = 'Your order has been confirmed and payment processed successfully.';
+                    pillEl.className = 'text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 border border-green-200';
+                    break;
+                case 'processing':
+                case 'pending':
+                case 'pending_payment':
+                case 'requires_action':
+                    titleEl.textContent = 'Payment Processing…';
+                    subEl.textContent = 'We are confirming your payment. This may take a few moments.';
+                    pillEl.className = 'text-xs px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 border border-yellow-200';
+                    break;
+                case 'failed':
+                    titleEl.textContent = 'Payment Failed';
+                    subEl.textContent = 'Your payment could not be completed. Please try again or use a different method.';
+                    pillEl.className = 'text-xs px-2 py-1 rounded-full bg-red-100 text-red-700 border border-red-200';
+                    break;
+                case 'canceled':
+                    titleEl.textContent = 'Payment Canceled';
+                    subEl.textContent = 'Your payment was canceled. You can return to the homepage and try again any time.';
+                    pillEl.className = 'text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200';
+                    break;
+                default:
+                    titleEl.textContent = 'Finalizing your payment…';
+                    subEl.textContent = 'Please wait while we confirm your payment and update your order.';
+                    pillEl.className = 'text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-200';
             }
         }
 

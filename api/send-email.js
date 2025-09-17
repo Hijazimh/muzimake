@@ -21,7 +21,8 @@ module.exports = async (req, res) => {
             return res.status(405).json({ error: 'Method Not Allowed' });
         }
 
-        const { to, subject, audioUrl, customerName, recipientName, celebration, genre, voiceGender } = req.body;
+        const { to, subject, audioUrl } = req.body;
+        let { customerName, recipientName, celebration, genre, voiceGender } = req.body;
 
         console.log('Extracted fields:');
         console.log('- to:', to);
@@ -33,26 +34,43 @@ module.exports = async (req, res) => {
         console.log('- genre:', genre);
         console.log('- voiceGender:', voiceGender);
 
-        // Validate required fields
-        if (!to || !subject || !audioUrl || !customerName || !recipientName || !celebration || !genre || !voiceGender) {
-            console.log('Missing required fields validation failed');
-            return res.status(400).json({ error: 'Missing required fields' });
+        // Validate required fields (min set)
+        const missing = [];
+        if (!to) missing.push('to');
+        if (!subject) missing.push('subject');
+        if (!audioUrl) missing.push('audioUrl');
+        if (missing.length) {
+            console.log('Missing required fields:', missing);
+            return res.status(400).json({ error: 'Missing required fields', missing });
         }
+
+        // Optional fields fallbacks
+        customerName = customerName || 'Customer';
+        recipientName = recipientName || 'Recipient';
+        celebration = celebration || 'N/A';
+        genre = genre || 'N/A';
+        voiceGender = voiceGender || 'N/A';
         
         console.log('All required fields present - proceeding with email setup');
 
+    // Validate SMTP env vars
+    const SMTP_HOST = process.env.SMTP_HOST || 'smtp.maileroo.com';
+    const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587', 10);
+    const SMTP_USER = process.env.SMTP_USER;
+    const SMTP_PASS = process.env.SMTP_PASS;
+
+    if (!SMTP_USER || !SMTP_PASS) {
+        console.error('Missing SMTP credentials. Ensure SMTP_USER and SMTP_PASS are set.');
+        return res.status(500).json({ error: 'SMTP not configured', code: 'SMTP_CONFIG_MISSING' });
+    }
+
     // Create SMTP transporter with Maileroo credentials - using environment variables
     const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST || 'smtp.maileroo.com',
-        port: parseInt(process.env.SMTP_PORT) || 587,
-        secure: false, // true for 465, false for other ports
-        auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS
-        },
-        tls: {
-            rejectUnauthorized: false
-        }
+        host: SMTP_HOST,
+        port: SMTP_PORT,
+        secure: SMTP_PORT === 465, // secure for 465
+        auth: { user: SMTP_USER, pass: SMTP_PASS },
+        tls: { rejectUnauthorized: false }
     });
 
     // Email template
@@ -91,7 +109,7 @@ module.exports = async (req, res) => {
     `;
 
     const mailOptions = {
-        from: process.env.SMTP_USER || 'hello@muzimake.com',
+        from: SMTP_USER, // must match authenticated user for most providers
         to,
         subject,
         html: emailHtml,

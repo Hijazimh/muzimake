@@ -10,7 +10,7 @@ const stripeSecret = isTest && process.env.STRIPE_SECRET_KEY_TEST
   : process.env.STRIPE_SECRET_KEY;
 const stripe = new Stripe(stripeSecret, { apiVersion: '2023-10-16' });
 
-export const config = {
+module.exports.config = {
   api: {
     bodyParser: false
   }
