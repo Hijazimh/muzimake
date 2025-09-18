@@ -33,7 +33,7 @@ module.exports = async function handler(req, res) {
     const amountTotal = typeof session.amount_total === 'number' ? session.amount_total : null;
     const customerEmail = session.customer_details?.email || session.customer_email || null;
     const customerName = session.customer_details?.name || null;
-    const customerPhone = session.customer_details?.phone || null;
+    const customerPhone = session.customer_details?.phone || session.metadata?.customer_phone || null;
     const paymentId = session.payment_intent?.id || session.payment_intent || session.id;
 
     const orderRecord = {
@@ -45,6 +45,7 @@ module.exports = async function handler(req, res) {
       customer_email: customerEmail,
       customer_name: customerName,
       customer_phone: customerPhone,
+      welcome_email_sent_at: null,
       updated_at: new Date().toISOString()
     };
 

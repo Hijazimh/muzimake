@@ -23,6 +23,17 @@ module.exports = async function handler(req, res) {
       cancelUrl
     } = req.body || {};
 
+    console.log('=== CREATE CHECKOUT SESSION DEBUG ===');
+    console.log('Request body:', req.body);
+    console.log('Extracted customer data:', {
+      orderId,
+      customerName,
+      customerEmail,
+      customerPhone,
+      successUrl,
+      cancelUrl
+    });
+
     // Basic validation
     if (!orderId || !successUrl || !cancelUrl) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -30,10 +41,11 @@ module.exports = async function handler(req, res) {
 
     const amount = 3500; // AED 35.00 in minor unit
 
-    const session = await stripe.checkout.sessions.create({
+    const sessionConfig = {
       mode: 'payment',
       payment_method_types: ['card'],
       currency: 'aed',
+      phone_number_collection: { enabled: true },
       line_items: [
         {
           price_data: {
@@ -51,12 +63,18 @@ module.exports = async function handler(req, res) {
       metadata: {
         order_id: orderId,
         customer_name: customerName || '',
-        customer_phone: customerPhone || ''
+        customer_phone: customerPhone || '',
+        customer_email: customerEmail || '' // Also add to metadata for debugging
       },
       success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}&order_id=${orderId}`,
       cancel_url: cancelUrl,
       allow_promotion_codes: false
-    });
+    };
+
+    console.log('Stripe session config:', sessionConfig);
+    console.log('Customer email being sent to Stripe:', customerEmail);
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
 
     return res.status(200).json({ id: session.id, url: session.url });
   } catch (error) {

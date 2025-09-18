@@ -631,6 +631,8 @@
                 };
 
                 console.log('Payment data prepared:', paymentData);
+                console.log('Customer email from orderData:', orderData.email);
+                console.log('Contact data from localStorage:', contactData);
 
                 // Validate payment data before proceeding
                 const validation = validatePaymentData(paymentData);
@@ -638,20 +640,8 @@
                     throw new Error(`Payment validation failed: ${validation.errors.join(', ')}`);
                 }
 
-                // Save order to Supabase first (before payment)
-                console.log('Saving order to database...');
-                const savedOrder = await saveOrderToSupabase();
-                console.log('Order saved successfully:', savedOrder);
-
-                // For testing purposes, always create the order in production
-                // Even if payment gateway isn't fully set up yet
-                const isProduction = !window.location.hostname.includes('localhost') && 
-                                   !window.location.hostname.includes('127.0.0.1') && 
-                                   !window.location.hostname.includes('vercel.app');
-                
-                // Always proceed to Stripe Checkout in production
-
-                // For localhost/Vercel preview, proceed with payment flow
+                // Do NOT create any song_requests record before payment.
+                // We only create the record after successful payment via webhook/confirm-session.
                 console.log('Creating Stripe Checkout session...');
                 const paymentResponse = await createStripeCheckout(paymentData);
                 
@@ -707,17 +697,23 @@
         // Create Stripe Checkout session
         async function createStripeCheckout(paymentData) {
             try {
+                const checkoutData = {
+                    orderId: orderData.orderId,
+                    customerName: orderData.fullName,
+                    customerEmail: orderData.email,
+                    customerPhone: `${orderData.countryCode}${orderData.phoneNumber}`,
+                    successUrl: `${window.location.origin}/payment-success.html`,
+                    cancelUrl: `${window.location.origin}/create-song-step4.html`
+                };
+                
+                console.log('=== STRIPE CHECKOUT DEBUG ===');
+                console.log('Sending to create-checkout-session:', checkoutData);
+                console.log('Customer email being sent:', checkoutData.customerEmail);
+                
                 const response = await fetch('/api/create-checkout-session', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        orderId: orderData.orderId,
-                        customerName: orderData.fullName,
-                        customerEmail: orderData.email,
-                        customerPhone: `${orderData.countryCode}${orderData.phoneNumber}`,
-                        successUrl: `${window.location.origin}/payment-success.html`,
-                        cancelUrl: `${window.location.origin}/create-song-step4.html`
-                    })
+                    body: JSON.stringify(checkoutData)
                 });
 
                 if (!response.ok) {
@@ -814,83 +810,7 @@
             }
         }
 
-        // Save order to Supabase
-        async function saveOrderToSupabase() {
-            try {
-                console.log('Starting to save order to Supabase...');
-                
-                // For localhost testing, simulate successful save to avoid CORS issues
-                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                    console.log('Localhost mode: Simulating successful order save (CORS bypass)');
-                    return [{ id: 'test_' + Date.now(), order_id: orderData.orderId }];
-                }
-                
-                // In production, always save to real database
-                console.log('Production mode: Saving to real database');
-                
-                // Test Supabase connection first
-                const { data: testData, error: testError } = await supabase
-                    .from('song_requests')
-                    .select('id')
-                    .limit(1);
-
-                if (testError) {
-                    console.error('Supabase connection test failed:', testError);
-                    
-                    // Check if it's a table doesn't exist error
-                    if (testError.message.includes('relation "song_requests" does not exist')) {
-                        throw new Error('Database table not found. Please run the setup script to create the table.');
-                    }
-                    
-                    throw new Error(`Database connection failed: ${testError.message}`);
-                }
-
-                console.log('Supabase connection test successful');
-
-                const orderRecord = {
-                    customer_name: orderData.fullName,
-                    customer_email: orderData.email,
-                    customer_phone: `${orderData.countryCode}${orderData.phoneNumber}`,
-                    celebration: orderData.moment,
-                    genre: orderData.genre,
-                    recipient_name: orderData.recipientName,
-                    recipient_gender: orderData.gender,
-                    story: orderData.story,
-                    vibe: Array.isArray(orderData.vibe) ? orderData.vibe.join(', ') : orderData.vibe,
-                    status: 'pending_payment',
-                    price: 35.00,
-                    order_id: orderData.orderId,
-                    created_at: new Date().toISOString()
-                };
-
-                console.log('Inserting order record:', orderRecord);
-
-                const { data, error } = await supabase
-                    .from('song_requests')
-                    .upsert(orderRecord, { onConflict: 'order_id' })
-                    .select();
-
-                if (error) {
-                    console.error('Error saving order:', error);
-                    throw new Error(`Failed to save order: ${error.message}`);
-                }
-
-                console.log('Order saved successfully:', data);
-                return data;
-            } catch (error) {
-                console.error('Order submission error:', error);
-                
-                // For localhost testing, simulate successful save
-                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                    console.log('Localhost mode: Simulating successful order save');
-                    return [{ id: 'test_' + Date.now(), order_id: orderData.orderId }];
-                }
-                
-                // In production, don't simulate - throw the real error
-                console.error('Production mode: Failed to save order to database');
-                throw error;
-            }
-        }
+        // Removed: pre-payment saving of order. Creation happens after payment via webhook/confirm-session.
 
         // Clear form data
         function clearFormData() {

@@ -27,7 +27,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net https://client.crisp.chat https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' https://lchleopfdvrgunbrlngh.supabase.co https: data: blob:; connect-src 'self' https://lchleopfdvrgunbrlngh.supabase.co https://api.ziina.com https://ip-api.com https://ipapi.co; frame-src 'none'; object-src 'none'; base-uri 'self';"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://unpkg.com https://cdn.jsdelivr.net https://client.crisp.chat https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: https://storage.crisp.chat; media-src 'self' https://lchleopfdvrgunbrlngh.supabase.co https: data: blob:; connect-src 'self' https://lchleopfdvrgunbrlngh.supabase.co https://api.ziina.com https://ip-api.com https://ipapi.co https://client.crisp.chat wss://client.relay.crisp.chat; frame-src https://client.crisp.chat https://go.crisp.chat; object-src 'none'; base-uri 'self';"
         }
       ]
     }

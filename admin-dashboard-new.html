@@ -749,11 +749,19 @@
             const totalItems = requests.length; // Each request is one item
             const ordersFulfilled = requests.filter(r => r.status === 'completed' || r.status === 'paid').length;
             const ordersDelivered = requests.filter(r => r.status === 'completed').length;
+
+            // Sum returns from price column across all requests (fallback 0 if missing)
+            const totalReturnsAed = requests.reduce((sum, r) => {
+                const value = typeof r.price === 'number' ? r.price : parseFloat(r.price);
+                return sum + (isFinite(value) ? value : 0);
+            }, 0);
+            const formattedReturns = `AED ${totalReturnsAed.toFixed(2)}`;
             
             document.getElementById('totalOrders').textContent = totalOrders;
             document.getElementById('totalItems').textContent = totalItems;
             document.getElementById('ordersFulfilled').textContent = ordersFulfilled;
             document.getElementById('ordersDelivered').textContent = ordersDelivered;
+            document.getElementById('totalReturns').textContent = formattedReturns;
         }
         
         // (Removed: home metrics and recent activity helpers)

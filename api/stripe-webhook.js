@@ -153,7 +153,7 @@ module.exports = async function handler(req, res) {
       const amountTotal = typeof fullSession.amount_total === 'number' ? fullSession.amount_total : null;
       const customerEmail = fullSession.customer_details?.email || fullSession.customer_email || null;
       const customerName = fullSession.customer_details?.name || null;
-      const customerPhone = fullSession.customer_details?.phone || null;
+      const customerPhone = fullSession.customer_details?.phone || fullSession.metadata?.customer_phone || null;
 
       if (orderId) {
         console.log(`Checkout session completed for order ${orderId}. Session ID: ${session.id}`);
